@@ -1,4 +1,6 @@
 /* Direct Search Optimization Fitting Routine
+ * Author of this sketch: David Dubins
+ * Date: 9-Feb-19
  * Source: Luus R., Jaakola THI. Optimization by Direct Search and Systematic Reduction in the Size of Search Region
  * AIChE Journal 19(4):760 - 766 · July 1973
  * This search routine can be used for nonlinear fits.
