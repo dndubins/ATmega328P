@@ -6,20 +6,22 @@
  * See http://robotics.hobbizine.com/arduinoann.html for details.
  * TCS230 color recognition sensor 
  * Sensor connection pins to Arduino are shown in comments
- * Neural network code and algorithm adapted from: http://robotics.hobbizine.com/arduinoann.html
+ * Neural network code and algorithm adapted from: http://robotics.hobbizine.com/arduinoann.html 
+ * Sketch: David Dubins
+ * Date: 3-Feb-19
  * 
-
-Color Sensor      Arduino
------------      --------
- VCC               5V
- GND               GND
- s0                8
- s1                9
- s2                12
- s3                11
- OUT               10
- OE                GND
-*/
+ * Connections:
+ * Color Sensor      Arduino
+ * -----------      --------
+ *  VCC               5V
+ * GND               GND
+ *  s0                8
+ *  s1                9
+ *  s2                12
+ *  s3                11
+ *  OUT               10
+ *  OE                GND
+ */
 
 // Global Network Configuration Variables
 const int InputNodes = 3;            // The number of input neurons (can be sensor readings, <=7 for Arduino)
@@ -109,6 +111,7 @@ void setup(){
 }  
 
 void loop (){
+ readSample();  // use the neural network to interpret new data
 }
 
 void solveNN(){ // neural network fitting routine
