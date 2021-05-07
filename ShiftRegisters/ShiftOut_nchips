@@ -1,0 +1,79 @@
+/*
+  Shift Register Example
+ for 74HC595 shift register
+
+ This sketch cycles through pins and keeps track of what the current state is so that you can
+ independently turn on and off a specific shift pin without resetting the rest of them.
+
+ Hardware:
+ * 74HC595 shift register attached to pins 4,5, and 6 of the Arduino,
+ as detailed below.
+ * LEDs attached to each of the outputs of the shift register
+
+*/
+const int clockPin = 4; //Pin connected to clock pin (SH_CP) of 74HC595 (pin 11 on chip)
+const int latchPin = 5; //Pin connected to latch pin (ST_CP) of 74HC595 (pin 12 on chip)
+const int dataPin = 6;  //Pin connected to Data in (DS) of 74HC595 (pin 14 on chip)
+byte bitsOut[2]; //Define an array of bytes for the shift registers.
+byte chipnum=2;         // This is the number of chips used
+
+void setup() {
+  //set pins to output because they are addressed in the main loop
+  pinMode(latchPin, OUTPUT);
+  pinMode(dataPin, OUTPUT);  
+  pinMode(clockPin, OUTPUT);
+  for(int i=0;i<chipnum;i++){
+    bitsOut[i]=0b0; //Initialize all chip bit values to 0
+  }
+  Serial.begin(9600);
+  //Serial.begin(250000);
+  //Serial.println("reset");
+}
+
+void loop() {
+   for(int k=0;k<16;k++){
+      registerWrite(k, HIGH);
+      delay(250);
+      //delayMicroseconds(3000);
+   }
+   for(int k=0;k<16;k++){
+      registerWrite(k, LOW);
+      delay(250);
+      //delayMicroseconds(3000);
+   }
+}
+
+// This method sends bits to the shift register:
+void registerWrite(int whichPin, int whichState) {
+  byte bitTemp = 0b0;  //Initialize bitTemp (clear it)
+  byte ShiftPinTemp = 0b0; //temporary storage for pin to be changed
+  byte whichChip=whichPin/8; //temporary storage for which chip the pin is on (Chip0, Chip1, Chip2...)
+  Serial.print("Pin:");
+  Serial.print(whichPin);
+  Serial.print("Chip:");
+  Serial.println(whichChip);
+  for(int n=0;n<chipnum;n++){
+    if(whichChip==n){
+      ShiftPinTemp=bitsOut[n]; //Get the present values from the chip to be changed   
+    }
+  }
+  // convert the pin number (whichPin) to a binary number stored in bitTemp.
+  bitWrite(bitTemp, whichPin-(8*whichChip), HIGH); //make the state high regardless (used for logic)
+  if(whichState==HIGH){ //If you are turning on a Shift Register Pin:
+    ShiftPinTemp = ShiftPinTemp | bitTemp; //Latch operator "|" results in a 1 at each bit position where either input values were 1.
+  }
+  if(whichState==LOW){ //If you are turning off a Shift Register Pin:
+    ShiftPinTemp = ShiftPinTemp & ~bitTemp; // e.g. if bitTemp = 4, in binary: 00000100. ~bitTemp (not bitTemp)= 11111011. An AND operation with the previous state (e.g. 10110110) will result in 10110010 - pin 4 turned off, the rest of the pins are on.
+  }
+
+  for(int n=0;n<chipnum;n++){
+    if(whichChip==n){
+      bitsOut[n]=ShiftPinTemp; //Record the new chip byte on the correct chip   
+    }
+  }
+  digitalWrite(latchPin, LOW); 
+  for(int n=0;n<chipnum;n++){    // Shift the bits out, in forward order (last chip in chain is chip 1)
+    shiftOut(dataPin, clockPin, MSBFIRST, bitsOut[n]);
+  }
+  digitalWrite(latchPin, HIGH);  // Set the latch HIGH to trigger the bits shifting OUT:
+}
