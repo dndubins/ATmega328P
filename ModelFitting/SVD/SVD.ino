@@ -1,7 +1,9 @@
 /*
  * Singular Value Decomposition coding based on:
  * William H. Press. Numerical recipes in C (2nd ed.): the art of scientific computing
- * Cambridge University Press New York, NY, USA ©1992 
+ * Cambridge University Press New York, NY, USA ©1992
+ * Author of this sketch: David Dubins
+ * Date: 6-Feb-19
 */
 #define DEBUG //comment out for no serial debugging commands
 
