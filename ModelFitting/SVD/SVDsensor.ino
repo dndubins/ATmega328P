@@ -5,21 +5,20 @@
  * 
  * TCS230 color recognition sensor 
  * Sensor connection pins to Arduino are shown in comments
- * Sketch: David Dubins
- * Date: 16-Feb-18
+ * Author of this sketch: David Dubins
+ * Date: 6-Feb-19
  * 
-
-Color Sensor      Arduino
------------      --------
- VCC               5V
- GND               GND
- s0                8
- s1                9
- s2                12
- s3                11
- OUT               10
- OE                GND
-*/
+ * Color Sensor      Arduino
+ * -----------      --------
+ *  VCC               5V
+ *  GND               GND
+ *  s0                8
+ *  s1                9
+ *  s2                12
+ *  s3                11
+ *  OUT               10
+ *  OE                GND
+ */
 
 #include <EEPROM.h> // for saving SVD matrix
 #define DEBUG //comment out to remove extra serial debugging messages
