@@ -1,4 +1,4 @@
-Singlular Value Decomposition (SVD) is a really cool algebraic model-fitting routine that gives you an approximation if the number of equations is less than the number of unknowns, a solution if the number of equations is equal to the number of unknowns, and a fit if the number of equations is greater than the number of unknowns.
+Singlular Value Decomposition (SVD) is a really cool algebraic model-fitting routine that gives you an approximation if the number of equations is less than the number of unknowns, a solution if the number of equations is equal to the number of unknowns, and a fit if the number of equations is greater than the number of unknowns. This routine was adapted from  William Press, Numerical Recipes in C++: The Art of Scientific Computing (2nd edition). Cambridge University Press New York, NY, USA ©1992. 
 
 In this example, I use SVD to solve the red, green, and blue data I have collected from a colour sensor. The 2x2 "READINGS" matrix holds the measured readings from the colour sensor. The matrix "Y" holds wavelengths I would like to map those readings to.
 
