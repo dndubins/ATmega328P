@@ -5,6 +5,8 @@
  * 
  * TCS230 color recognition sensor 
  * Sensor connection pins to Arduino are shown in comments
+ * Sketch: David Dubins
+ * Date: 16-Feb-18
  * 
 
 Color Sensor      Arduino
