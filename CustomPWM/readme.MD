@@ -12,13 +12,13 @@ This story began because I needed to do something that I thought would be simple
 
 There are three timers in the ATmega328P that time various important things. Timer 0 controls pins 5 and 6, along with the arduino time-related functions (e.g. delay() and millis()). Timer 1 controls pins 9 and 10. Finally, Timer 2 controls pins 3 and 11. So let's start with Timer 0. I will organize this page by what you might looking to do, so that hopefully you can find "the answer" quickly.
 
-##Timer 0 (controls Pins 5 and 6)
+## Timer 0 (controls Pins 5 and 6)
 -------------------------------
 ### "I want to output a specific frequency on Pin 5 only, using Timer 0."
 
 Before you do this, know that messing with Timer 0 will screw with your delay() and millis() functions, which you can account for, but it's another headache. Timer 0 is a 8-bit clock, so the counters are limited to 255.
 
-The code for a signal on Pin 5 only, using Timer 0:
+#### The Code for a Signal on Pin 5 only, using Timer 0:
 ```
   // Just Pin 5:
   pinMode(5, OUTPUT); // output pin for OCR0B, this is Arduino pin number
@@ -63,7 +63,7 @@ You can try generating this chart in Excel with the above formula. You can use a
 
 ### "I want to output a specific frequency on Pin 6 only, using Timer 0."
 
-The code for a signal on Pin 6 only:
+#### The Code for a Signal on Pin 6 only:
 
 ```
   //Just Pin 6:
@@ -109,7 +109,7 @@ So far, so good? How about if you'd like to output a signal on both Pins 5 and P
 
 So you can also create a signal on both pins; however, in the modes I've tried, you can't make them have distinct (different) frequencies. They will have the same frequency, which is (less) tweakable. You can however assign them different duty cycles, which is nice.
 
-The Code for a Signal on Pins 5 and 6:
+#### The Code for a Signal on Pins 5 and 6:
 ```
  //Both Pins 5 and 6: In this mode, timer 0 always counts to 255.
  //Formula: wave frequency=fclk/(256*N) - this formula is more limited with respect to frequency
@@ -135,13 +135,13 @@ The duty cycle for pin 6 is adjusted by changing OCR0A to a number between 0-255
 
 The example code above creates a signal on Pin 5 with a frequency of 62.5 kHz and a duty cycle of 80%, and a signal on Pin 6 with the same frequency (62.5 kHz) and a duty cycle of 50%.
 
-#Timer 1 (Controls Pins 9 and 10)
+## Timer 1 (Controls Pins 9 and 10)
 ------------------------------------------
 ### "I want to output a specific frequency on Pin 10 only, using Timer 1."
 
 Timer 1 is a 16 bit clock, so there is a bit more flexibility here (largest counter value is now 65535). The code for Pin 10 bears resemblance to that of Pin 5 only above, so I'm putting these code snippets in the same order.
 
-The Code for a Signal on Pin 10 only:
+#### The Code for a Signal on Pin 10 only:
 ```
   // Just Pin 10:
   //Formula: wave frequency=fclk/((OCR1A+1)*N)
@@ -178,7 +178,7 @@ Here is a chart of the frequencies you will get, spanning the OCR1A range and pr
 
 ### "I want to output a specific frequency on Pin 9 only, using Timer 1."
 
-The Code for a Signal on Pin 9 Only:
+#### The Code for a Signal on Pin 9 Only:
 ```
   //Just Pin 9:
   //Formula: wave frequency=fclk/((OCR1A+1)*2*N)
@@ -218,7 +218,7 @@ Here is a chart spanning the range of OCR1A and prescaler values:
 
 Again, the frequencies are limited with the mode I played with (modulated only by changing the prescaler value). However, you can set the duty cycles of 9 and 10 individually.
 
-The code for signals on both Pins 9 and 10:
+#### The Code for Signals on both Pins 9 and 10:
 ```
   // Both Pin 9 and Pin 10:
   //Formula: wave frequency=fclk/(N*1024)
@@ -244,14 +244,14 @@ The duty cycle for pin 9 is adjusted by changing OCR1A to a number between 0-102
 
 The example code above creates a signal on Pin 9 with a frequency of 15.6 kHz and a duty cycle of 50%, and a signal on Pin 10 with the same frequency (15.6 kHz) and a duty cycle of about 10%.
 
-#Timer 2 (controls Pins 3 and 11)
+## Timer 2 (controls Pins 3 and 11)
 -------------------------------
 
 ### "I want to output a specific frequency on Pin 3 only, using Timer 2."
 
 Timer 2 is a lot like Timer 0 (it's also an 8 bit clock and the registers are structured very similarly). One important distinction is that the options for the prescaler values are a little different. Also, changing Timer 2 doesn't mess up the arduino time functions.
 
-The Code for a Signal on Pin 3 Only:
+#### The Code for a Signal on Pin 3 Only:
 ```
   //Just Pin 3:
   pinMode(3, OUTPUT); // output pin for OCR2B, this is Arduino pin number
@@ -291,7 +291,7 @@ Here is a table spanning practical values of OCR2A and prescalers:
 
 ### "I want to output a specific frequency on Pin 11 only, using Timer 2."
 
-The Code for a Signal on Pin 11 Only:
+#### The Code for a Signal on Pin 11 Only:
 
 ```
   //Just Pin 11:
@@ -332,7 +332,7 @@ Here is a table of output frequencies spanning the ranges of OCR2A and prescaler
 
 Once again (assuming you have skipped down to this part and not read the above cases), the frequencies in this mode can only be changed by selecting the prescaler value, and once set, Pins 3 and 11 will have the exact same frequencies. However, you can set the duty cycles of pins 3 and 11 individually in this mode.
 
-The Code for Signals on Both Pins 3 and 11:
+#### The Code for Signals on Both Pins 3 and 11:
 ```
   //Both Pin 3 and Pin 11:
   //Formula: wave frequency=fclk/(256*N) - this formula is more limited with respect to frequency
