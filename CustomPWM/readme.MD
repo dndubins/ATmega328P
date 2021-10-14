@@ -12,7 +12,7 @@ This story began because I needed to do something that I thought would be simple
 
 There are three timers in the ATmega328P that time various important things. Timer 0 controls pins 5 and 6, along with the arduino time-related functions (e.g. delay() and millis()). Timer 1 controls pins 9 and 10. Finally, Timer 2 controls pins 3 and 11. So let's start with Timer 0. I will organize this page by what you might looking to do, so that hopefully you can find "the answer" quickly.
 
-##Timer 0 (controls Pins 5 and 6)
+#Timer 0 (controls Pins 5 and 6)
 -------------------------------
 ### "I want to output a specific frequency on Pin 5 only, using Timer 0."
 
@@ -135,7 +135,7 @@ The duty cycle for pin 6 is adjusted by changing OCR0A to a number between 0-255
 
 The example code above creates a signal on Pin 5 with a frequency of 62.5 kHz and a duty cycle of 80%, and a signal on Pin 6 with the same frequency (62.5 kHz) and a duty cycle of 50%.
 
-##Timer 1 (Controls Pins 9 and 10)
+#Timer 1 (Controls Pins 9 and 10)
 ------------------------------------------
 ### "I want to output a specific frequency on Pin 10 only, using Timer 1."
 
@@ -244,7 +244,7 @@ The duty cycle for pin 9 is adjusted by changing OCR1A to a number between 0-102
 
 The example code above creates a signal on Pin 9 with a frequency of 15.6 kHz and a duty cycle of 50%, and a signal on Pin 10 with the same frequency (15.6 kHz) and a duty cycle of about 10%.
 
-##Timer 2 (controls Pins 3 and 11)
+#Timer 2 (controls Pins 3 and 11)
 
 ### "I want to output a specific frequency on Pin 3 only, using Timer 2."
 
