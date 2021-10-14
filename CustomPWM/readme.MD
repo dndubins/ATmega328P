@@ -69,7 +69,7 @@ You can try generating this chart in Excel with the above formula. You can use a
 ```
   //Just Pin 6:
   //Formula: frequency=fclk/((OCR0A+1)*2N)
-  pinMode(6,OUTPUT); // duty cycle fixed at 50% in this mode.
+  pinMode(6, OUTPUT); // duty cycle fixed at 50% in this mode.
   TCCR0A =  _BV(COM0A0) | _BV(WGM01) | _BV(WGM00); // inverting mode, fast PWM
   //uncomment for your desired prescaler:
   TCCR0B = _BV(WGM02)| _BV(CS00); // no prescaling
@@ -298,7 +298,7 @@ Here is a table spanning practical values of OCR2A and prescalers:
 ```
   //Just Pin 11:
   //Formula: frequency=fclk/((OCR2A+1)*2N)
-  pinMode(11,OUTPUT); // duty cycle fixed at 50% in this mode.
+  pinMode(11, OUTPUT); // duty cycle fixed at 50% in this mode.
   TCCR2A =  _BV(COM2A0) | _BV(WGM21) | _BV(WGM20); // inverting mode, fast PWM
   //uncomment for your desired prescaler:
   TCCR2B = _BV(WGM22) | _BV(CS20); // no prescaling
@@ -339,7 +339,7 @@ Once again (assuming you have skipped down to this part and not read the above c
   //Both Pin 3 and Pin 11:
   //Formula: frequency=fclk/(256*N) - this formula is more limited with respect to frequency
   pinMode(3, OUTPUT);
-  pinMode(11,OUTPUT);
+  pinMode(11, OUTPUT);
   TCCR2A = _BV(COM2A1) | _BV(COM2A0) | _BV(COM2B1) |_BV(COM2B0) | _BV(WGM21) | _BV(WGM20); // inverting mode, fast PWM
   //uncomment for your desired prescaler:
   TCCR2B = _BV(CS20); // no prescaling (62.5 kHz)
