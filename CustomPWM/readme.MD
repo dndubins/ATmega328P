@@ -36,7 +36,7 @@ Before you do this, know that messing with Timer 0 will screw with your delay() 
 
 There are two counters involved in this mode: OCR0A and OCR0B. Setting OCR0A will change the frequency of the output signal. The prescaler value is a multiplier which puts you in a different frequency range. In this mode (inverting, fast PWM), the formula for the output signal is:
 
-output frequency=fclk/((OCR0A+1)/*N), where fclk=16000000, and N is the prescaler you selected by un-commenting the appropriate line in the above code (which can just go in your setup loop if you like).
+output frequency=fclk/((OCR0A+1)*N), where fclk=16000000, and N is the prescaler you selected by un-commenting the appropriate line in the above code (which can just go in your setup loop if you like).
 
 The duty cycle for this signal will be defined by OCR0B, and calculated by the formula: duty cycle=OCR0B/OCR0A. The example code above creates a signal on Pin 5 with a frequency of 390 kHz and a duty cycle of 50%.
 
