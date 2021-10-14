@@ -67,7 +67,7 @@ You can try generating this chart in Excel with the above formula. You can use a
 
 ```
   //Just Pin 6:
-  //Formula: frequency=fclk/((OCR0A+1)*2*N)
+  //Formula: frequency=fclk/((OCR0A+1)*2N)
   pinMode(6,OUTPUT); // duty cycle fixed at 50% in this mode.
   TCCR0A =  _BV(COM0A0) | _BV(WGM01) | _BV(WGM00); // inverting mode, fast PWM
   //uncomment for your desired prescaler:
@@ -80,7 +80,7 @@ You can try generating this chart in Excel with the above formula. You can use a
 ```
 OCR0B is left out of the picture here, and you are limited to a 50% duty cycle in this mode. The formula for frequency is slightly different (by a factor of 2):
 
-output frequency=fclk/((OCR0A+1)*2*N)
+output frequency=fclk/((OCR0A+1)*2N)
 
 The example code above creates a signal on Pin 6 with a frequency of 727 kHz and a duty cycle of 50%.
 
@@ -181,7 +181,7 @@ Here is a chart of the frequencies you will get, spanning the OCR1A range and pr
 #### The Code for a Signal on Pin 9 Only:
 ```
   //Just Pin 9:
-  //Formula: wave frequency=fclk/((OCR1A+1)*2*N)
+  //Formula: wave frequency=fclk/((OCR1A+1)*2N)
   pinMode(9, OUTPUT); // duty cycle fixed at 50% in this mode.
   TCCR1A = _BV(COM1A0) | _BV(WGM11) | _BV(WGM10); // fast PWM, 10bit resolution
   //uncomment for your desired prescaler:
@@ -195,7 +195,7 @@ Here is a chart of the frequencies you will get, spanning the OCR1A range and pr
 ```
 Like with Pin 6, OCR1B is left out of the picture here, and you are limited to a 50% duty cycle in this mode. As with Pin 6, the formula is:
 
-output frequency=fclk/((OCR1A+1)*2*N)
+output frequency=fclk/((OCR1A+1)*2N)
 
 The example code above creates a signal on Pin 9 with a frequency of 195.1 kHz and a duty cycle of 50%.
 
@@ -295,7 +295,7 @@ Here is a table spanning practical values of OCR2A and prescalers:
 
 ```
   //Just Pin 11:
-  //Formula: frequency=fclk/((OCR2A+1)*2*N)
+  //Formula: frequency=fclk/((OCR2A+1)*2N)
   pinMode(11,OUTPUT); // duty cycle fixed at 50% in this mode.
   TCCR2A =  _BV(COM2A0) | _BV(WGM21) | _BV(WGM20); // inverting mode, fast PWM
   //uncomment for your desired prescaler:
@@ -305,7 +305,7 @@ Here is a table spanning practical values of OCR2A and prescalers:
   //TCCR2B = _BV(WGM22) | _BV(CS22); // prescaler=64
   OCR2A = 10; // counter limit: 255
 ```
-Again, this mode is limited to a 50% duty cycle, and the output frequency is governed by the formula: fclk/((OCR2A+1)*2*N).
+Again, this mode is limited to a 50% duty cycle, and the output frequency is governed by the formula: fclk/((OCR2A+1)*2N).
 
 The example code above creates a signal on Pin 11 with a frequency of 727.2 kHz and a duty cycle of 50%.
 
