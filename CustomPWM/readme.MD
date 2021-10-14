@@ -245,6 +245,7 @@ The duty cycle for pin 9 is adjusted by changing OCR1A to a number between 0-102
 The example code above creates a signal on Pin 9 with a frequency of 15.6 kHz and a duty cycle of 50%, and a signal on Pin 10 with the same frequency (15.6 kHz) and a duty cycle of about 10%.
 
 #Timer 2 (controls Pins 3 and 11)
+-------------------------------
 
 ### "I want to output a specific frequency on Pin 3 only, using Timer 2."
 
