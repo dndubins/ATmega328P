@@ -12,7 +12,7 @@ This story began because I needed to do something that I thought would be simple
 
 There are three timers in the ATmega328P that time various important things. Timer 0 controls pins 5 and 6, along with the arduino time-related functions (e.g. delay() and millis()). Timer 1 controls pins 9 and 10. Finally, Timer 2 controls pins 3 and 11. So let's start with Timer 0. I will organize this page by what you might looking to do, so that hopefully you can find "the answer" quickly.
 
-#Timer 0 (controls Pins 5 and 6)
+##Timer 0 (controls Pins 5 and 6)
 -------------------------------
 ### "I want to output a specific frequency on Pin 5 only, using Timer 0."
 
