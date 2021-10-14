@@ -115,7 +115,7 @@ So you can also create a signal on both pins; however, in the modes I've tried, 
  //Both Pins 5 and 6: In this mode, timer 0 always counts to 255.
  //Formula: frequency=fclk/(256*N) - this formula is more limited with respect to frequency
   pinMode(5, OUTPUT);
-  pinMode(6,OUTPUT);
+  pinMode(6, OUTPUT);
   TCCR0A = _BV(COM0A1) | _BV(COM0A0) | _BV(COM0B1) |_BV(COM0B0) | _BV(WGM01) | _BV(WGM00); // inverting mode, fast PWM
   //uncomment for your desired prescaler:
   TCCR0B = _BV(CS00); // no prescaling (62.5 kHz)
