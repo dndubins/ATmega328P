@@ -10,7 +10,7 @@ In case this site disappears, I am reposting this information here.
 
 This story began because I needed to do something that I thought would be simple, but ended up being quite challenging. I wanted a 370 kHz wave on Pin 3 of my Arduino Uno, because I needed to move a clock out from another pin to avoid a hardware conflict with an external chip (the 23LC1024 - here is a cheap plug for the library I wrote for it: https://github.com/dndubins/SRAMsimple). Little did I know that this was not a quick or easy problem. What the fclk! There are lots of explanations and code snippets out there to create custom frequency clock signals, but I quickly learned that I lacked the basic understanding of registers to do this.
 
-There are three timers in the ATmega328P that time various important things. Timer 0 controls pins 5 and 6, along with the arduino time-related functions (e.g. delay() and millis()). Timer 1 controls pins 9 and 10. Finally, Timer 2 controls pins 3 and 11. So let's start with Timer 0. I will organize this page by what you might looking to do, so that hopefully you can find "the answer" quickly.
+There are three timers in the ATmega328P that time various important things. Timer 0 controls pins 5 and 6, along with the arduino time-related functions (e.g. delay() and millis()). Timer 1 controls pins 9 and 10. Finally, Timer 2 controls pins 3 and 11. So let's start with Timer 0. I will organize this page by what you might be looking to do, so that hopefully you can find "the answer" quickly.
 
 ## Timer 0 (controls Pins 5 and 6)
 -------------------------------
@@ -21,6 +21,7 @@ Before you do this, know that messing with Timer 0 will screw with your delay() 
 #### The Code for a Signal on Pin 5 only, using Timer 0:
 ```
   // Just Pin 5:
+  //Formula: frequency=fclk/((OCR0A+1)*N)
   pinMode(5, OUTPUT); // output pin for OCR0B, this is Arduino pin number
   TCCR0A = _BV(COM0A1) | _BV(COM0B1) | _BV(WGM01) | _BV(WGM00); // inverting mode, fast PWM
   //uncomment for your desired prescaler:
@@ -36,7 +37,7 @@ Before you do this, know that messing with Timer 0 will screw with your delay() 
 
 There are two counters involved in this mode: OCR0A and OCR0B. Setting OCR0A will change the frequency of the output signal. The prescaler value is a multiplier which puts you in a different frequency range. In this mode (inverting, fast PWM), the formula for the output signal is:
 
-output frequency=fclk/((OCR0A+1)*N), where fclk=16000000, and N is the prescaler you selected by un-commenting the appropriate line in the above code (which can just go in your setup loop if you like).
+output frequency=fclk/((OCR0A+1)*N), where fclk=16,000,000 (or 16 MHz), and N is the prescaler you selected by un-commenting the appropriate line in the above code (which can just go inside your setup function if you like).
 
 The duty cycle for this signal will be defined by OCR0B, and calculated by the formula: duty cycle=OCR0B/OCR0A. The example code above creates a signal on Pin 5 with a frequency of 390 kHz and a duty cycle of 50%.
 
@@ -112,7 +113,7 @@ So you can also create a signal on both pins; however, in the modes I've tried, 
 #### The Code for a Signal on Pins 5 and 6:
 ```
  //Both Pins 5 and 6: In this mode, timer 0 always counts to 255.
- //Formula: wave frequency=fclk/(256*N) - this formula is more limited with respect to frequency
+ //Formula: frequency=fclk/(256*N) - this formula is more limited with respect to frequency
   pinMode(5, OUTPUT);
   pinMode(6,OUTPUT);
   TCCR0A = _BV(COM0A1) | _BV(COM0A0) | _BV(COM0B1) |_BV(COM0B0) | _BV(WGM01) | _BV(WGM00); // inverting mode, fast PWM
@@ -144,7 +145,7 @@ Timer 1 is a 16 bit clock, so there is a bit more flexibility here (largest coun
 #### The Code for a Signal on Pin 10 only:
 ```
   // Just Pin 10:
-  //Formula: wave frequency=fclk/((OCR1A+1)*N)
+  //Formula: frequency=fclk/((OCR1A+1)*N)
   pinMode(10, OUTPUT); // output pin for OCR1B, this is Arduino pin number
   TCCR1A = _BV(COM1A1) | _BV(COM1B1) | _BV(WGM11) | _BV(WGM10); // fast PWM, 10bit resolution
   //uncomment for your desired prescaler:
@@ -181,7 +182,7 @@ Here is a chart of the frequencies you will get, spanning the OCR1A range and pr
 #### The Code for a Signal on Pin 9 Only:
 ```
   //Just Pin 9:
-  //Formula: wave frequency=fclk/((OCR1A+1)*2N)
+  //Formula: frequency=fclk/((OCR1A+1)*2N)
   pinMode(9, OUTPUT); // duty cycle fixed at 50% in this mode.
   TCCR1A = _BV(COM1A0) | _BV(WGM11) | _BV(WGM10); // fast PWM, 10bit resolution
   //uncomment for your desired prescaler:
@@ -221,7 +222,7 @@ Again, the frequencies are limited with the mode I played with (modulated only b
 #### The Code for Signals on both Pins 9 and 10:
 ```
   // Both Pin 9 and Pin 10:
-  //Formula: wave frequency=fclk/(N*1024)
+  //Formula: frequency=fclk/(N*1024)
   pinMode(9, OUTPUT); // output pin for OCR1A, this is Arduino pin number
   pinMode(10, OUTPUT); // output pin for OCR1B, this is Arduino pin number
   TCCR1A = _BV(COM1A1) | _BV(COM1B1) | _BV(WGM11) | _BV(WGM10); // fast PWM, 10bit resolution
@@ -254,6 +255,7 @@ Timer 2 is a lot like Timer 0 (it's also an 8 bit clock and the registers are st
 #### The Code for a Signal on Pin 3 Only:
 ```
   //Just Pin 3:
+  //Formula: frequency=fclk/((OCR2A+1)*N)
   pinMode(3, OUTPUT); // output pin for OCR2B, this is Arduino pin number
   TCCR2A = _BV(COM2A1) | _BV(COM2B1) | _BV(WGM21) | _BV(WGM20); // inverting mode, fast PWM
   //uncomment for your desired prescaler:
@@ -335,7 +337,7 @@ Once again (assuming you have skipped down to this part and not read the above c
 #### The Code for Signals on Both Pins 3 and 11:
 ```
   //Both Pin 3 and Pin 11:
-  //Formula: wave frequency=fclk/(256*N) - this formula is more limited with respect to frequency
+  //Formula: frequency=fclk/(256*N) - this formula is more limited with respect to frequency
   pinMode(3, OUTPUT);
   pinMode(11,OUTPUT);
   TCCR2A = _BV(COM2A1) | _BV(COM2A0) | _BV(COM2B1) |_BV(COM2B0) | _BV(WGM21) | _BV(WGM20); // inverting mode, fast PWM
