@@ -57,6 +57,8 @@ const float LearningRate = 0.3;      // Adjusts how much of the error is actuall
 const float Momentum = 0.9;          // Adjusts how much the results of the previous iteration affect the current iteration. (choose a value between 0 and 1)
 const float InitialWeightMax = 0.5;  // Sets the maximum starting value for weights. (0.5 sets initial weights between -0.5 and 0.5.)
 const float Success = 0.01;          // The threshold for error at which the network will be said to have solved the training set. (choose a value close to zero)
+                                     // This is a (somewhat) arbitrary relative measure. If the routine doesn't find a good solution, raise Success accordingly.
+                                     // (If at first you don't succeed... lower your standards!)
 
 // For inputting training set manually:
 float Input[PatternCount][InputNodes] = {
