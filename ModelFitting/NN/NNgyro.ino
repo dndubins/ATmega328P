@@ -1,4 +1,4 @@
-/* NNgyro.ino
+/* NNsensor.ino
  * This sketch provides a serial menu, where you can train a sensor using a neural network algorithm, and save it to EPROM memory.
  * This can be retreived and used later. The menu also provides a reading mode to use your trained network on new colours.
  *
@@ -10,7 +10,7 @@
  * GY-521/MPU6050 6-axis gyroscopic sensor 
  * Sensor connection pins to Arduino are shown in comments
  * Neural network code and algorithm adapted from: http://robotics.hobbizine.com/arduinoann.html
- * Sketch: David Dubins
+ * Sketch by: David Dubins
  * Date: 14-Oct-21
  * Library: Adafruit MPU6050 Version 2.0.5 (plus dependent libraries). Install through Library Manager.
  * 
@@ -64,7 +64,7 @@ const int PatternCount = 15;         // The number of training items (or rows) i
 const float LearningRate = 0.3;      // Adjusts how much of the error is actually backpropagated. (lower = slower, less chance for oscillations)
 const float Momentum = 0.9;          // Adjusts how much the results of the previous iteration affect the current iteration. (choose a value between 0 and 1)
 const float InitialWeightMax = 0.5;  // Sets the maximum starting value for weights. (0.5 sets initial weights between -0.5 and 0.5.)
-const float Success = 0.01;          // The threshold for error at which the network will be said to have solved the training set. (choose a value close to zero)
+const float Success = 1.0;           // The threshold for error at which the network will be said to have solved the training set. (choose a value close to zero)
 
 // For inputting training set manually:
 float Input[PatternCount][InputNodes] = {
@@ -74,15 +74,15 @@ float Input[PatternCount][InputNodes] = {
   { -0.73, 0.99, 0.46 },   // twist
   { 0.17, 0.29, 0.20 },    // twist
   { -0.22, -0.04, -3.14 }, // twist
-  { 1.20, -0.01, -2.76 },    // shake
-  { 0.66, 0.04, -1.37 },    // shake 
-  { 0.47, -0.23, 0.17 },    // shake 
+  { 1.20, -0.01, -2.76 },  // shake
+  { 0.66, 0.04, -1.37 },   // shake 
+  { 0.47, -0.23, 0.17 },   // shake 
   { 0.04, 0.06, 0.10 },    // lift
-  { 0.25, 0.23, -0.07 },    // lift
-  { 0.22, 0.01, -0.11 },    // lift
-  { -0.26, -0.37, 0.05 },    // drop
-  { -0.21, -0.59, 0.09 },    // drop
-  { 0.56, 0.81, 0.24 }       // drop
+  { 0.25, 0.23, -0.07 },   // lift
+  { 0.22, 0.01, -0.11 },   // lift
+  { -0.26, -0.37, 0.05 },  // drop
+  { -0.21, -0.59, 0.09 },  // drop
+  { 0.56, 0.81, 0.24 }     // drop
 }; 
 
 const byte Target[PatternCount][OutputNodes] = {
