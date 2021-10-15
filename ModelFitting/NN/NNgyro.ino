@@ -1,4 +1,4 @@
-/* NNsensor.ino
+/* NNgyro.ino
  * This sketch provides a serial menu, where you can train a sensor using a neural network algorithm, and save it to EPROM memory.
  * This can be retreived and used later. The menu also provides a reading mode to use your trained network on new colours.
  *
