@@ -1,6 +1,12 @@
 /* Test sketch: 28BYJ-48 Stepper with ULN2003
  * David Dubins 15-Dec-20
+ * Last Updated: 25-Dec-21
+ *
+ * Connections:
+ * -Plug the connector for the 28BYJ-48 stepper motor directly into the socket of the ULN2003.
+ *
  * ULN2003 to MCU:
+ * ---------------
  * IN1 to D8
  * IN2 to D9
  * IN3 to D10
