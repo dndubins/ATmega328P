@@ -8,3 +8,5 @@ SendOnlySoftwareSerial.h v1.0 by Nick Gammon, available at: https://github.com/n
 The MASTER MCU is powered through USB. The SLAVE MCU is powered parasitically from the master (Vin - Vin, GND - GND). That way there only needs to be one connection to the computer.<p>
 
 However, the slave.ino sketch will need to be uploaded to the SLAVE MCU through USB first.
+  
+  ![two keypads project](2Keypads.jpg)
