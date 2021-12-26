@@ -38,7 +38,7 @@ void loop() {
 
 void motorStep(int mSteps, float rpm){
   //convert rpm to time delay:
-  float t=60000.0/(rpm*stepsPerRev);
+  unsigned long t=60000000/(rpm*stepsPerRev); // calculate delay in microseconds
   const bool mSequence[4][4]={
     {1, 0, 0, 1}, // step 0
     {1, 0, 1, 0}, // step 1
@@ -62,7 +62,7 @@ void motorStep(int mSteps, float rpm){
 }
 
 void motorStepHalf(int mSteps, float rpm){
-  float t=60000.0/(rpm*stepsPerRev*2.0);
+  unsigned long t=60000000/(rpm*stepsPerRev*2); // calculate delay in microseconds
   const bool mSequence[8][4]={ // for motor sequence
     {0, 1, 0, 1}, // step 0
     {0, 0, 0, 1}, // step 1    
@@ -89,10 +89,10 @@ void motorStepHalf(int mSteps, float rpm){
   }
 }
 
-void delay_(float x){ // allows for delays <1ms
-  if(x<16.383){ // delayMicroseconds() becomes less accurate after 16383 uS
-    delayMicroseconds(t*1000.0); // use microsec delay if t < 16383
+void delay_(unsigned long x){ // allows for delays <1ms (x is in microseconds)
+  if(x<16383){ // delayMicroseconds() becomes less accurate above 16383 uS
+    delayMicroseconds(t); // use microsec delay if t < 16383 usec
   }else{
-    delay(t); // use to millisec delay if t >= 16.383 (will be important at speeds under 1 rpm)
+    delay(t/1000); // use millisec delay if t >= 16383 usec (will be important at speeds under 1 rpm)
   }  
 }
