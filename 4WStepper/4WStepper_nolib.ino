@@ -90,9 +90,9 @@ void motorStepHalf(int mSteps, float rpm){
 }
 
 void delay_(float x){ // allows for delays <1ms
-  if(x>1.0){
-    delay(x);
+  if(x<16.383){ // delayMicroseconds() becomes less accurate after 16383 uS
+    delayMicroseconds(t*1000.0); // use microsec delay if t < 16383
   }else{
-    delayMicroseconds(x*1000.0); //convert to usec
+    delay(t); // use to millisec delay if t >= 16.383 (will be important at speeds under 1 rpm)
   }  
 }
