@@ -15,15 +15,15 @@
  * Pin 3 - Pin 2 (TX - RX)
 */
 
-#include <SoftwareSerial.h> // include the software serial library
-SoftwareSerial mySerial(2,3); // define software serial connection RX:2, TX:3
+#include <SoftwareSerial.h>    // include the software serial library
+SoftwareSerial mySerial(2,3);  // define software serial connection RX:2, TX:3
 
 #define LEDPIN 13
 
 void setup(){
-  Serial.begin(57600); // start serial connection
-  mySerial.begin(57600); // start software serial connection (max speed for SoftwareSerial is 57600 for Uno)
-  pinMode(LEDPIN,OUTPUT); // set LEDPIN to OUTPUT mode
+  Serial.begin(57600);         // start serial connection
+  mySerial.begin(57600);       // start software serial connection (max speed for SoftwareSerial is 57600 for Uno)
+  pinMode(LEDPIN,OUTPUT);      // set LEDPIN to OUTPUT mode
 }
 
 void loop(){
