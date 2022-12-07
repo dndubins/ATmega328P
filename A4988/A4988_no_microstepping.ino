@@ -1,5 +1,5 @@
 /*  A4988 test sketch
- *  David Dubins 12-Dec-18
+ *  David Dubins 07-Dec-22
  *  
  *  Connections:
  *  ------------
@@ -17,7 +17,6 @@
  *  GND -- MCU GND
  */
 const int stepsPerRev=200; //change as needed for motor
-byte n;             // multiplier for microstepping
 const byte ENA=11;  // set ENA low to enable motor
 const byte STEP=7;  // sends a pulse for each step
 const byte DIR=6;   // changes direction of stepper
