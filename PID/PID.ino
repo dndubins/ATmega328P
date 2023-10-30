@@ -91,6 +91,8 @@ void myPID(float kP, float kI, float kD) {
     Serial.print(SETPOINT);  
     Serial.print(", MEASURED: ");
     Serial.print(MEASURED);
+    Serial.print(", ERROR: ");
+    Serial.print(Error);
     Serial.print(", P: ");  
     Serial.print(P);  
     Serial.print(", I: ");  
