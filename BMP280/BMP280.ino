@@ -18,16 +18,8 @@ float humidity=0.0;
 
 void setup() {
   Serial.begin(9600);
-  Wire.begin();
   Serial.println("Initializing...");
-  if (!BMP280.begin()) {
-    Serial.println("Failed to initialize. Check wiring and I2C address.");
-    while (1);
-  }
-  BMP280.resetToDefaults();
-  BMP280.writeOversamplingPressure(BMx280MI::OSRS_P_x16);
-  BMP280.writeOversamplingTemperature(BMx280MI::OSRS_T_x16);
-  BMP280.writeOversamplingHumidity(BMx280MI::OSRS_H_x16);
+  BMP280_init();  // initialize BMP280
 }
 
 void loop() {
@@ -39,6 +31,18 @@ void loop() {
   Serial.print("Humidity: ");
   Serial.println(humidity);
   delay(1000);  // time between measurements
+}
+
+void BMP280_init(){
+  Wire.begin();
+  if (!BMP280.begin()) {
+    Serial.println("Failed to initialize. Check wiring and I2C address.");
+    while (1);
+  }
+  BMP280.resetToDefaults();
+  BMP280.writeOversamplingPressure(BMx280MI::OSRS_P_x16);
+  BMP280.writeOversamplingTemperature(BMx280MI::OSRS_T_x16);
+  BMP280.writeOversamplingHumidity(BMx280MI::OSRS_H_x16);
 }
 
 void getReading(float &p, float &t, float &h){
