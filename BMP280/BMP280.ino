@@ -12,6 +12,9 @@
 
 #include <BMx280I2C.h>
 BMx280I2C BMP280(0x76); // Default bit address is 0x76. use I2C_Scanner.ino to find bit address if this is incorrect
+float temperature=0.0;
+float pressure=0.0;
+float humidity=0.0;
 
 void setup() {
   Serial.begin(9600);
@@ -28,15 +31,20 @@ void setup() {
 }
 
 void loop() {
+  getReading(pressure, temperature, humidity); // get a reading
+  Serial.print("Pressure: ");
+  Serial.println(pressure);
+  Serial.print("Temperature: ");
+  Serial.println(temperature);
+  Serial.print("Humidity: ");
+  Serial.println(humidity);
   delay(1000);  // time between measurements
+}
+
+void getReading(float &p, float &t, float &h){
   BMP280.measure(); // take a measurement
   while (!BMP280.hasValue()); // wait for measurement to finish
-  Serial.print("Pressure: ");
-  Serial.println(BMP280.getPressure());
-  Serial.print("Pressure (64 bit): ");
-  Serial.println(BMP280.getPressure64());
-  Serial.print("Temperature: ");
-  Serial.println(BMP280.getTemperature());
-  Serial.print("Humidity: ");
-  Serial.println(BMP280.getHumidity());
+  p=BMP280.getPressure(); //for 64 bit pressure, replace with BMP280.getPressure64()
+  t=BMP280.getTemperature();
+  h=BMP280.getHumidity();
 }
