@@ -33,7 +33,7 @@ void loop() {
   delay(1000);  // time between measurements
 }
 
-void BMP280_init(){
+void BMP280_init(){  // sensor initialization routine
   Wire.begin();
   if (!BMP280.begin()) {
     Serial.println("Failed to initialize. Check wiring and I2C address.");
@@ -45,7 +45,7 @@ void BMP280_init(){
   BMP280.writeOversamplingHumidity(BMx280MI::OSRS_H_x16);
 }
 
-void getReading(float &p, float &t, float &h){
+void getReading(float &p, float &t, float &h){  // function to take a reading (requires 3 float variables as arguments)
   BMP280.measure(); // take a measurement
   while (!BMP280.hasValue()); // wait for measurement to finish
   p=BMP280.getPressure(); //for 64 bit pressure, replace with BMP280.getPressure64()
