@@ -15,7 +15,7 @@ BMx280I2C BMP280(0x76); // Default bit address is 0x76. use I2C_Scanner.ino to f
 
 void setup() {
   Serial.begin(9600);
-	Wire.begin();
+  Wire.begin();
   Serial.println("Initializing...");
   if (!BMP280.begin()) {
     Serial.println("Failed to initialize. Check wiring and I2C address.");
