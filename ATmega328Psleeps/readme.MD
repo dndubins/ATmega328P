@@ -1,4 +1,4 @@
-These two sketches show simple implementations of interrupt and watchdog sleep modes. There are two wake-on-interrupt pins for the ATmega328P: 0 (Pin 2), and 1 (Pin 3).
+These two sketches show simple implementations of interrupt and watchdog sleep modes. There are two wake-on-interrupt pins for the ATmega328P-PU: 0 (Pin 2), and 1 (Pin 3).
 
 There isn't a whole lot of power savings putting the Arduino Uno R3 MCU into sleep mode, since the other on-board components still light up. Consider a "bareduino", or an off-board MCU ATmega328P-PU chip in order to benefit from sleep mode. You can also scratch off the on-board LEDs if you are trying to get power consumption down.
 
