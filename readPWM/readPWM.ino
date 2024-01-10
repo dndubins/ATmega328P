@@ -1,4 +1,12 @@
+// readPWM.ino
+// Author: D. Dubins
+// Date: 09-Jan-24
+// Libraries Required: None
+// Description: This sketch sends a PWM signal on Pin 5, and reads the pulse width on Pin 3.
+// Both are output to the Serial Monitor for comparison.
+// Interrupts are used to measure pulse width.
 // For the Arudino Uno, Pin 2 is int_0, Pin 3 is int_1.
+
 // Wiring:
 // Wire a pot as a voltage divider, and wire the wiper to pin A0
 // Connect pin 3 to pin 5 to generate a PWM signal from pin 5, and read it from pin 3 using interrupts.
