@@ -47,6 +47,6 @@ void fallingISR() {                        // This ISR will run with a falling s
 void risingISR(){  // This ISR will run with a rising signal on Pin 3 when attached.
   timer0 = timer1;  // store last value of timer1 as timer0
   timer1 = micros();
-  width = 256 * (timer2 - timer0) / (timer1 - timer0);  // gives a number from 0-1023
+  width = 256 * (timer2 - timer0) / (timer1 - timer0);  // gives a number from ~0-255
   attachInterrupt(1, fallingISR, FALLING); 
 }
