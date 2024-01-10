@@ -19,10 +19,10 @@ byte pwmSend = 5;  //to send PWM signal
 byte pwmRead = 3;  //to read PWM signal
 byte potPin = A0;  //to read the wiper of a 10K pot, to generate PWM
 
-volatile long timer0 = millis();   //last rising edge
-volatile long timer1 = millis();   //rising edge
-volatile long timer2 = millis();   //falling edge
-volatile long width = 0;           //to store width of pulse
+volatile long timer0 = 0;   //last rising edge
+volatile long timer1 = 0;   //rising edge
+volatile long timer2 = 0;   //falling edge
+volatile long width = 0;    //to store width of pulse
 
 void setup() {
   Serial.begin(9600);
