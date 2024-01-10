@@ -26,7 +26,7 @@ volatile long width = 0;           //to store width of pulse
 void setup() {
   Serial.begin(9600);
   attachInterrupt(1, risingISR, RISING);  // attach interrupt to pin 3 (int_1), on CHANGE. Use ISR called pwmISR.
-  pinMode(pwmRead, INPUT);
+  pinMode(pwmRead, INPUT);                // set the pinMode for pin 3
 }
 
 void loop() {
@@ -39,12 +39,12 @@ void loop() {
   delay(500);  // wait a bit
 }
 
-void fallingISR() {                        // This ISR will run when interrupt is triggered
+void fallingISR() {                        // This ISR will run with a falling signal on Pin 3 when attached.
   timer2 = micros();  // if falling edge
   attachInterrupt(1, risingISR, RISING);
 }
 
-void risingISR(){
+void risingISR(){  // This ISR will run with a rising signal on Pin 3 when attached.
   timer0 = timer1;  // store last value of timer1 as timer0
   timer1 = micros();
   width = 256 * (timer2 - timer0) / (timer1 - timer0);  // gives a number from 0-1023
