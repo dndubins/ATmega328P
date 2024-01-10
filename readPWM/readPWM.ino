@@ -4,7 +4,8 @@
 // Libraries Required: None
 // Description: This sketch sends a PWM signal on Pin 5, and reads the pulse width on Pin 3.
 // Both are output to the Serial Monitor for comparison.
-// Interrupts are used to measure pulse width.
+// Interrupts are used to measure pulse width. Since the width is calculated as a proportion,
+// the calculation doesn't depend on the frequency of the signal.
 // For the Arudino Uno, Pin 2 is int_0, Pin 3 is int_1.
 
 // Wiring:
