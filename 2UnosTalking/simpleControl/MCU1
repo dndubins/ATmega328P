@@ -34,7 +34,7 @@ void setup() {
   Serial.begin(57600);      // start serial connection
   MCU2Serial.begin(57600);  // start software serial connection with MCU2 (max speed for SoftwareSerial is 57600 for Uno)
   MCU3Serial.begin(57600);  // start software serial connection with MCU3 (max speed for SoftwareSerial is 57600 for Uno)
-  delay(1000);              // wait for both MCUs to boot up
+  delay(1000);              // wait for MCUs to boot up
   Serial_clear(MCU2Serial); // clear MCU2Serial buffers
   Serial_clear(MCU3Serial); // clear MCU3Serial buffers
   Serial.println("Enter number of flashes to send.");
