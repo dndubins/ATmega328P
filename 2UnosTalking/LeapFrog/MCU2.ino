@@ -10,7 +10,7 @@
 
  * Connections: (MCU1 - MCU2)
  * Vin - Vin (or power independently)
- * GND - GND (or power independently)
+ * GND - GND
  * Pin 2 - Pin 3 (RX - TX)
  * Pin 3 - Pin 2 (TX - RX)
 */
