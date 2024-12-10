@@ -30,9 +30,9 @@ void setup() {
 }
 
 void loop() {
-  int snd, rcv;  // define bytes for sending and receiving data
-  if (Serial.available()) {  // if user entered something on the serial monitor
-    snd = Serial.parseInt();  // store it to readKey
+  int snd, rcv;               // define variables for sending and receiving data
+  if (Serial.available()) {   // if user entered something on the serial monitor
+    snd = Serial.parseInt();  // store it to snd
     Serial.print("Sending to MCU2: ");
     Serial.println(snd);    // send snd to the regular Serial Monitor
     MCU2Serial.print(snd);  // send snd to MCU2
@@ -47,7 +47,7 @@ void loop() {
       } else {
         Serial.println("MCU2: Communication error.");
       }
-    } else { // timeout feature
+    } else {  // timeout feature
       Serial.println("MCU2: Communcation timed out.");
       MCU2Serial_clear();  // get rid of any residual data on the MCU2Serial monitor
     }
