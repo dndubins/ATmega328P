@@ -28,7 +28,7 @@ void setup(){
 
 void loop(){
   if(mySerial.available()){    // if there's something received by mySerial
-    int i=mySerial.parseInt(); // store it to readKey
+    int i=mySerial.parseInt(); // store it to i
     Serial.println(i);         // send i to the regular Serial Monitor
     flashLED(i);               // flash onboard LED i times
     mySerial.print(i+1);       // send i+1 to the other MCU
