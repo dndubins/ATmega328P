@@ -58,8 +58,7 @@ void Serial_send(SoftwareSerial x, int s) {  // send integer "s" to SoftwareSeri
   int r = 0;                                 // to receive integer from x
   x.print(s);                                // send s to x
   timer = millis();                          // start the timer
-  while (!x.available() && millis() - timer < TIMEOUT)
-    ;                   // wait for response from MCU2, with TIMEOUT limit
+  while (!x.available() && millis() - timer < TIMEOUT);  // wait for response from MCU2, with TIMEOUT limit
   if (x.available()) {  // if there's something waiting from x
     r = x.parseInt();   // store it to r
     Serial.print("Receiving: ");
