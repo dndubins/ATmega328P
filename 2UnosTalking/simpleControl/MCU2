@@ -31,6 +31,7 @@ SoftwareSerial MCU1Serial(2, 3);  // define software serial connection to MCU1 (
 
 void setup() {
   MCU1Serial.begin(57600);  // start software serial connection (max speed for SoftwareSerial is 57600 for Uno)
+  Serial_clear(MCU1Serial); // clear MCU1Serial buffers
   pinMode(LEDPIN, OUTPUT);  // set LEDPIN to OUTPUT mode
 }
 
