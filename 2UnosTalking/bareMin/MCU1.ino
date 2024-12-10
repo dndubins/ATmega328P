@@ -20,22 +20,20 @@
 SoftwareSerial MCU2Serial(2, 3);  // define software serial connection to MCU2 (RX:2, TX:3)
 
 void setup() {
-  Serial.begin(57600);      // start serial connection
-  MCU2Serial.begin(57600);  // start software serial connection with MCU2 (max speed for SoftwareSerial is 57600 for Uno)
-  Serial.println("Enter number of flashes:"); // ask user to enter a number
+  Serial.begin(57600);                                         // start serial connection
+  MCU2Serial.begin(57600);                                     // start software serial connection with MCU2 (max speed for SoftwareSerial is 57600 for Uno)
+  Serial.println("Enter number of flashes to send to MCU2:");  // ask user to enter a number
 }
 
 void loop() {
-  int snd, rcv;  // define bytes for sending and receiving data
-  if (Serial.available()) {
-    snd = Serial.parseInt();  // store it to readKey
-    Serial.print("Sending to MCU2: ");  // messag
-    Serial.println(snd);    // print "snd" to Serial Monitor
-    MCU2Serial.print(snd);  // send "snd" to MCU2
+  int snd, rcv;                         // define bytes for sending and receiving data
+  if (Serial.available()) {             // if user has entered something on the Serial Monitor
+    snd = Serial.parseInt();            // store it to readKey
+    MCU2Serial.print(snd);              // send snd to MCU2
   }
-  if (MCU2Serial.available()){  // listen for response from MCU2
+  if (MCU2Serial.available()) {   // listen for response from MCU2Serial
     rcv = MCU2Serial.parseInt();  // store it to rcv
-    Serial.print("Receiving from MCU2: ");
+    Serial.print("Receiving from MCU2: "); // prompt user
     Serial.println(rcv);  // send rcv to the regular Serial Monitor
   }
 }
