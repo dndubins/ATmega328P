@@ -69,7 +69,7 @@ void Serial_send(SoftwareSerial x, int s) {  // send integer "s" to SoftwareSeri
       Serial.println("Communication error.");
     }
   } else {  // timeout feature
-    Serial.println("Communcation timed out.");
+    Serial.println("Communication timed out.");
     Serial_clear(x);  // get rid of any residual data in the serial buffer
   }
 }
