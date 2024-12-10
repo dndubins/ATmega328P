@@ -53,13 +53,13 @@ void loop() {
 }
 
 void Serial_send(SoftwareSerial x, int s) {  // send integer "s" to SoftwareSerial device "x"
-  x.listen();                                // listen to this port
+  x.listen();                                // listen to port x
   unsigned long timer = millis();            // start the timer
-  int r = 0;                                 // to receive integer from x
-  x.print(s);                                // send s to x
+  int r = 0;                                 // to receive integer from port x
+  x.print(s);                                // send s to port x
   timer = millis();                          // start the timer
   while (!x.available() && millis() - timer < TIMEOUT);  // wait for response from MCU2, with TIMEOUT limit
-  if (x.available()) {  // if there's something waiting from x
+  if (x.available()) {  // if there's something waiting from port x
     r = x.parseInt();   // store it to r
     Serial.print("Receiving: ");
     Serial.println(r);  // send rcv to the regular Serial Monitor
@@ -75,8 +75,8 @@ void Serial_send(SoftwareSerial x, int s) {  // send integer "s" to SoftwareSeri
 }
 
 void Serial_clear(SoftwareSerial x) {  // used to clear the serial buffers from junk
-  x.listen();
-  while (x.available()) {  // while data are available on the serial monitor
+  x.listen();              // listen to port x
+  while (x.available()) {  // while data are available in the buffer
     byte i = x.read();     // read the data and store to i
   }
 }
