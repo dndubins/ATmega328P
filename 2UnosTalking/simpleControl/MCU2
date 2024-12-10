@@ -54,8 +54,8 @@ void flashLED(int n) {  // flash the LED n times
 }
 
 void Serial_clear(SoftwareSerial x) {  // used to clear the serial buffers from junk
-  x.listen();
-  while (x.available()) {  // while data are available on the serial monitor
+  x.listen();              // listen to port x
+  while (x.available()) {  // while data are available in the buffer
     byte i = x.read();     // read the data and store to i
   }
 }
