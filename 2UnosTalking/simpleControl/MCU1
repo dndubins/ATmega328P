@@ -34,28 +34,28 @@ void loop() {
   if (Serial.available()) {
     snd = Serial.parseInt();  // store it to readKey
     Serial.print("Sending to MCU2: ");
-    Serial.println(snd);    // send i to the regular Serial Monitor
-    MCU2Serial.print(snd);  // send i+1 to the other MCU
+    Serial.println(snd);    // send snd to the regular Serial Monitor
+    MCU2Serial.print(snd);  // send snd to MCU2
     timer = millis();       // start the timer
     while (!MCU2Serial.available() && millis() - timer < TIMEOUT);  // wait for response from MCU2, with TIMEOUT limit
-    if (MCU2Serial.available()) {
+    if (MCU2Serial.available()) {   // if there's something waiting from MCU2Serial
       rcv = MCU2Serial.parseInt();  // store it to rcv
       Serial.print("Receiving from MCU2: ");
       Serial.println(rcv);  // send rcv to the regular Serial Monitor
-      if (snd == rcv) {
+      if (snd == rcv) {     // integers should match
         Serial.println("MCU2: Communication successful.");
       } else {
         Serial.println("MCU2: Communication error.");
       }
-    } else {
+    } else { // timeout feature
       Serial.println("MCU2: Communcation timed out.");
-      MCU2Serial_clear();  // get rid of any residual data on the MCU2 Serial monitor
+      MCU2Serial_clear();  // get rid of any residual data on the MCU2Serial monitor
     }
   }
 }
 
-void MCU2Serial_clear(){   // clear the serial monitor (read until empty)
-  while(MCU2Serial.available()){ // while data are available on the serial monitor
-    byte i=MCU2Serial.read();        // read the data and store to i
+void MCU2Serial_clear() {           // clear the serial monitor (read until empty)
+  while (MCU2Serial.available()) {  // while data are available on the serial monitor
+    byte i = MCU2Serial.read();     // read the data and store to i
   }
 }
