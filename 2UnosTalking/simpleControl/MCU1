@@ -1,0 +1,56 @@
+/* SoftwareSerial example, MCU1 to MCU2. This sketch is for MCU1 - the master, sending commands to MCU2.
+ * Author: D. Dubins
+ * Date: 10-Dec-24
+
+ * Description: This project illustrates how to get one MCU to send commands to another through a SoftwareSerial connection.
+ * This sketch is for the first MCU (MCU1). The second MCU (MCU2) will be powered parasitically through the Vin and GND pins of MCU1.
+ * This is hookup is optional though, they can be independently powered.
+ * 
+ * MCU1 reads an integer from the Serial Monitor, and sends a command to MCU2 through the SoftwareSerial connection.
+ * MCU2 receives the command, executes a function, then reports back to MCU1 for error checking.
+
+ * Connections: (MCU1 - MCU2)
+ * Vin - Vin (or power independently)
+ * GND - GND
+ * Pin 2 - Pin 3 (RX - TX)
+ * Pin 3 - Pin 2 (TX - RX)
+*/
+
+#include <SoftwareSerial.h>       // include the software serial library
+SoftwareSerial MCU2Serial(2, 3);  // define software serial connection to MCU2 (RX:2, TX:3)
+
+#define LEDPIN 13
+#define TIMEOUT 10000            // milliseconds for communications timeout
+unsigned long timer = millis();  // for timer
+
+void setup() {
+  Serial.begin(57600);      // start serial connection
+  MCU2Serial.begin(57600);  // start software serial connection with MCU2 (max speed for SoftwareSerial is 57600 for Uno)
+  delay(1000);              // wait for both MCUs to boot up
+  Serial.println("Enter number of flashes to send to MCU2.");
+}
+
+void loop() {
+  int snd, rcv;  // define bytes for sending and receiving data
+  if (Serial.available()) {
+    snd = Serial.parseInt();  // store it to readKey
+    Serial.print("Sending to MCU2: ");
+    Serial.println(snd);    // send i to the regular Serial Monitor
+    MCU2Serial.print(snd);  // send i+1 to the other MCU
+    timer = millis();       // start the timer
+    while (!MCU2Serial.available() && millis() - timer < TIMEOUT)
+      ;  // wait for response from MCU2, with TIMEOUT limit
+    if (MCU2Serial.available()) {
+      int rcv = MCU2Serial.parseInt();  // store it to rcv
+      Serial.print("Receiving from MCU2: ");
+      Serial.println(rcv);  // send rcv to the regular Serial Monitor
+      if (snd == rcv) {
+        Serial.println("MCU2: Communication successful.");
+      } else {
+        Serial.println("MCU2: Communication error.");
+      }
+    } else {
+      Serial.println("MCU2: Communcation timed out.");
+    }
+  }
+}
