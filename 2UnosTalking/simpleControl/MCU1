@@ -19,8 +19,7 @@
 #include <SoftwareSerial.h>       // include the software serial library
 SoftwareSerial MCU2Serial(2, 3);  // define software serial connection to MCU2 (RX:2, TX:3)
 
-#define LEDPIN 13
-#define TIMEOUT 10000            // milliseconds for communications timeout
+#define TIMEOUT 2000             // threshold (in milliseconds) for communications timeout
 unsigned long timer = millis();  // for timer
 
 void setup() {
@@ -38,10 +37,9 @@ void loop() {
     Serial.println(snd);    // send i to the regular Serial Monitor
     MCU2Serial.print(snd);  // send i+1 to the other MCU
     timer = millis();       // start the timer
-    while (!MCU2Serial.available() && millis() - timer < TIMEOUT)
-      ;  // wait for response from MCU2, with TIMEOUT limit
+    while (!MCU2Serial.available() && millis() - timer < TIMEOUT);  // wait for response from MCU2, with TIMEOUT limit
     if (MCU2Serial.available()) {
-      int rcv = MCU2Serial.parseInt();  // store it to rcv
+      rcv = MCU2Serial.parseInt();  // store it to rcv
       Serial.print("Receiving from MCU2: ");
       Serial.println(rcv);  // send rcv to the regular Serial Monitor
       if (snd == rcv) {
@@ -51,6 +49,13 @@ void loop() {
       }
     } else {
       Serial.println("MCU2: Communcation timed out.");
+      MCU2Serial_clear();  // get rid of any residual data on the MCU2 Serial monitor
     }
+  }
+}
+
+void MCU2Serial_clear(){   // clear the serial monitor (read until empty)
+  while(MCU2Serial.available()){ // while data are available on the serial monitor
+    byte i=MCU2Serial.read();        // read the data and store to i
   }
 }
