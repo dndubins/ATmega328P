@@ -26,14 +26,14 @@ void setup() {
 }
 
 void loop() {
-  int snd, rcv;                         // define bytes for sending and receiving data
-  if (Serial.available()) {             // if user has entered something on the Serial Monitor
-    snd = Serial.parseInt();            // store it to readKey
-    MCU2Serial.print(snd);              // send snd to MCU2
+  int snd, rcv;               // define bytes for sending and receiving data
+  if (Serial.available()) {   // if user has entered something on the Serial Monitor
+    snd = Serial.parseInt();  // store it to readKey
+    MCU2Serial.print(snd);    // send snd to MCU2
   }
-  if (MCU2Serial.available()) {   // listen for response from MCU2Serial
-    rcv = MCU2Serial.parseInt();  // store it to rcv
-    Serial.print("Receiving from MCU2: "); // prompt user
-    Serial.println(rcv);  // send rcv to the regular Serial Monitor
+  if (MCU2Serial.available()) {             // listen for response from MCU2Serial
+    rcv = MCU2Serial.parseInt();            // store it to rcv
+    Serial.print("Receiving from MCU2: ");  // prompt user
+    Serial.println(rcv);                    // send rcv to the regular Serial Monitor
   }
 }
