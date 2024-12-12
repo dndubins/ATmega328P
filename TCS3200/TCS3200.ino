@@ -15,42 +15,45 @@ Color Sensor - Arduino Uno
  OE -- GND
 */
 
-#define S0 8  
+#define S0 8  // declare pin numbers
 #define S1 9
 #define S2 12
 #define S3 11
 #define OUT 10
 
-int reading[3]={0,0,0}; // to store red, green, blue reading
-    
-void setup(){   
-  Serial.begin(9600); 
-  pinMode(S0, OUTPUT);  
-  pinMode(S1, OUTPUT);  
-  pinMode(S2, OUTPUT);  
-  pinMode(S3, OUTPUT);  
-  pinMode(OUT, INPUT);  
-  digitalWrite(S0, HIGH);  
-  digitalWrite(S1, HIGH);  
-}  
-    
-void loop(){
-  readColour();
-  Serial.print("R,G,B: ");
-  Serial.print(reading[0]);
-  Serial.println(",");
-  Serial.print(reading[1]);
-  Serial.println(",");
-  Serial.println(reading[2]);
+int reading[3] = { 0, 0, 0 };  // to store red, green, blue reading
+
+void setup() {
+  Serial.begin(9600);   // start the Serial Monitor
+  pinMode(S0, OUTPUT);  // set pins to OUTPUT mode
+  pinMode(S1, OUTPUT);
+  pinMode(S2, OUTPUT);
+  pinMode(S3, OUTPUT);
+  pinMode(OUT, INPUT);     // set OUT pin to INPUT mode
+  digitalWrite(S0, HIGH);  // set on LEDs on front to HIGH
+  digitalWrite(S1, HIGH);  // (setting these both low turns LEDs off)
+  Serial.println("R,G,B: ");
+}
+
+void loop() {
+  readColour();  // take one colour reading
+  Serial.print(reading[0]);   // output red channel
+  Serial.print(",");
+  Serial.print(reading[1]);   // output green channel
+  Serial.print(",");
+  Serial.println(reading[2]); // output blue channel
   delay(500);
- }  
-    
-void readColour(){ 
-  digitalWrite(S2, LOW);  
-  digitalWrite(S3, LOW);  
-  reading[0] = pulseIn(OUT, !digitalRead(OUT)); //read red  
-  digitalWrite(S3, HIGH);  
-  reading[2] = pulseIn(OUT, !digitalRead(OUT)); //read blue
-  digitalWrite(S2, HIGH);  
-  reading[1] = pulseIn(OUT, !digitalRead(OUT)); //read green  
+}
+
+void readColour() {
+  digitalWrite(S2, LOW);
+  digitalWrite(S3, LOW);
+  delay(20);                                     // wait for reading to stabilize
+  reading[0] = pulseIn(OUT, !digitalRead(OUT));  //read red
+  delay(20);                                     // wait for reading to stabilize
+  digitalWrite(S3, HIGH);
+  reading[2] = pulseIn(OUT, !digitalRead(OUT));  //read blue
+  digitalWrite(S2, HIGH);
+  delay(20);                                     // wait for reading to stabilize
+  reading[1] = pulseIn(OUT, !digitalRead(OUT));  //read green
 }
