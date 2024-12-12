@@ -9,17 +9,18 @@
  *
  * Author of this sketch: David Dubins
  * Date: 6-Feb-19
+ * Last updated: 12-Dec-24
  * 
- * Color Sensor      Arduino
- * -----------      --------
- *  VCC               5V
- *  GND               GND
- *  s0                8
- *  s1                9
- *  s2                12
- *  s3                11
- *  OUT               10
- *  OE                GND
+ * TCS3200 - Arduino Uno
+ * ---------------------
+ *  VCC - 5V
+ *  GND - GND
+ *  s0  - 8
+ *  s1  - 9
+ *  s2  - 12
+ *  s3  - 11
+ *  OUT - 10
+ *  OE  - GND
  */
 
 #include <EEPROM.h>  // for saving SVD matrix
