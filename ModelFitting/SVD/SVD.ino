@@ -9,8 +9,9 @@
 
 const int MP=10; // total number of experimental observations in the system
 const int NP=4; // number of parameters (R,G,B terms + intercept)
+const int NI=3; // dimension of colour sensor data (3 for R,G,B)
 
-float READINGS[MP][NP] = {  // Sensor measurements (from RGB colour sensor)
+float READINGS[MP][NI] = {  // Sensor measurements (from RGB colour sensor)
   { 16, 45, 33 },     // red
   { 17, 43, 30 },     // red
   { 13, 17, 30 },     // yellow
