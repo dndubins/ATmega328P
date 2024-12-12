@@ -149,7 +149,7 @@ void loop() {
       Serial.print(F("Reading response for "));
       Serial.print(SVD.Y[i]);
       Serial.println(F(" nm."));
-      readColour(50);  // read sensor
+      readColour(NUMREADS);  // read sensor
       Serial.print(F("Reading: "));
       Serial.print(reading[0]);
       Serial.print(F(","));
