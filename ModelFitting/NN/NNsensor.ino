@@ -27,6 +27,7 @@
  */
 
 #include <EEPROM.h> // for saving AI matrix
+#define NUMREADS 10  // number of readings per colour reading (for averaging)
 
 // Global Network Configuration Variables
 const int InputNodes = 3;            // The number of input neurons (can be sensor readings, <=7 for Arduino)
@@ -142,7 +143,7 @@ void loop (){
         Serial.println("Enter 'r' to read response "+(String)(j+1)+" for "+TargetNames[i]+">");
         while(!Serial.available()){;} // wait for input
         choice=Serial.read();
-        readColour(30); // read sensor
+        readColour(NUMREADS); // read sensor
         Serial.println("Reading: "+(String)reading[0]+","+(String)reading[1]+","+(String)reading[2]);
         Input[j+(3*i)][0]=(float)reading[0]/100.0; //red
         Input[j+(3*i)][1]=(float)reading[1]/100.0; //green
@@ -419,24 +420,27 @@ void useNN(int R, int G, int B){  // use NN hidden and output weights to compute
     }
 }
 
-void readColour(int NUMREADS){
-  unsigned long thisread[3]={0,0,0};
-  for(int i=0;i<NUMREADS;i++){
-    digitalWrite(S2, LOW);  
-    digitalWrite(S3, LOW);  
-    thisread[0] += pulseIn(OUT, !digitalRead(OUT)); //read red  
-    digitalWrite(S3, HIGH);  
-    thisread[2] += pulseIn(OUT, !digitalRead(OUT)); //read blue
-    digitalWrite(S2, HIGH);  
-    thisread[1] += pulseIn(OUT, !digitalRead(OUT)); //read green
+void readColour(int n) {
+  unsigned long thisread[3] = { 0, 0, 0 };
+  for (int i = 0; i < n; i++) {
+    digitalWrite(S2, LOW);
+    digitalWrite(S3, LOW);
+    delay(20);                                       // wait for reading to stabilize
+    thisread[0] += pulseIn(OUT, !digitalRead(OUT));  //read red
+    digitalWrite(S3, HIGH);
+    delay(20);                                       // wait for reading to stabilize
+    thisread[2] += pulseIn(OUT, !digitalRead(OUT));  //read blue
+    digitalWrite(S2, HIGH);
+    delay(20);                                       // wait for reading to stabilize
+    thisread[1] += pulseIn(OUT, !digitalRead(OUT));  //read green
   }
-  for(int i=0;i<3;i++){
-    reading[i]=thisread[i]/NUMREADS; 
+  for (int i = 0; i < 3; i++) {
+    reading[i] = thisread[i] / n;
   }
 }
 
 void readSample(){ // take one reading and apply neural network weights to calculate output
-  readColour(30); // take measurement
+  readColour(NUMREADS); // take measurement
   useNN(reading[0],reading[1],reading[2]);
   //Serial.print ("  Output ");
   float maxC=0.0;
