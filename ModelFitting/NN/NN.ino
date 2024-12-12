@@ -31,7 +31,7 @@ const int OutputNodes = 5;  // The number of output neurons (<=4 for Arduino)
 float Hidden[HiddenNodes];
 float Output[OutputNodes];
 float Accum;
-String TargetNames[OutputNodes] = { "red", "green", "blue", "yellow", "purple" };  // titles to match training set
+const String TargetNames[OutputNodes] = { "red", "green", "blue", "yellow", "purple" };  // titles to match training set
 
 struct NNweights {
   char name[10];
