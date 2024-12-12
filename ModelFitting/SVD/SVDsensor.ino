@@ -5,6 +5,8 @@
  * 
  * TCS230 color recognition sensor 
  * Sensor connection pins to Arduino are shown in comments
+ * SVD is used to fit colour intensities into an overall "wavelength", and then wavelength ranges are converted to a colour at the end.
+ *
  * Author of this sketch: David Dubins
  * Date: 6-Feb-19
  * 
