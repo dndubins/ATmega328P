@@ -540,7 +540,7 @@ void readColour(int NUMREADS){
   }
 }
 
-void readSample(){ // take one reading and apply neural network weights to calculate output
+void readSample(){ // take one reading and apply model to calculate output
   readColour(30); // take measurement
   int wavelength=useSVD(reading[0],reading[1],reading[2]);
   #ifdef DEBUG
