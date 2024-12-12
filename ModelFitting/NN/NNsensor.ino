@@ -12,18 +12,19 @@
  * Neural network code and algorithm adapted from: http://robotics.hobbizine.com/arduinoann.html
  * Sketch: David Dubins
  * Date: 3-Feb-19
- * 
+ * Last Updated: 12-Dec-24
+ *
  * Connections:
- * Color Sensor      Arduino
- * -----------      --------
- *  VCC               5V
- * GND               GND
- *  s0                8
- *  s1                9
- *  s2                12
- *  s3                11
- *  OUT               10
- *  OE                GND
+ * TCS3200 - Arduino Uno
+ * ---------------------
+ *  VCC - 5V
+ *  GND - GND
+ *  s0  - 8
+ *  s1  - 9
+ *  s2  - 12
+ *  s3  - 11
+ *  OUT - 10
+ *  OE  - GND
  */
 
 #include <EEPROM.h> // for saving AI matrix
@@ -37,7 +38,7 @@ const int OutputNodes = 5;           // The number of output neurons (<=4 for Ar
 float Hidden[HiddenNodes];
 float Output[OutputNodes];
 float Accum;
-String TargetNames[OutputNodes]={"red","yellow","green","blue","violet"}; // titles to match training set
+const String TargetNames[OutputNodes]={"red","yellow","green","blue","purple"}; // titles to match training set
 
 struct NNweights {
   char name[10];
