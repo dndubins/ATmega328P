@@ -13,16 +13,16 @@ const int NP = 4;   // number of parameters (R,G,B terms + intercept)
 
 float READINGS[MP][NP - 1] = {
   // Sensor measurements (from RGB colour sensor)
-  { 16, 45, 33 },    // red
-  { 17, 43, 30 },    // red
-  { 13, 17, 30 },    // yellow
-  { 6, 8, 18 },      // yellow
-  { 19, 18, 30 },    // green
-  { 29, 27, 41 },    // green
-  { 104, 131, 77 },  // blue
-  { 171, 176, 97 },  // blue
-  { 43, 63, 47 },    // violet
-  { 48, 66, 36 }     // violet
+  { 12, 54, 43 },  // red
+  { 12, 52, 42 },  // red
+  { 11, 15, 28 },  // yellow
+  { 11, 16, 28 },  // yellow
+  { 26, 18, 27 },  // green
+  { 25, 17, 26 },  // green
+  { 74, 37, 16 },  // blue
+  { 67, 32, 14 },  // blue
+  { 25, 41, 19 },  // violet
+  { 25, 41, 19 }   // violet
 };
 
 //Y matrix (wavelengths we want sensor to map to)
