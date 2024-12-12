@@ -24,12 +24,12 @@
  */
 
 #include <EEPROM.h>  // for saving SVD matrix
+#define NUMREADS 10  // number of readings per colour reading (for averaging)
 #define DEBUG        //comment out to remove extra serial debugging messages
 #define MENU         //comment out for just continous readings
 #define EPROMLOAD    //comment out if not loading/saving weights from EPROM (useful for first time running sketch)
-
-const int MP = 14;  // total number of experimental observations in the system
-const int NP = 4;   // number of parameters (# columns + intercept)
+const int MP = 14;   // total number of experimental observations in the system
+const int NP = 4;    // number of parameters (# columns + intercept)
 
 // Colour sensor module pins and setup
 #define S0 8
@@ -52,20 +52,20 @@ String TargetNames[7] = { "red", "orange", "yellow", "green", "cyan", "blue", "v
 #ifndef EPROMLOAD
 float Input[MP][NP - 1] = {
   //training set (sensor readings)
-  { 32, 110, 83 },   // red
-  { 26, 94, 70 },    // red
-  { 16, 52, 55 },    // orange
-  { 20, 60, 62 },    // orange
-  { 13, 20, 34 },    // yellow
-  { 14, 22, 37 },    // yellow
-  { 44, 29, 46 },    // green
-  { 54, 33, 50 },    // green
-  { 94, 51, 33 },    // cyan
-  { 92, 48, 30 },    // cyan
-  { 135, 119, 52 },  // blue
-  { 97, 99, 45 },    // blue
-  { 63, 89, 45 },    // violet
-  { 65, 92, 48 }     // violet
+  { 12, 54, 43 },  // red
+  { 12, 52, 42 },  // red
+  { 8, 24, 27 },   // orange
+  { 7, 21, 24 },   // orange
+  { 11, 15, 28 },  // yellow
+  { 11, 16, 28 },  // yellow
+  { 26, 18, 27 },  // green
+  { 25, 17, 26 },  // green
+  { 36, 20, 12 },  // cyan
+  { 37, 21, 13 },  // cyan
+  { 74, 37, 16 },  // blue
+  { 67, 32, 14 },  // blue
+  { 25, 41, 19 },  // violet
+  { 25, 41, 19 }   // violet
 };
 #endif
 
@@ -546,24 +546,27 @@ float useSVD(int R, int G, int B) {  // use SVD model to solve for wavelength
   return sum;
 }
 
-void readColour(int NUMREADS) {
+void readColour(int n) {
   unsigned long thisread[3] = { 0, 0, 0 };
-  for (int i = 0; i < NUMREADS; i++) {
+  for (int i = 0; i < n; i++) {
     digitalWrite(S2, LOW);
     digitalWrite(S3, LOW);
+    delay(20);                                       // wait for reading to stabilize
     thisread[0] += pulseIn(OUT, !digitalRead(OUT));  //read red
     digitalWrite(S3, HIGH);
+    delay(20);                                       // wait for reading to stabilize
     thisread[2] += pulseIn(OUT, !digitalRead(OUT));  //read blue
     digitalWrite(S2, HIGH);
+    delay(20);                                       // wait for reading to stabilize
     thisread[1] += pulseIn(OUT, !digitalRead(OUT));  //read green
   }
   for (int i = 0; i < 3; i++) {
-    reading[i] = thisread[i] / NUMREADS;
+    reading[i] = thisread[i] / n;
   }
 }
 
-void readSample() {  // take one reading and apply model to calculate output
-  readColour(30);    // take measurement
+void readSample() {      // take one reading and apply model to calculate output
+  readColour(NUMREADS);  // take measurement
   int wavelength = useSVD(reading[0], reading[1], reading[2]);
 #ifdef DEBUG
   Serial.print(F("R:"));
