@@ -9,7 +9,7 @@
  * Neural network code and algorithm adapted from: http://robotics.hobbizine.com/arduinoann.html 
  * Sketch: David Dubins
  * Date: 3-Feb-19
- * Last Updated: 12-Dec-24
+ * Last Updated: 13-Dec-24
  *
  * Connections:
  * TCS3200 - Arduino Uno
@@ -63,35 +63,35 @@ const float Success = 0.01;          // The threshold for error at which the net
                                      // (If at first you don't succeed... lower your standards!)
 
 // For inputting training set manually:
-float Input[PatternCount][InputNodes] = {
-  { 0.16, 0.45, 0.33 },  // red
-  { 0.17, 0.43, 0.30 },  // red
-  { 0.15, 0.48, 0.36 },  // red
-  { 0.19, 0.18, 0.30 },  // green
-  { 0.29, 0.27, 0.41 },  // green
-  { 0.47, 0.44, 0.55 },  // green
-  { 1.04, 1.31, 0.77 },  // blue
-  { 1.71, 1.76, 0.97 },  // blue
-  { 1.16, 1.19, 0.71 },  // blue
-  { 0.13, 0.17, 0.30 },  // yellow
-  { 0.06, 0.08, 0.18 },  // yellow
-  { 0.10, 0.13, 0.23 },  // yellow
-  { 0.43, 0.63, 0.47 },  // purple
-  { 0.48, 0.66, 0.36 },  // purple
-  { 0.32, 0.48, 0.34 }   // purple
+float Input[PatternCount][InputNodes] = { 
+  { 0.11, 0.45, 0.41 },  // red
+  { 0.09, 0.38, 0.35 },  // red
+  { 0.09, 0.39, 0.35 },  // red
+  { 0.11, 0.19, 0.30 },  // yellow
+  { 0.11, 0.18, 0.29 },  // yellow
+  { 0.10, 0.14, 0.24 },  // yellow
+  { 0.16, 0.13, 0.20 },  // green
+  { 0.18, 0.15, 0.21 },  // green
+  { 0.18, 0.15, 0.22 },  // green
+  { 0.26, 0.21, 0.16 },  // blue
+  { 0.25, 0.21, 0.15 },  // blue
+  { 0.24, 0.21, 0.14 },  // blue
+  { 0.27, 0.44, 0.25 },  // purple
+  { 0.24, 0.38, 0.22 },  // purple
+  { 0.20, 0.36, 0.19 }   // purple
 };
 
 const byte Target[PatternCount][OutputNodes] = {
   { 1, 0, 0, 0, 0 },  //red
   { 1, 0, 0, 0, 0 },
   { 1, 0, 0, 0, 0 },
-  { 0, 1, 0, 0, 0 },  //green
+  { 0, 1, 0, 0, 0 },  //yellow
   { 0, 1, 0, 0, 0 },
   { 0, 1, 0, 0, 0 },
-  { 0, 0, 1, 0, 0 },  //blue
+  { 0, 0, 1, 0, 0 },  //green
   { 0, 0, 1, 0, 0 },
   { 0, 0, 1, 0, 0 },
-  { 0, 0, 0, 1, 0 },  //yellow
+  { 0, 0, 0, 1, 0 },  //blue
   { 0, 0, 0, 1, 0 },
   { 0, 0, 0, 1, 0 },
   { 0, 0, 0, 0, 1 },  //purple
