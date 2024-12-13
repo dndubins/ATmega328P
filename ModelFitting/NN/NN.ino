@@ -31,7 +31,7 @@ const int OutputNodes = 5;  // The number of output neurons (<=4 for Arduino)
 float Hidden[HiddenNodes];
 float Output[OutputNodes];
 float Accum;
-const String TargetNames[OutputNodes] = { "red", "green", "blue", "yellow", "purple" };  // titles to match training set
+const char* TargetNames[OutputNodes] = { "red", "yellow", "green", "blue", "purple" };  // titles to match training set
 
 struct NNweights {
   char name[10];
@@ -46,6 +46,7 @@ struct NNweights {
 #define S3 11
 #define OUT 10
 int reading[3] = { 0, 0, 0 };  // to store red, green, blue reading
+#define NUMREADS 1000  // number of readings per colour reading (for averaging)
 
 #include <math.h>
 
@@ -344,17 +345,26 @@ void toTerminal() {
   Serial.println("\nSolving neural network. Please wait.");
 }
 
-void readColour() {
-  digitalWrite(S2, LOW);
-  digitalWrite(S3, LOW);
-  delay(20);                                     // wait for reading to stabilize
-  reading[0] = pulseIn(OUT, !digitalRead(OUT));  //read red
-  digitalWrite(S3, HIGH);
-  delay(20);                                     // wait for reading to stabilize
-  reading[2] = pulseIn(OUT, !digitalRead(OUT));  //read blue
-  digitalWrite(S2, HIGH);
-  delay(20);                                     // wait for reading to stabilize
-  reading[1] = pulseIn(OUT, !digitalRead(OUT));  //read green
+// This function takes an array as an input agument, and calculates the average
+// of n readings on each colour channel.
+void readColourN(int colourArr[3], int n) {  // arrays are always passed by value
+  unsigned long thisRead[3] = { 0, 0, 0 };   // for data averaging
+  bool pinStates[3][2] = {
+    { LOW, LOW },    // S2,S3 are LOW for RED
+    { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
+    { LOW, HIGH }    // S2=LOW,S3=HIGH for BLUE
+  };
+  for (int i = 0; i < 3; i++) {          //i=0: red, i=1: green, i=2: blue
+    digitalWrite(S2, pinStates[i][0]);   // set S2 to correct pin state
+    digitalWrite(S3, pinStates[i][1]);   // set S3 to correct pin state
+    thisRead[i] = 0;                     //initialize colour
+    delay(100);                          // wait for reading to stabilize
+    for (int j = 0; j < n; j++) {        // collect n readings on channel i
+      thisRead[i] += pulseIn(OUT, LOW);  //read colour (iterative mean)
+    }
+    thisRead[i] /= n;            // report the average
+    colourArr[i] = thisRead[i];  //write back to colourArr
+  }
 }
 
 void useNN(int R, int G, int B) {  // use NN hidden and output weights to compute outcome
@@ -386,7 +396,7 @@ void useNN(int R, int G, int B) {  // use NN hidden and output weights to comput
 }
 
 void readSample() {  // take one reading and apply neural network weights to calculate output
-  readColour();      // take measurement
+  readColourN(reading, NUMREADS);      // take measurement
   useNN(reading[0], reading[1], reading[2]);
   //Serial.print ("  Output ");
   float maxC = 0.0;
@@ -400,7 +410,7 @@ void readSample() {  // take one reading and apply neural network weights to cal
     Serial.print(" ");
   }
   if (maxC > 0.8) {
-    Serial.print(" <--- " + TargetNames[maxIdx] + " detected");
+    Serial.print(" <--- " + (String)TargetNames[maxIdx] + " detected");
   }
   Serial.println("");
 }
