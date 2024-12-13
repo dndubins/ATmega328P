@@ -46,7 +46,7 @@ struct SVDweights {
 
 char choice = '\0';  // For serial menu. Initialize choice with NULL.
 
-String TargetNames[7] = { "red", "orange", "yellow", "green", "cyan", "blue", "violet" };  // titles to match training set
+const char* TargetNames[7] = { "red", "orange", "yellow", "green", "cyan", "blue", "violet" };  // titles to match training set
 
 // for defining SVD matrix manually: (not needed with EPROMLOAD)
 #ifndef EPROMLOAD
