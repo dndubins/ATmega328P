@@ -12,7 +12,7 @@
  * Neural network code and algorithm adapted from: http://robotics.hobbizine.com/arduinoann.html
  * Sketch: David Dubins
  * Date: 3-Feb-19
- * Last Updated: 12-Dec-24
+ * Last Updated: 13-Dec-24
  *
  * Connections:
  * TCS3200 - Arduino Uno
@@ -27,34 +27,34 @@
  *  OE  - GND
  */
 
-#include <EEPROM.h> // for saving AI matrix
-#define NUMREADS 10  // number of readings per colour reading (for averaging)
+#include <EEPROM.h>    // for saving AI matrix
+#define NUMREADS 1000  // number of readings per colour reading (for averaging)
 
 // Global Network Configuration Variables
-const int InputNodes = 3;            // The number of input neurons (can be sensor readings, <=7 for Arduino)
-const int HiddenNodes = 8;           // The number of hidden neurons (> # output neurons, <=8 for Arduino)
-const int OutputNodes = 5;           // The number of output neurons (<=4 for Arduino)
-                                     // Note: Scroll down and adjust sizes of PatternCount, Input, and Target matrices
+const int InputNodes = 3;   // The number of input neurons (can be sensor readings, <=7 for Arduino)
+const int HiddenNodes = 8;  // The number of hidden neurons (> # output neurons, <=8 for Arduino)
+const int OutputNodes = 5;  // The number of output neurons (<=4 for Arduino)
+                            // Note: Scroll down and adjust sizes of PatternCount, Input, and Target matrices
 float Hidden[HiddenNodes];
 float Output[OutputNodes];
 float Accum;
-const String TargetNames[OutputNodes]={"red","yellow","green","blue","purple"}; // titles to match training set
+const char* TargetNames[OutputNodes] = { "red", "yellow", "green", "blue", "purple" };  // titles to match training set
 
 struct NNweights {
   char name[10];
-  float HiddenWeights[InputNodes+1][HiddenNodes];
-  float OutputWeights[HiddenNodes+1][OutputNodes];
+  float HiddenWeights[InputNodes + 1][HiddenNodes];
+  float OutputWeights[HiddenNodes + 1][OutputNodes];
 } NN;
 
 // Colour sensor module pins and setup
-#define S0 8  
+#define S0 8
 #define S1 9
 #define S2 12
 #define S3 11
 #define OUT 10
-int reading[3]={0,0,0}; // to store red, green, blue reading
+int reading[3] = { 0, 0, 0 };  // to store red, green, blue reading
 
-char choice='\0'; // For serial menu. Initialize choice with NULL.
+char choice = '\0';  // For serial menu. Initialize choice with NULL.
 
 #include <math.h>
 
@@ -72,395 +72,395 @@ const float Success = 0.01;          // The threshold for error at which the net
 
 // For inputting training set manually:
 float Input[PatternCount][InputNodes] = {
-  { 0.16, 0.45, 0.33 },   // red
-  { 0.17, 0.43, 0.30 },   // red
-  { 0.15, 0.48, 0.36 },   // red
-  { 0.19, 0.18, 0.30 },   // green
-  { 0.29, 0.27, 0.41 },   // green
-  { 0.47, 0.44, 0.55 },   // green
-  { 1.04, 1.31, 0.77 },   // blue
-  { 1.71, 1.76, 0.97 },   // blue 
-  { 1.16, 1.19, 0.71 },   // blue 
-  { 0.13, 0.17, 0.30 },   // yellow
-  { 0.06, 0.08, 0.18 },   // yellow
-  { 0.10, 0.13, 0.23 },   // yellow
-  { 0.43, 0.63, 0.47 },   // purple
-  { 0.48, 0.66, 0.36 },   // purple
-  { 0.32, 0.48, 0.34 }    // purple
-}; 
-
+  { 0.16, 0.45, 0.33 },  // red
+  { 0.17, 0.43, 0.30 },  // red
+  { 0.15, 0.48, 0.36 },  // red
+  { 0.19, 0.18, 0.30 },  // green
+  { 0.29, 0.27, 0.41 },  // green
+  { 0.47, 0.44, 0.55 },  // green
+  { 1.04, 1.31, 0.77 },  // blue
+  { 1.71, 1.76, 0.97 },  // blue
+  { 1.16, 1.19, 0.71 },  // blue
+  { 0.13, 0.17, 0.30 },  // yellow
+  { 0.06, 0.08, 0.18 },  // yellow
+  { 0.10, 0.13, 0.23 },  // yellow
+  { 0.43, 0.63, 0.47 },  // purple
+  { 0.48, 0.66, 0.36 },  // purple
+  { 0.32, 0.48, 0.34 }   // purple
+};
 
 const byte Target[PatternCount][OutputNodes] = {
   { 1, 0, 0, 0, 0 },  //red
-  { 1, 0, 0, 0, 0 },  
-  { 1, 0, 0, 0, 0 },  
+  { 1, 0, 0, 0, 0 },
+  { 1, 0, 0, 0, 0 },
   { 0, 1, 0, 0, 0 },  //green
-  { 0, 1, 0, 0, 0 },  
-  { 0, 1, 0, 0, 0 },  
+  { 0, 1, 0, 0, 0 },
+  { 0, 1, 0, 0, 0 },
   { 0, 0, 1, 0, 0 },  //blue
-  { 0, 0, 1, 0, 0 },  
-  { 0, 0, 1, 0, 0 },  
+  { 0, 0, 1, 0, 0 },
+  { 0, 0, 1, 0, 0 },
   { 0, 0, 0, 1, 0 },  //yellow
-  { 0, 0, 0, 1, 0 },  
-  { 0, 0, 0, 1, 0 },  
+  { 0, 0, 0, 1, 0 },
+  { 0, 0, 0, 1, 0 },
   { 0, 0, 0, 0, 1 },  //purple
-  { 0, 0, 0, 0, 1 },  
-  { 0, 0, 0, 0, 1 }  
+  { 0, 0, 0, 0, 1 },
+  { 0, 0, 0, 0, 1 }
 };
 
 /******************************************************************
  * End Network Configuration
  ******************************************************************/
 
-void setup(){
+void setup() {
   Serial.begin(9600);
   Serial.println("Loading weights form EEPROM.");
-  EEPROM.get(0, NN); // get weights from EEPROM
+  EEPROM.get(0, NN);  // get weights from EEPROM
   Serial.println("Weights loaded.");
-  pinMode(S0, OUTPUT);  
-  pinMode(S1, OUTPUT);  
-  pinMode(S2, OUTPUT);  
-  pinMode(S3, OUTPUT);  
-  pinMode(OUT, INPUT);  
-  digitalWrite(S0, HIGH);  
-  digitalWrite(S1, HIGH);  
-  printMenu(); //reprint user menu    
-}  
+  pinMode(S0, OUTPUT);
+  pinMode(S1, OUTPUT);
+  pinMode(S2, OUTPUT);
+  pinMode(S3, OUTPUT);
+  pinMode(OUT, INPUT);
+  digitalWrite(S0, HIGH);
+  digitalWrite(S1, HIGH);
+  printMenu();  //reprint user menu
+}
 
-void loop (){
-  if(Serial.available()){
-    choice=Serial.read();
-  } else if(choice=='r'){ // what happens with s
+void loop() {
+  if (Serial.available()) {
+    choice = Serial.read();
+  } else if (choice == 'r') {  // what happens with s
     Serial.println("\nReading sample:");
     readSample();
-    choice='\0'; //erase choice
-    printMenu(); //reprint user menu
-  } else if(choice=='c'){
+    choice = '\0';  //erase choice
+    printMenu();    //reprint user menu
+  } else if (choice == 'c') {
     readSample();
-    delay(100); //short delay
-  } else if(choice=='t'){
-    for(int i=0;i<OutputNodes;i++){
-      for(int j=0;j<3;j++){
-        Serial.println("Enter 'r' to read response "+(String)(j+1)+" for "+TargetNames[i]+">");
-        while(!Serial.available()){;} // wait for input
-        choice=Serial.read();
-        readColour(NUMREADS); // read sensor
-        Serial.println("Reading: "+(String)reading[0]+","+(String)reading[1]+","+(String)reading[2]);
-        Input[j+(3*i)][0]=(float)reading[0]/100.0; //red
-        Input[j+(3*i)][1]=(float)reading[1]/100.0; //green
-        Input[j+(3*i)][2]=(float)reading[2]/100.0; //blue
+    delay(100);  //short delay
+  } else if (choice == 't') {
+    for (int i = 0; i < OutputNodes; i++) {
+      for (int j = 0; j < 3; j++) {
+        Serial.println("Enter 'r' to read response " + (String)(j + 1) + " for " + TargetNames[i] + ">");
+        while (!Serial.available()) { ; }  // wait for input
+        choice = Serial.read();
+        readColourN(reading, NUMREADS);  // read sensor
+        Serial.println("Reading: " + (String)reading[0] + "," + (String)reading[1] + "," + (String)reading[2]);
+        Input[j + (3 * i)][0] = (float)reading[0] / 100.0;  //red
+        Input[j + (3 * i)][1] = (float)reading[1] / 100.0;  //green
+        Input[j + (3 * i)][2] = (float)reading[2] / 100.0;  //blue
       }
     }
     solveNN();
     Serial.println("Saving weights to EEPROM.");
-    EEPROM.put(0, NN); // write weights to EEPROM
+    EEPROM.put(0, NN);  // write weights to EEPROM
     Serial.println("Weights saved.");
-    choice='\0'; //erase choice
-    printMenu(); //reprint user menu
-  } else if(choice!='\0'){
+    choice = '\0';  //erase choice
+    printMenu();    //reprint user menu
+  } else if (choice != '\0') {
     Serial.println("\nInvalid option.");
-    choice='\0'; //erase choice
-    printMenu(); //reprint user menu    
+    choice = '\0';  //erase choice
+    printMenu();    //reprint user menu
   }
 }
 
-void solveNN(){ // neural network fitting routine
-  int p, q, r;  // counter variables
+void solveNN() {  // neural network fitting routine
+  int p, q, r;    // counter variables
   int ReportEvery1000;
   int RandomizedIndex[PatternCount];
   float Rando;
   float Error;
   float HiddenDelta[HiddenNodes];
   float OutputDelta[OutputNodes];
-  float ChangeHiddenWeights[InputNodes+1][HiddenNodes];
-  float ChangeOutputWeights[HiddenNodes+1][OutputNodes];
-  unsigned long TrainingCycle=0;
+  float ChangeHiddenWeights[InputNodes + 1][HiddenNodes];
+  float ChangeOutputWeights[HiddenNodes + 1][OutputNodes];
+  unsigned long TrainingCycle = 0;
 
   randomSeed(analogRead(3));
   ReportEvery1000 = 1;
-  for( p = 0 ; p < PatternCount ; p++ ) {    
-    RandomizedIndex[p] = p ;
+  for (p = 0; p < PatternCount; p++) {
+    RandomizedIndex[p] = p;
   }
-  
-/******************************************************************
+
+  /******************************************************************
 * Initialize HiddenWeights and ChangeHiddenWeights 
 ******************************************************************/
-  for( int i = 0 ; i < HiddenNodes ; i++ ) {    
-    for( int j = 0 ; j <= InputNodes ; j++ ) { 
-      ChangeHiddenWeights[j][i] = 0.0 ;
-      Rando = float(random(100))/100;
-      NN.HiddenWeights[j][i] = 2.0 * ( Rando - 0.5 ) * InitialWeightMax ;
+  for (int i = 0; i < HiddenNodes; i++) {
+    for (int j = 0; j <= InputNodes; j++) {
+      ChangeHiddenWeights[j][i] = 0.0;
+      Rando = float(random(100)) / 100;
+      NN.HiddenWeights[j][i] = 2.0 * (Rando - 0.5) * InitialWeightMax;
     }
   }
-  
-/******************************************************************
+
+  /******************************************************************
 * Initialize OutputWeights and ChangeOutputWeights
 ******************************************************************/
-  for( int i = 0 ; i < OutputNodes ; i ++ ) {    
-    for( int j = 0 ; j <= HiddenNodes ; j++ ) {
-      ChangeOutputWeights[j][i] = 0.0 ;  
-      Rando = float(random(100))/100;        
-      NN.OutputWeights[j][i] = 2.0 * ( Rando - 0.5 ) * InitialWeightMax ;
+  for (int i = 0; i < OutputNodes; i++) {
+    for (int j = 0; j <= HiddenNodes; j++) {
+      ChangeOutputWeights[j][i] = 0.0;
+      Rando = float(random(100)) / 100;
+      NN.OutputWeights[j][i] = 2.0 * (Rando - 0.5) * InitialWeightMax;
     }
   }
   Serial.println("Initial/Untrained Outputs: ");
   toTerminal();
-/******************************************************************
+  /******************************************************************
 * Begin training 
 ******************************************************************/
-  for( TrainingCycle = 1 ; TrainingCycle < 2147483647 ; TrainingCycle++) {    
+  for (TrainingCycle = 1; TrainingCycle < 2147483647; TrainingCycle++) {
 
-/******************************************************************
+    /******************************************************************
 * Randomize order of training patterns
 ******************************************************************/
-    for(p = 0 ; p < PatternCount ; p++) {
+    for (p = 0; p < PatternCount; p++) {
       q = random(PatternCount);
-      r = RandomizedIndex[p] ; 
-      RandomizedIndex[p] = RandomizedIndex[q] ; 
-      RandomizedIndex[q] = r ;
+      r = RandomizedIndex[p];
+      RandomizedIndex[p] = RandomizedIndex[q];
+      RandomizedIndex[q] = r;
     }
-    Error = 0.0 ;
-    
-/******************************************************************
+    Error = 0.0;
+
+    /******************************************************************
 * Cycle through each training pattern in the randomized order
 ******************************************************************/
-    for( int q = 0 ; q < PatternCount ; q++ ) {    
+    for (int q = 0; q < PatternCount; q++) {
       p = RandomizedIndex[q];
 
-/******************************************************************
+      /******************************************************************
 * Compute hidden layer activations
 ******************************************************************/
-      for( int i = 0 ; i < HiddenNodes ; i++ ) {    
-        Accum = NN.HiddenWeights[InputNodes][i] ;
-        for( int j = 0 ; j < InputNodes ; j++ ) {
-          Accum += Input[p][j] * NN.HiddenWeights[j][i] ;
+      for (int i = 0; i < HiddenNodes; i++) {
+        Accum = NN.HiddenWeights[InputNodes][i];
+        for (int j = 0; j < InputNodes; j++) {
+          Accum += Input[p][j] * NN.HiddenWeights[j][i];
         }
-        Hidden[i] = 1.0/(1.0 + exp(-Accum)) ;
+        Hidden[i] = 1.0 / (1.0 + exp(-Accum));
       }
 
-/******************************************************************
+      /******************************************************************
 * Compute output layer activations and calculate errors
 ******************************************************************/
-      for( int i = 0 ; i < OutputNodes ; i++ ) {    
-        Accum = NN.OutputWeights[HiddenNodes][i] ;
-        for( int j = 0 ; j < HiddenNodes ; j++ ) {
-          Accum += Hidden[j] * NN.OutputWeights[j][i] ;
+      for (int i = 0; i < OutputNodes; i++) {
+        Accum = NN.OutputWeights[HiddenNodes][i];
+        for (int j = 0; j < HiddenNodes; j++) {
+          Accum += Hidden[j] * NN.OutputWeights[j][i];
         }
-        Output[i] = 1.0/(1.0 + exp(-Accum)) ;   
-        OutputDelta[i] = (Target[p][i] - Output[i]) * Output[i] * (1.0 - Output[i]) ;   
-        Error += 0.5 * (Target[p][i] - Output[i]) * (Target[p][i] - Output[i]) ;
+        Output[i] = 1.0 / (1.0 + exp(-Accum));
+        OutputDelta[i] = (Target[p][i] - Output[i]) * Output[i] * (1.0 - Output[i]);
+        Error += 0.5 * (Target[p][i] - Output[i]) * (Target[p][i] - Output[i]);
       }
 
-/******************************************************************
+      /******************************************************************
 * Backpropagate errors to hidden layer
 ******************************************************************/
-      for( int i = 0 ; i < HiddenNodes ; i++ ) {    
-        Accum = 0.0 ;
-        for( int j = 0 ; j < OutputNodes ; j++ ) {
-          Accum += NN.OutputWeights[i][j] * OutputDelta[j] ;
+      for (int i = 0; i < HiddenNodes; i++) {
+        Accum = 0.0;
+        for (int j = 0; j < OutputNodes; j++) {
+          Accum += NN.OutputWeights[i][j] * OutputDelta[j];
         }
-        HiddenDelta[i] = Accum * Hidden[i] * (1.0 - Hidden[i]) ;
+        HiddenDelta[i] = Accum * Hidden[i] * (1.0 - Hidden[i]);
       }
 
 
-/******************************************************************
+      /******************************************************************
 * Update Inner-->Hidden Weights
 ******************************************************************/
-      for( int i = 0 ; i < HiddenNodes ; i++ ) {     
-        ChangeHiddenWeights[InputNodes][i] = LearningRate * HiddenDelta[i] + Momentum * ChangeHiddenWeights[InputNodes][i] ;
-        NN.HiddenWeights[InputNodes][i] += ChangeHiddenWeights[InputNodes][i] ;
-        for( int j = 0 ; j < InputNodes ; j++ ) { 
+      for (int i = 0; i < HiddenNodes; i++) {
+        ChangeHiddenWeights[InputNodes][i] = LearningRate * HiddenDelta[i] + Momentum * ChangeHiddenWeights[InputNodes][i];
+        NN.HiddenWeights[InputNodes][i] += ChangeHiddenWeights[InputNodes][i];
+        for (int j = 0; j < InputNodes; j++) {
           ChangeHiddenWeights[j][i] = LearningRate * Input[p][j] * HiddenDelta[i] + Momentum * ChangeHiddenWeights[j][i];
-          NN.HiddenWeights[j][i] += ChangeHiddenWeights[j][i] ;
+          NN.HiddenWeights[j][i] += ChangeHiddenWeights[j][i];
         }
       }
 
-/******************************************************************
+      /******************************************************************
 * Update Hidden-->Output Weights
 ******************************************************************/
-      for( int i = 0 ; i < OutputNodes ; i ++ ) {    
-        ChangeOutputWeights[HiddenNodes][i] = LearningRate * OutputDelta[i] + Momentum * ChangeOutputWeights[HiddenNodes][i] ;
-        NN.OutputWeights[HiddenNodes][i] += ChangeOutputWeights[HiddenNodes][i] ;
-        for( int j = 0 ; j < HiddenNodes ; j++ ) {
-          ChangeOutputWeights[j][i] = LearningRate * Hidden[j] * OutputDelta[i] + Momentum * ChangeOutputWeights[j][i] ;
-          NN.OutputWeights[j][i] += ChangeOutputWeights[j][i] ;
+      for (int i = 0; i < OutputNodes; i++) {
+        ChangeOutputWeights[HiddenNodes][i] = LearningRate * OutputDelta[i] + Momentum * ChangeOutputWeights[HiddenNodes][i];
+        NN.OutputWeights[HiddenNodes][i] += ChangeOutputWeights[HiddenNodes][i];
+        for (int j = 0; j < HiddenNodes; j++) {
+          ChangeOutputWeights[j][i] = LearningRate * Hidden[j] * OutputDelta[i] + Momentum * ChangeOutputWeights[j][i];
+          NN.OutputWeights[j][i] += ChangeOutputWeights[j][i];
         }
       }
     }
 
-/******************************************************************
+    /******************************************************************
 * Every 1000 cycles send data to terminal for display
 ******************************************************************/
     ReportEvery1000 = ReportEvery1000 - 1;
-    if (ReportEvery1000 == 0)
-    {
-      Serial.println(); 
-      Serial.println(); 
-      Serial.print ("TrainingCycle: ");
-      Serial.print (TrainingCycle);
-      Serial.print ("  Error = ");
-      Serial.println (Error, 5);
+    if (ReportEvery1000 == 0) {
+      Serial.println();
+      Serial.println();
+      Serial.print("TrainingCycle: ");
+      Serial.print(TrainingCycle);
+      Serial.print("  Error = ");
+      Serial.println(Error, 5);
       toTerminal();
-      if (TrainingCycle==1)
-      {
+      if (TrainingCycle == 1) {
         ReportEvery1000 = 999;
-      }else{
+      } else {
         ReportEvery1000 = 1000;
       }
-    }    
+    }
 
-/******************************************************************
+    /******************************************************************
 * If error rate is less than pre-determined threshold then end
 ******************************************************************/
-    if( Error < Success ) break ;  
+    if (Error < Success) break;
   }
-  Serial.println ();
-  Serial.println(); 
-  Serial.print ("TrainingCycle: ");
-  Serial.print (TrainingCycle);
-  Serial.print ("  Error = ");
-  Serial.println (Error, 5);
+  Serial.println();
+  Serial.println();
+  Serial.print("TrainingCycle: ");
+  Serial.print(TrainingCycle);
+  Serial.print("  Error = ");
+  Serial.println(Error, 5);
   toTerminal();
-  
-/******************************************************************
+
+  /******************************************************************
 * Send HiddenWeights and OutputWeights to Serial
 ******************************************************************/
-  Serial.println(); 
-  Serial.println("  HiddenWeights: ");      
-  for( int j = 0 ; j <= InputNodes ; j++ ) { 
-    for( int i = 0 ; i < HiddenNodes ; i++ ) {
-      Serial.print (NN.HiddenWeights[j][i], DEC);
-      Serial.print (", ");
+  Serial.println();
+  Serial.println("  HiddenWeights: ");
+  for (int j = 0; j <= InputNodes; j++) {
+    for (int i = 0; i < HiddenNodes; i++) {
+      Serial.print(NN.HiddenWeights[j][i], DEC);
+      Serial.print(", ");
     }
     Serial.println("");
   }
-  Serial.println(); 
-  Serial.println("  OutputWeights: ");  
-  for( int j = 0 ; j <= HiddenNodes ; j++ ) { 
-    for( int i = 0 ; i < OutputNodes ; i++ ) {
-      Serial.print (NN.OutputWeights[j][i], DEC);
-      Serial.print (", ");
+  Serial.println();
+  Serial.println("  OutputWeights: ");
+  for (int j = 0; j <= HiddenNodes; j++) {
+    for (int i = 0; i < OutputNodes; i++) {
+      Serial.print(NN.OutputWeights[j][i], DEC);
+      Serial.print(", ");
     }
     Serial.println("");
   }
-  Serial.println ("\n\nTraining Set Solved! ");
-  Serial.println ("--------\n\n"); 
-  ReportEvery1000 = 1;  
+  Serial.println("\n\nTraining Set Solved! ");
+  Serial.println("--------\n\n");
+  ReportEvery1000 = 1;
 }
 
-void toTerminal(){
-  for( int p = 0 ; p < PatternCount ; p++ ) { 
-    Serial.println(); 
-    Serial.print ("  Training Pattern: ");
-    Serial.println (p);      
-    Serial.print ("  Input ");
-    for( int i = 0 ; i < InputNodes ; i++ ) {
-      Serial.print (Input[p][i], DEC);
-      Serial.print (" ");
+void toTerminal() {
+  for (int p = 0; p < PatternCount; p++) {
+    Serial.println();
+    Serial.print("  Training Pattern: ");
+    Serial.println(p);
+    Serial.print("  Input ");
+    for (int i = 0; i < InputNodes; i++) {
+      Serial.print(Input[p][i], DEC);
+      Serial.print(" ");
     }
-    Serial.print ("  Target ");
-    for( int i = 0 ; i < OutputNodes ; i++ ) {
-      Serial.print (Target[p][i], DEC);
-      Serial.print (" ");
+    Serial.print("  Target ");
+    for (int i = 0; i < OutputNodes; i++) {
+      Serial.print(Target[p][i], DEC);
+      Serial.print(" ");
     }
-/******************************************************************
+    /******************************************************************
 * Compute hidden layer activations
 ******************************************************************/
-    for( int i = 0 ; i < HiddenNodes ; i++ ) {    
-      Accum = NN.HiddenWeights[InputNodes][i] ;
-      for( int j = 0 ; j < InputNodes ; j++ ) {
-        Accum += Input[p][j] * NN.HiddenWeights[j][i] ;
+    for (int i = 0; i < HiddenNodes; i++) {
+      Accum = NN.HiddenWeights[InputNodes][i];
+      for (int j = 0; j < InputNodes; j++) {
+        Accum += Input[p][j] * NN.HiddenWeights[j][i];
       }
-      Hidden[i] = 1.0/(1.0 + exp(-Accum)) ;
+      Hidden[i] = 1.0 / (1.0 + exp(-Accum));
     }
 
-/******************************************************************
+    /******************************************************************
 * Compute output layer activations and calculate errors
 ******************************************************************/
-    for( int i = 0 ; i < OutputNodes ; i++ ) {    
-      Accum = NN.OutputWeights[HiddenNodes][i] ;
-      for( int j = 0 ; j < HiddenNodes ; j++ ) {
-        Accum += Hidden[j] * NN.OutputWeights[j][i] ;
+    for (int i = 0; i < OutputNodes; i++) {
+      Accum = NN.OutputWeights[HiddenNodes][i];
+      for (int j = 0; j < HiddenNodes; j++) {
+        Accum += Hidden[j] * NN.OutputWeights[j][i];
       }
-      Output[i] = 1.0/(1.0 + exp(-Accum)) ; 
+      Output[i] = 1.0 / (1.0 + exp(-Accum));
     }
-    Serial.print ("  Output ");
-    for( int i = 0 ; i < OutputNodes ; i++ ) {       
-      Serial.print (Output[i], 5);
-      Serial.print (" ");
+    Serial.print("  Output ");
+    for (int i = 0; i < OutputNodes; i++) {
+      Serial.print(Output[i], 5);
+      Serial.print(" ");
     }
   }
   Serial.println("\nSolving neural network. Please wait.");
 }
 
-void useNN(int R, int G, int B){  // use NN hidden and output weights to compute outcome
+void useNN(int R, int G, int B) {  // use NN hidden and output weights to compute outcome
   float measuredInput[3];
-  measuredInput[0]=R/100.0;
-  measuredInput[1]=G/100.0;
-  measuredInput[2]=B/100.0;
+  measuredInput[0] = R / 100.0;
+  measuredInput[1] = G / 100.0;
+  measuredInput[2] = B / 100.0;
   /******************************************************************
 * Compute hidden layer activations
 ******************************************************************/
-      for( int i = 0 ; i < HiddenNodes ; i++ ) {    
-        Accum = NN.HiddenWeights[InputNodes][i] ;
-        for( int j = 0 ; j < InputNodes ; j++ ) {
-          Accum += measuredInput[j] * NN.HiddenWeights[j][i] ;
-        }
-        Hidden[i] = 1.0/(1.0 + exp(-Accum)) ;
-      }
+  for (int i = 0; i < HiddenNodes; i++) {
+    Accum = NN.HiddenWeights[InputNodes][i];
+    for (int j = 0; j < InputNodes; j++) {
+      Accum += measuredInput[j] * NN.HiddenWeights[j][i];
+    }
+    Hidden[i] = 1.0 / (1.0 + exp(-Accum));
+  }
 
-/******************************************************************
+  /******************************************************************
 * Compute output layer activations and calculate errors
 ******************************************************************/
-      for( int i = 0 ; i < OutputNodes ; i++ ) {    
-        Accum = NN.OutputWeights[HiddenNodes][i] ;
-        for( int j = 0 ; j < HiddenNodes ; j++ ) {
-          Accum += Hidden[j] * NN.OutputWeights[j][i] ;
-        }
-        Output[i] = 1.0/(1.0 + exp(-Accum)) ;   
+  for (int i = 0; i < OutputNodes; i++) {
+    Accum = NN.OutputWeights[HiddenNodes][i];
+    for (int j = 0; j < HiddenNodes; j++) {
+      Accum += Hidden[j] * NN.OutputWeights[j][i];
     }
-}
-
-void readColour(int n) {
-  unsigned long thisread[3] = { 0, 0, 0 };
-  for (int i = 0; i < n; i++) {
-    digitalWrite(S2, LOW);
-    digitalWrite(S3, LOW);
-    delay(20);                                       // wait for reading to stabilize
-    thisread[0] += pulseIn(OUT, !digitalRead(OUT));  //read red
-    digitalWrite(S3, HIGH);
-    delay(20);                                       // wait for reading to stabilize
-    thisread[2] += pulseIn(OUT, !digitalRead(OUT));  //read blue
-    digitalWrite(S2, HIGH);
-    delay(20);                                       // wait for reading to stabilize
-    thisread[1] += pulseIn(OUT, !digitalRead(OUT));  //read green
-  }
-  for (int i = 0; i < 3; i++) {
-    reading[i] = thisread[i] / n;
+    Output[i] = 1.0 / (1.0 + exp(-Accum));
   }
 }
 
-void readSample(){ // take one reading and apply neural network weights to calculate output
-  readColour(NUMREADS); // take measurement
-  useNN(reading[0],reading[1],reading[2]);
+// This function takes an array as an input agument, and calculates the average
+// of n readings on each colour channel.
+void readColourN(int colourArr[3], int n) {  // arrays are always passed by value
+  unsigned long thisRead[3] = { 0, 0, 0 };   // for data averaging
+  bool pinStates[3][2] = {
+    { LOW, LOW },    // S2,S3 are LOW for RED
+    { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
+    { LOW, HIGH }    // S2=LOW,S3=HIGH for BLUE
+  };
+  for (int i = 0; i < 3; i++) {          //i=0: red, i=1: green, i=2: blue
+    digitalWrite(S2, pinStates[i][0]);   // set S2 to correct pin state
+    digitalWrite(S3, pinStates[i][1]);   // set S3 to correct pin state
+    thisRead[i] = 0;                     //initialize colour
+    delay(100);                          // wait for reading to stabilize
+    for (int j = 0; j < n; j++) {        // collect n readings on channel i
+      thisRead[i] += pulseIn(OUT, LOW);  //read colour (iterative mean)
+    }
+    thisRead[i] /= n;            // report the average
+    colourArr[i] = thisRead[i];  //write back to colourArr
+  }
+}
+
+void readSample() {                // take one reading and apply neural network weights to calculate output
+  readColourN(reading, NUMREADS);  // take measurement
+  useNN(reading[0], reading[1], reading[2]);
   //Serial.print ("  Output ");
-  float maxC=0.0;
-  byte maxIdx=0;
-  for( int i = 0 ; i < OutputNodes ; i++ ) {       
-    Serial.print (Output[i], 3);
-    if(Output[i]>maxC){
-      maxC=Output[i];
-      maxIdx=i;
+  float maxC = 0.0;
+  byte maxIdx = 0;
+  for (int i = 0; i < OutputNodes; i++) {
+    Serial.print(Output[i], 3);
+    if (Output[i] > maxC) {
+      maxC = Output[i];
+      maxIdx = i;
     }
-    Serial.print (" ");
+    Serial.print(" ");
   }
-  if(maxC>0.8){
-        Serial.print(" <--- "+TargetNames[maxIdx]+" detected");
+  if (maxC > 0.8) {
+    Serial.print(" <--- " + (String)TargetNames[maxIdx] + " detected");
   }
   Serial.println("");
 }
 
-void printMenu(){ // user menu
+void printMenu() {  // user menu
   Serial.println("r: Read one sample");
   Serial.println("c: Continuous reads");
   Serial.println("t: train neural network with new values");
