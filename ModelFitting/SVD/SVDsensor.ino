@@ -9,7 +9,7 @@
  *
  * Author of this sketch: David Dubins
  * Date: 6-Feb-19
- * Last updated: 12-Dec-24
+ * Last updated: 13-Dec-24
  * 
  * TCS3200 - Arduino Uno
  * ---------------------
@@ -23,13 +23,13 @@
  *  OE  - GND
  */
 
-#include <EEPROM.h>  // for saving SVD matrix
-#define NUMREADS 10  // number of readings per colour reading (for averaging)
-#define DEBUG        //comment out to remove extra serial debugging messages
-#define MENU         //comment out for just continous readings
-#define EPROMLOAD    //comment out if not loading/saving weights from EPROM (useful for first time running sketch)
-const int MP = 14;   // total number of experimental observations in the system
-const int NP = 4;    // number of parameters (# columns + intercept)
+#include <EEPROM.h>    // for saving SVD matrix
+#define NUMREADS 1000  // number of readings per colour reading (for averaging)
+#define DEBUG          //comment out to remove extra serial debugging messages
+#define MENU           //comment out for just continous readings
+//#define EPROMLOAD    //comment out if not loading/saving weights from EPROM (useful for first time running sketch)
+const int MP = 14;  // total number of experimental observations in the system
+const int NP = 4;   // number of parameters (# columns + intercept)
 
 // Colour sensor module pins and setup
 #define S0 8
@@ -52,20 +52,20 @@ String TargetNames[7] = { "red", "orange", "yellow", "green", "cyan", "blue", "v
 #ifndef EPROMLOAD
 float Input[MP][NP - 1] = {
   //training set (sensor readings)
-  { 12, 54, 43 },  // red
-  { 12, 52, 42 },  // red
-  { 8, 24, 27 },   // orange
-  { 7, 21, 24 },   // orange
-  { 11, 15, 28 },  // yellow
-  { 11, 16, 28 },  // yellow
-  { 26, 18, 27 },  // green
-  { 25, 17, 26 },  // green
-  { 36, 20, 12 },  // cyan
-  { 37, 21, 13 },  // cyan
-  { 74, 37, 16 },  // blue
-  { 67, 32, 14 },  // blue
-  { 25, 41, 19 },  // violet
-  { 25, 41, 19 }   // violet
+  { 11, 43, 39 },    // red
+  { 11, 47, 43 },    // red
+  { 7, 24, 27 },     // orange
+  { 6, 20, 24 },     // orange
+  { 10, 18, 28 },    // yellow
+  { 10, 16, 27 },    // yellow
+  { 19, 17, 26 },    // green
+  { 20, 18, 25 },    // green
+  { 36, 35, 26 },    // cyan
+  { 32, 29, 22 },    // cyan
+  { 61, 61, 33 },    // blue
+  { 113, 105, 58 },  // blue
+  { 21, 31, 17 },    // violet
+  { 22, 38, 23 }     // violet
 };
 #endif
 
@@ -149,7 +149,7 @@ void loop() {
       Serial.print(F("Reading response for "));
       Serial.print(SVD.Y[i]);
       Serial.println(F(" nm."));
-      readColour(NUMREADS);  // read sensor
+      readColourN(reading, NUMREADS);  // read sensor NUMREADS times
       Serial.print(F("Reading: "));
       Serial.print(reading[0]);
       Serial.print(F(","));
@@ -546,27 +546,30 @@ float useSVD(int R, int G, int B) {  // use SVD model to solve for wavelength
   return sum;
 }
 
-void readColour(int n) {
-  unsigned long thisread[3] = { 0, 0, 0 };
-  for (int i = 0; i < n; i++) {
-    digitalWrite(S2, LOW);
-    digitalWrite(S3, LOW);
-    delay(20);                                       // wait for reading to stabilize
-    thisread[0] += pulseIn(OUT, !digitalRead(OUT));  //read red
-    digitalWrite(S3, HIGH);
-    delay(20);                                       // wait for reading to stabilize
-    thisread[2] += pulseIn(OUT, !digitalRead(OUT));  //read blue
-    digitalWrite(S2, HIGH);
-    delay(20);                                       // wait for reading to stabilize
-    thisread[1] += pulseIn(OUT, !digitalRead(OUT));  //read green
-  }
-  for (int i = 0; i < 3; i++) {
-    reading[i] = thisread[i] / n;
+// This function takes an array as an input agument, and calculates the average
+// of n readings on each colour channel.
+void readColourN(int colourArr[3], int n) {  // arrays are always passed by value
+  unsigned long thisRead[3] = { 0, 0, 0 };   // for data averaging
+  bool pinStates[3][2] = {
+    { LOW, LOW },    // S2,S3 are LOW for RED
+    { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
+    { LOW, HIGH }    // S2=LOW,S3=HIGH for BLUE
+  };
+  for (int i = 0; i < 3; i++) {          //i=0: red, i=1: green, i=2: blue
+    digitalWrite(S2, pinStates[i][0]);   // set S2 to correct pin state
+    digitalWrite(S3, pinStates[i][1]);   // set S3 to correct pin state
+    thisRead[i] = 0;                     //initialize colour
+    delay(100);                          // wait for reading to stabilize
+    for (int j = 0; j < n; j++) {        // collect n readings on channel i
+      thisRead[i] += pulseIn(OUT, LOW);  //read colour (iterative mean)
+    }
+    thisRead[i] /= n;            // report the average
+    colourArr[i] = thisRead[i];  //write back to colourArr
   }
 }
 
-void readSample() {      // take one reading and apply model to calculate output
-  readColour(NUMREADS);  // take measurement
+void readSample() {                // take one reading and apply model to calculate output
+  readColourN(reading, NUMREADS);  // take measurement
   int wavelength = useSVD(reading[0], reading[1], reading[2]);
 #ifdef DEBUG
   Serial.print(F("R:"));
