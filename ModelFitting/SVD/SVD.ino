@@ -4,7 +4,7 @@
  * Cambridge University Press New York, NY, USA ©1992
  * Author of this sketch: David Dubins
  * Date: 6-Feb-19
- * Last updated: 12-Dec-24
+ * Last updated: 13-Dec-24
 */
 #define DEBUG  //comment out for no serial debugging commands
 
@@ -12,17 +12,17 @@ const int MP = 10;  // total number of experimental observations in the system
 const int NP = 4;   // number of parameters (R,G,B terms + intercept)
 
 float READINGS[MP][NP - 1] = {
-  // Sensor measurements (from RGB colour sensor)
-  { 12, 54, 43 },  // red
-  { 12, 52, 42 },  // red
-  { 11, 15, 28 },  // yellow
-  { 11, 16, 28 },  // yellow
-  { 26, 18, 27 },  // green
-  { 25, 17, 26 },  // green
-  { 74, 37, 16 },  // blue
-  { 67, 32, 14 },  // blue
-  { 25, 41, 19 },  // violet
-  { 25, 41, 19 }   // violet
+  //training set (sensor readings)
+  { 11, 43, 39 },    // red
+  { 11, 47, 43 },    // red
+  { 10, 18, 28 },    // yellow
+  { 10, 16, 27 },    // yellow
+  { 19, 17, 26 },    // green
+  { 20, 18, 25 },    // green
+  { 61, 61, 33 },    // blue
+  { 113, 105, 58 },  // blue
+  { 21, 31, 17 },    // violet
+  { 22, 38, 23 }     // violet
 };
 
 //Y matrix (wavelengths we want sensor to map to)
