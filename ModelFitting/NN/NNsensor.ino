@@ -12,7 +12,7 @@
  * Neural network code and algorithm adapted from: http://robotics.hobbizine.com/arduinoann.html
  * Sketch: David Dubins
  * Date: 3-Feb-19
- * Last Updated: 12-Dec-24
+ * Last Updated: 13-Dec-24
  *
  * Connections:
  * TCS3200 - Arduino Uno
