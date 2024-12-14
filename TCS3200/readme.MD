@@ -19,16 +19,16 @@ void readColourN(int colourArr[3], int n) {  // arrays are always passed by valu
     { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
     { LOW, HIGH }    // S2=LOW,S3=HIGH for BLUE
   };
-  for (int i = 0; i < 3; i++) {          //i=0: red, i=1: green, i=2: blue
+  for (int i = 0; i < 3; i++) {          // i=0: red, i=1: green, i=2: blue
     digitalWrite(S2, pinStates[i][0]);   // set S2 to correct pin state
     digitalWrite(S3, pinStates[i][1]);   // set S3 to correct pin state
-    thisRead[i] = 0;                     //initialize colour
+    thisRead[i] = 0;                     // initialize colour
     delay(100);                          // wait for reading to stabilize
     for (int j = 0; j < n; j++) {        // collect n readings on channel i
-      thisRead[i] += pulseIn(OUT, LOW);  //read colour (iterative mean)
+      thisRead[i] += pulseIn(OUT, LOW);  // read colour (iterative mean)
     }
     thisRead[i] /= n;            // report the average
-    colourArr[i] = thisRead[i];  //write back to colourArr
+    colourArr[i] = thisRead[i];  // write back to colourArr
   }
 }
 ```
