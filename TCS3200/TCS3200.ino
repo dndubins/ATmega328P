@@ -2,30 +2,37 @@
  * This sketch spits out single reads from each channel of the TCS3200 (red, green, blue),
  * and it also has a function for multiple reads with data averaging.
  * Author: D. Dubins
- * Date: 13-Dec-24
+ * Date: 16-Dec-24
  * Sketch adapted from: https://electronicsforu.com/electronics-projects/rgb-color-detector-tcs3200-sensor-module
  * http://www.efymag.com/admin/issuepdf/RGB-Colour-Detection-Using-TCS3200_3-17.rar
-
-Color Sensor - Arduino Uno
----------------------------
- VCC -- +5V
- GND -- GND
- S0 -- Pin 8
- S1 -- Pin 9
- S2 -- Pin 12
- S3 -- Pin 11
- OUT -- Pin 10
- OE -- GND
+ * There are three functions presented here:
+ * readColour() gives you one raw reading from the TCS3200.
+ * readColourN() gives you an average of N readings. Select your option to normalize inside
+ * the function.
+ *
+ * Connections:
+ * TCS3200 - Arduino Uno
+ * ---------------------
+ *  VCC - 5V
+ *  OUT - 8
+ *  S2  - 9
+ *  S3  - 10
+ *  S0  - 11
+ *  S1  - 12
+ *  OE  - GND
+ *  GND - GND
 */
 
-#define S0 8  // declare pin numbers
-#define S1 9
-#define S2 12
-#define S3 11
-#define OUT 10
+// Colour sensor module pins and setup
+#define S0 11
+#define S1 12
+#define S2 9
+#define S3 10
+#define OUT 8
 
-int reading[3] = { 0, 0, 0 };  // to store red, green, blue reading
-#define NUMREADS 1000 // number of readings for data averaging
+int reading[3] = { 0, 0, 0 };           // to store red, green, blue reading
+
+#define NUMREADS 1000  // number of readings for data averaging
 
 void setup() {
   Serial.begin(9600);   // start the Serial Monitor
@@ -48,9 +55,9 @@ void loop() {
   Serial.print(",");
   Serial.println(reading[2]);  // output blue channel
   delay(500);
-  readColourN(reading, 1000);
+  readColourN(reading, 1000);  //
   Serial.print(NUMREADS);
-  Serial.print(" readings: ");
+  Serial.print(" readingN: ");
   Serial.print(reading[0]);  // output red channel
   Serial.print(",");
   Serial.print(reading[1]);  // output green channel
@@ -61,16 +68,18 @@ void loop() {
 
 // This is a simple function that takes only one reading to the global array reading[].
 void readColour() {
-  digitalWrite(S2, LOW);
+  digitalWrite(S2, LOW);  // S2,S3 are LOW for RED
   digitalWrite(S3, LOW);
-  delay(100);                       // wait for reading to stabilize
-  reading[0] = pulseIn(OUT, LOW);  //read red
-  delay(100);                       // wait for reading to stabilize
+  delay(100);                      // wait for reading to stabilize
+  reading[0] = pulseIn(OUT, LOW);  // read red
+  delay(100);                      // wait for reading to stabilize
+  digitalWrite(S2, HIGH);          // S2,S3 are HIGH for GREEN
   digitalWrite(S3, HIGH);
-  reading[2] = pulseIn(OUT, LOW);  //read blue
-  digitalWrite(S2, HIGH);
-  delay(100);                       // wait for reading to stabilize
   reading[1] = pulseIn(OUT, LOW);  //read green
+  digitalWrite(S2, LOW);           // S2=LOW,S3=HIGH for BLUE
+  digitalWrite(S3, HIGH);
+  delay(100);                      // wait for reading to stabilize
+  reading[2] = pulseIn(OUT, LOW);  //read blue
 }
 
 // This function takes an array as an input agument, and calculates the average 
