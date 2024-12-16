@@ -1,9 +1,9 @@
-/*
+/* SVDsensor.ino (for TCS3200 Colour Sensor)
  * Singular Value Decomposition coding based on:
  * William H. Press. Numerical recipes in C (2nd ed.): the art of scientific computing
  * Cambridge University Press New York, NY, USA ©1992 
  * 
- * TCS230 color recognition sensor 
+ * TCS3200 color recognition sensor 
  * Sensor connection pins to Arduino are shown in comments
  * SVD is used to fit colour intensities into an overall "wavelength", and then the wavelength ranges are bucketed to a colour at the end.
  *
