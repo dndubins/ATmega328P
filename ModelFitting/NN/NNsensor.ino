@@ -1,4 +1,4 @@
-/* NNsensor.ino
+/* NNsensor.ino (for TCS3200 Colour Sensor)
  * This sketch provides a serial menu, where you can train a sensor using a neural network algorithm, and save it to EPROM memory.
  * This can be retreived and used later. The menu also provides a reading mode to use your trained network on new colours.
  *
@@ -7,7 +7,7 @@
  * All basic settings can be controlled via the Network Configuration
  * section.
  * See http://robotics.hobbizine.com/arduinoann.html for details.
- * TCS230 color recognition sensor 
+ * TCS3200 color recognition sensor 
  * Sensor connection pins to Arduino are shown in comments
  * Neural network code and algorithm adapted from: http://robotics.hobbizine.com/arduinoann.html
  * Sketch: David Dubins
