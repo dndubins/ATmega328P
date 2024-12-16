@@ -30,7 +30,7 @@
 #define S3 10
 #define OUT 8
 
-int reading[3] = { 0, 0, 0 };           // to store red, green, blue reading
+int reading[3] = { 0, 0, 0 };  // to store red, green, blue reading
 
 #define NUMREADS 1000  // number of readings for data averaging
 
@@ -55,7 +55,7 @@ void loop() {
   Serial.print(",");
   Serial.println(reading[2]);  // output blue channel
   delay(500);
-  readColourN(reading, 1000);  //
+  readColourN(reading, 1000);  // take n colour readings
   Serial.print(NUMREADS);
   Serial.print(" readingN: ");
   Serial.print(reading[0]);  // output red channel
@@ -68,7 +68,7 @@ void loop() {
 
 // This is a simple function that takes only one reading to the global array reading[].
 void readColour() {
-  digitalWrite(S2, LOW);  // S2,S3 are LOW for RED
+  digitalWrite(S2, LOW);           // S2,S3 are LOW for RED
   digitalWrite(S3, LOW);
   delay(100);                      // wait for reading to stabilize
   reading[0] = pulseIn(OUT, LOW);  // read red
@@ -79,10 +79,10 @@ void readColour() {
   digitalWrite(S2, LOW);           // S2=LOW,S3=HIGH for BLUE
   digitalWrite(S3, HIGH);
   delay(100);                      // wait for reading to stabilize
-  reading[2] = pulseIn(OUT, LOW);  //read blue
+  reading[2] = pulseIn(OUT, LOW);  // read blue
 }
 
-// This function takes an array as an input agument, and calculates the average 
+// This function takes an array as an input agument, and calculates the average
 // of n readings on each colour channel.
 void readColourN(int colourArr[3], int n) {  // arrays are always passed by value
   unsigned long thisRead[3] = { 0, 0, 0 };   // for data averaging
