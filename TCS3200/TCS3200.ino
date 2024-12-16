@@ -7,8 +7,7 @@
  * http://www.efymag.com/admin/issuepdf/RGB-Colour-Detection-Using-TCS3200_3-17.rar
  * There are three functions presented here:
  * readColour() gives you one raw reading from the TCS3200.
- * readColourN() gives you an average of N readings. Select your option to normalize inside
- * the function.
+ * readColourN() gives you an average of N readings.
  *
  * Connections:
  * TCS3200 - Arduino Uno
@@ -30,7 +29,7 @@
 #define S3 10
 #define OUT 8
 
-int reading[3] = { 0, 0, 0 };  // to store red, green, blue reading
+int reading[3] = { 0, 0, 0 };  // to store RED, GREEN, BLUE reading
 
 #define NUMREADS 1000  // number of readings for data averaging
 
@@ -42,27 +41,27 @@ void setup() {
   pinMode(S3, OUTPUT);
   pinMode(OUT, INPUT);     // set OUT pin to INPUT mode
   digitalWrite(S0, HIGH);  // set on LEDs on front to HIGH
-  digitalWrite(S1, HIGH);  // (setting these both low turns LEDs off)
+  digitalWrite(S1, HIGH);  // (setting S0 & S1 LOW turns LEDs off)
   Serial.println("R,G,B: ");
 }
 
 void loop() {
   Serial.print("One reading: ");
-  readColour();              // take one colour reading
-  Serial.print(reading[0]);  // output red channel
+  readColour();                // take one colour reading
+  Serial.print(reading[0]);    // output red channel
   Serial.print(",");
-  Serial.print(reading[1]);  // output green channel
+  Serial.print(reading[1]);    // output green channel
   Serial.print(",");
   Serial.println(reading[2]);  // output blue channel
   delay(500);
   readColourN(reading, 1000);  // take n colour readings
   Serial.print(NUMREADS);
-  Serial.print(" readingN: ");
-  Serial.print(reading[0]);  // output red channel
+  Serial.print(" readings: ");
+  Serial.print(reading[0]);    // output RED channel
   Serial.print(",");
-  Serial.print(reading[1]);  // output green channel
+  Serial.print(reading[1]);    // output GREEN channel
   Serial.print(",");
-  Serial.println(reading[2]);  // output blue channel
+  Serial.println(reading[2]);  // output BLUE channel
   delay(500);
 }
 
@@ -71,15 +70,15 @@ void readColour() {
   digitalWrite(S2, LOW);           // S2,S3 are LOW for RED
   digitalWrite(S3, LOW);
   delay(100);                      // wait for reading to stabilize
-  reading[0] = pulseIn(OUT, LOW);  // read red
+  reading[0] = pulseIn(OUT, LOW);  // read RED channel
   delay(100);                      // wait for reading to stabilize
   digitalWrite(S2, HIGH);          // S2,S3 are HIGH for GREEN
   digitalWrite(S3, HIGH);
-  reading[1] = pulseIn(OUT, LOW);  //read green
+  reading[1] = pulseIn(OUT, LOW);  // read GREEN channel
   digitalWrite(S2, LOW);           // S2=LOW,S3=HIGH for BLUE
   digitalWrite(S3, HIGH);
   delay(100);                      // wait for reading to stabilize
-  reading[2] = pulseIn(OUT, LOW);  // read blue
+  reading[2] = pulseIn(OUT, LOW);  // read BLUE channel
 }
 
 // This function takes an array as an input agument, and calculates the average
@@ -91,7 +90,7 @@ void readColourN(int colourArr[3], int n) {  // arrays are always passed by valu
     { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
     { LOW, HIGH }    // S2=LOW,S3=HIGH for BLUE
   };
-  for (int i = 0; i < 3; i++) {          //i=0: red, i=1: green, i=2: blue
+  for (int i = 0; i < 3; i++) {          //i=0:RED, i=1:GREEN, i=2:BLUE
     digitalWrite(S2, pinStates[i][0]);   // set S2 to correct pin state
     digitalWrite(S3, pinStates[i][1]);   // set S3 to correct pin state
     thisRead[i] = 0;                     //initialize colour
@@ -100,6 +99,6 @@ void readColourN(int colourArr[3], int n) {  // arrays are always passed by valu
       thisRead[i] += pulseIn(OUT, LOW);  //read colour (iterative mean)
     }
     thisRead[i] /= n;            // report the average
-    colourArr[i] = thisRead[i];  //write back to colourArr
+    colourArr[i] = thisRead[i];  //write values back to colourArr
   }
 }
