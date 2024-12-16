@@ -195,7 +195,7 @@ void solveNN() {  // neural network fitting routine
     RandomizedIndex[p] = p;
   }
 
-  /******************************************************************
+/******************************************************************
 * Initialize HiddenWeights and ChangeHiddenWeights 
 ******************************************************************/
   for (int i = 0; i < HiddenNodes; i++) {
@@ -206,7 +206,7 @@ void solveNN() {  // neural network fitting routine
     }
   }
 
-  /******************************************************************
+/******************************************************************
 * Initialize OutputWeights and ChangeOutputWeights
 ******************************************************************/
   for (int i = 0; i < OutputNodes; i++) {
@@ -218,12 +218,12 @@ void solveNN() {  // neural network fitting routine
   }
   Serial.println(F("Initial/Untrained Outputs: "));
   toTerminal();
-  /******************************************************************
+/******************************************************************
 * Begin training 
 ******************************************************************/
   for (TrainingCycle = 1; TrainingCycle < 2147483647; TrainingCycle++) {
 
-    /******************************************************************
+/******************************************************************
 * Randomize order of training patterns
 ******************************************************************/
     for (p = 0; p < PatternCount; p++) {
@@ -234,13 +234,13 @@ void solveNN() {  // neural network fitting routine
     }
     Error = 0.0;
 
-    /******************************************************************
+/******************************************************************
 * Cycle through each training pattern in the randomized order
 ******************************************************************/
     for (int q = 0; q < PatternCount; q++) {
       p = RandomizedIndex[q];
 
-      /******************************************************************
+/******************************************************************
 * Compute hidden layer activations
 ******************************************************************/
       for (int i = 0; i < HiddenNodes; i++) {
@@ -251,7 +251,7 @@ void solveNN() {  // neural network fitting routine
         Hidden[i] = 1.0 / (1.0 + exp(-Accum));
       }
 
-      /******************************************************************
+/******************************************************************
 * Compute output layer activations and calculate errors
 ******************************************************************/
       for (int i = 0; i < OutputNodes; i++) {
@@ -264,7 +264,7 @@ void solveNN() {  // neural network fitting routine
         Error += 0.5 * (Target[p][i] - Output[i]) * (Target[p][i] - Output[i]);
       }
 
-      /******************************************************************
+/******************************************************************
 * Backpropagate errors to hidden layer
 ******************************************************************/
       for (int i = 0; i < HiddenNodes; i++) {
@@ -276,7 +276,7 @@ void solveNN() {  // neural network fitting routine
       }
 
 
-      /******************************************************************
+/******************************************************************
 * Update Inner-->Hidden Weights
 ******************************************************************/
       for (int i = 0; i < HiddenNodes; i++) {
@@ -288,7 +288,7 @@ void solveNN() {  // neural network fitting routine
         }
       }
 
-      /******************************************************************
+/******************************************************************
 * Update Hidden-->Output Weights
 ******************************************************************/
       for (int i = 0; i < OutputNodes; i++) {
@@ -301,7 +301,7 @@ void solveNN() {  // neural network fitting routine
       }
     }
 
-    /******************************************************************
+/******************************************************************
 * Every 1000 cycles send data to terminal for display
 ******************************************************************/
     ReportEvery1000 = ReportEvery1000 - 1;
@@ -320,7 +320,7 @@ void solveNN() {  // neural network fitting routine
       }
     }
 
-    /******************************************************************
+/******************************************************************
 * If error rate is less than pre-determined threshold then end
 ******************************************************************/
     if (Error < Success) break;
@@ -333,7 +333,7 @@ void solveNN() {  // neural network fitting routine
   Serial.println(Error, 5);
   toTerminal();
 
-  /******************************************************************
+/******************************************************************
 * Send HiddenWeights and OutputWeights to Serial
 ******************************************************************/
   Serial.println();
@@ -374,7 +374,7 @@ void toTerminal() {
       Serial.print(Target[p][i], DEC);
       Serial.print(F(" "));
     }
-    /******************************************************************
+/******************************************************************
 * Compute hidden layer activations
 ******************************************************************/
     for (int i = 0; i < HiddenNodes; i++) {
@@ -385,7 +385,7 @@ void toTerminal() {
       Hidden[i] = 1.0 / (1.0 + exp(-Accum));
     }
 
-    /******************************************************************
+/******************************************************************
 * Compute output layer activations and calculate errors
 ******************************************************************/
     for (int i = 0; i < OutputNodes; i++) {
@@ -409,7 +409,8 @@ void useNN(float R, float G, float B) {  // use NN hidden and output weights to 
   measuredInput[0] = R;
   measuredInput[1] = G;
   measuredInput[2] = B;
-  /******************************************************************
+  
+/******************************************************************
 * Compute hidden layer activations
 ******************************************************************/
   for (int i = 0; i < HiddenNodes; i++) {
@@ -420,7 +421,7 @@ void useNN(float R, float G, float B) {  // use NN hidden and output weights to 
     Hidden[i] = 1.0 / (1.0 + exp(-Accum));
   }
 
-  /******************************************************************
+/******************************************************************
 * Compute output layer activations and calculate errors
 ******************************************************************/
   for (int i = 0; i < OutputNodes; i++) {
@@ -442,22 +443,21 @@ void readColourN(float colourArr[3], int n) {  // arrays are always passed by va
     { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
     { LOW, HIGH }    // S2=LOW,S3=HIGH for BLUE
   };
-  for (int i = 0; i < 3; i++) {          //i=0: red, i=1: green, i=2: blue
+  for (int i = 0; i < 3; i++) {          // i=0: red, i=1: green, i=2: blue
     digitalWrite(S2, pinStates[i][0]);   // set S2 to correct pin state
     digitalWrite(S3, pinStates[i][1]);   // set S3 to correct pin state
-    thisRead[i] = 0;                     //initialize colour
+    thisRead[i] = 0;                     // initialize colour
     delay(100);                          // wait for reading to stabilize
     for (int j = 0; j < n; j++) {        // collect n readings on channel i
-      thisRead[i] += pulseIn(OUT, LOW);  //read colour (iterative mean)
+      thisRead[i] += pulseIn(OUT, LOW);  // read colour (iterative mean)
     }
     thisRead[i] /= n;            // report the average
     colourArr[i] = (float)thisRead[i];  //write back to colourArr
     if(thisRead[i]>maxRead)maxRead=thisRead[i]; // find maximum intensity
   }
   // normalize to highest intensity:
-  for (int i = 0; i < 3; i++) {          //i=0: red, i=1: green, i=2: blue
-    colourArr[i]=colourArr[i]/(float)maxRead; // Normalize here. Divide by highest reading.
-    //colourArr[i]=((float)maxRead-corlourArr[i])/(float)maxRead; // Normalize here. Convert to % colour.
+  for (int i = 0; i < 3; i++) {          // i=0: red, i=1: green, i=2: blue
+    colourArr[i]=colourArr[i]/(float)maxRead; // Normalize here for NN routine. Divide by highest reading.
   }
 }
 
