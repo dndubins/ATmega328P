@@ -487,5 +487,5 @@ void printMenu() {  // user menu
   Serial.println(F("h: train neural network with historical values"));
   Serial.println(F("t: train neural network with new values"));
 
-  Serial.println("Enter choice: ");
+  Serial.println(F("Enter choice: "));
 }
