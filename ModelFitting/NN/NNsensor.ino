@@ -449,7 +449,7 @@ void readColourN(float colourArr[3], int n) {  // arrays are always passed by va
     thisRead[i] = 0;                     // initialize colour
     delay(100);                          // wait for reading to stabilize
     for (int j = 0; j < n; j++) {        // collect n readings on channel i
-      thisRead[i] += pulseIn(OUT, LOW);  // read colour (iterative mean)
+      thisRead[i] += pulseIn(OUT, LOW);  // read colour
     }
     thisRead[i] /= n;            // report the average
     colourArr[i] = (float)thisRead[i];  //write back to colourArr
