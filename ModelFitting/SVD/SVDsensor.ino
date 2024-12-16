@@ -9,18 +9,19 @@
  *
  * Author of this sketch: David Dubins
  * Date: 6-Feb-19
- * Last updated: 13-Dec-24
+ * Last updated: 16-Dec-24
  * 
+ * Connections:
  * TCS3200 - Arduino Uno
  * ---------------------
  *  VCC - 5V
- *  GND - GND
- *  s0  - 8
- *  s1  - 9
- *  s2  - 12
- *  s3  - 11
- *  OUT - 10
+ *  OUT - 8
+ *  S2  - 9
+ *  S3  - 10
+ *  S0  - 11
+ *  S1  - 12
  *  OE  - GND
+ *  GND - GND
  */
 
 #include <EEPROM.h>    // for saving SVD matrix
@@ -32,11 +33,11 @@ const int MP = 14;  // total number of experimental observations in the system
 const int NP = 4;   // number of parameters (# columns + intercept)
 
 // Colour sensor module pins and setup
-#define S0 8
-#define S1 9
-#define S2 12
-#define S3 11
-#define OUT 10
+#define S0 11
+#define S1 12
+#define S2 9
+#define S3 10
+#define OUT 8
 int reading[3] = { 0, 0, 0 };  // to store red, green, blue reading
 
 struct SVDweights {
