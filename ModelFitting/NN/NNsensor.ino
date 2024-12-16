@@ -18,13 +18,13 @@
  * TCS3200 - Arduino Uno
  * ---------------------
  *  VCC - 5V
- *  GND - GND
- *  s0  - 8
- *  s1  - 9
- *  s2  - 12
- *  s3  - 11
- *  OUT - 10
+ *  OUT - 8
+ *  S2  - 9
+ *  S3  - 10
+ *  S0  - 11
+ *  S1  - 12
  *  OE  - GND
+ *  GND - GND
  */
 
 #include <EEPROM.h>    // for saving AI matrix
@@ -33,12 +33,12 @@
 // Global Network Configuration Variables
 const int InputNodes = 3;   // The number of input neurons (can be sensor readings, <=7 for Arduino)
 const int HiddenNodes = 8;  // The number of hidden neurons (> # output neurons, <=8 for Arduino)
-const int OutputNodes = 5;  // The number of output neurons (<=4 for Arduino)
+const int OutputNodes = 6;  // The number of output neurons (<=4 for Arduino)
                             // Note: Scroll down and adjust sizes of PatternCount, Input, and Target matrices
 float Hidden[HiddenNodes];
 float Output[OutputNodes];
 float Accum;
-const char* TargetNames[OutputNodes] = { "red", "yellow", "green", "blue", "purple" };  // titles to match training set
+const char* TargetNames[OutputNodes] = { "red", "orange", "yellow", "green", "blue", "purple" };  // titles to match training set
 
 struct NNweights {
   char name[10];
@@ -47,12 +47,12 @@ struct NNweights {
 } NN;
 
 // Colour sensor module pins and setup
-#define S0 8
-#define S1 9
-#define S2 12
-#define S3 11
-#define OUT 10
-int reading[3] = { 0, 0, 0 };  // to store red, green, blue reading
+#define S0 11
+#define S1 12
+#define S2 9
+#define S3 10
+#define OUT 8
+float reading[3] = { 0.0, 0.0, 0.0 };  // to store red, green, blue reading
 
 char choice = '\0';  // For serial menu. Initialize choice with NULL.
 
@@ -62,7 +62,7 @@ char choice = '\0';  // For serial menu. Initialize choice with NULL.
  * Network Configuration - customized per network 
  ******************************************************************/
 
-const int PatternCount = 15;         // The number of training items (or rows) in the truth table
+const int PatternCount = 18;         // The number of training items (or rows) in the truth table
 const float LearningRate = 0.3;      // Adjusts how much of the error is actually backpropagated. (lower = slower, less chance for oscillations)
 const float Momentum = 0.9;          // Adjusts how much the results of the previous iteration affect the current iteration. (choose a value between 0 and 1)
 const float InitialWeightMax = 0.5;  // Sets the maximum starting value for weights. (0.5 sets initial weights between -0.5 and 0.5.)
@@ -72,39 +72,45 @@ const float Success = 0.01;          // The threshold for error at which the net
 
 // For inputting training set manually:
 float Input[PatternCount][InputNodes] = {
-  { 0.11, 0.45, 0.41 },  // red
-  { 0.09, 0.38, 0.35 },  // red
-  { 0.09, 0.39, 0.35 },  // red
-  { 0.11, 0.19, 0.30 },  // yellow
-  { 0.11, 0.18, 0.29 },  // yellow
-  { 0.10, 0.14, 0.24 },  // yellow
-  { 0.16, 0.13, 0.20 },  // green
-  { 0.18, 0.15, 0.21 },  // green
-  { 0.18, 0.15, 0.22 },  // green
-  { 0.26, 0.21, 0.16 },  // blue
-  { 0.25, 0.21, 0.15 },  // blue
-  { 0.24, 0.21, 0.14 },  // blue
-  { 0.27, 0.44, 0.25 },  // purple
-  { 0.24, 0.38, 0.22 },  // purple
-  { 0.20, 0.36, 0.19 }   // purple
+  { 0.224, 1.000, 0.816 },  // red
+  { 0.234, 1.000, 0.809 },  // red
+  { 0.231, 1.000, 0.808 },  // red
+  { 0.278, 0.889, 1.000 },  // orange
+  { 0.281, 0.844, 1.000 },  // orange
+  { 0.251, 0.856, 1.000 },  // orange
+  { 0.357, 0.571, 1.000 },  // yellow
+  { 0.333, 0.593, 1.000 },  // yellow
+  { 0.385, 0.583, 1.000 },  // yellow
+  { 1.000, 0.630, 0.778 },  // green
+  { 1.000, 0.640, 0.840 },  // green
+  { 1.000, 0.625, 0.875 },  // green
+  { 1.000, 0.600, 0.367 },  // blue
+  { 1.000, 0.667, 0.417 },  // blue
+  { 1.000, 0.600, 0.367 },  // blue
+  { 0.559, 1.000, 0.471 },  // purple
+  { 0.545, 1.000, 0.455 },  // purple
+  { 0.556, 1.000, 0.472 }   // purple
 };
 
 const byte Target[PatternCount][OutputNodes] = {
-  { 1, 0, 0, 0, 0 },  //red
-  { 1, 0, 0, 0, 0 },
-  { 1, 0, 0, 0, 0 },
-  { 0, 1, 0, 0, 0 },  //yellow
-  { 0, 1, 0, 0, 0 },
-  { 0, 1, 0, 0, 0 },
-  { 0, 0, 1, 0, 0 },  //green
-  { 0, 0, 1, 0, 0 },
-  { 0, 0, 1, 0, 0 },
-  { 0, 0, 0, 1, 0 },  //blue
-  { 0, 0, 0, 1, 0 },
-  { 0, 0, 0, 1, 0 },
-  { 0, 0, 0, 0, 1 },  //purple
-  { 0, 0, 0, 0, 1 },
-  { 0, 0, 0, 0, 1 }
+  { 1, 0, 0, 0, 0, 0 },  //red
+  { 1, 0, 0, 0, 0, 0 },
+  { 1, 0, 0, 0, 0, 0 },
+  { 0, 1, 0, 0, 0, 0 },  //orange
+  { 0, 1, 0, 0, 0, 0 },
+  { 0, 1, 0, 0, 0, 0 },
+  { 0, 0, 1, 0, 0, 0 },  //yellow
+  { 0, 0, 1, 0, 0, 0 },
+  { 0, 0, 1, 0, 0, 0 },
+  { 0, 0, 0, 1, 0, 0 },  //green
+  { 0, 0, 0, 1, 0, 0 },
+  { 0, 0, 0, 1, 0, 0 },
+  { 0, 0, 0, 0, 1, 0 },  //blue
+  { 0, 0, 0, 0, 1, 0 },
+  { 0, 0, 0, 0, 1, 0 },
+  { 0, 0, 0, 0, 0, 1 },  //purple
+  { 0, 0, 0, 0, 0, 1 },
+  { 0, 0, 0, 0, 0, 1 }
 };
 
 /******************************************************************
@@ -113,9 +119,9 @@ const byte Target[PatternCount][OutputNodes] = {
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("Loading weights form EEPROM.");
+  Serial.println(F("Loading weights form EEPROM."));
   EEPROM.get(0, NN);  // get weights from EEPROM
-  Serial.println("Weights loaded.");
+  Serial.println(F("Weights loaded."));
   pinMode(S0, OUTPUT);
   pinMode(S1, OUTPUT);
   pinMode(S2, OUTPUT);
@@ -130,7 +136,7 @@ void loop() {
   if (Serial.available()) {
     choice = Serial.read();
   } else if (choice == 'r') {  // what happens with s
-    Serial.println("\nReading sample:");
+    Serial.println(F("\nReading sample:"));
     readSample();
     choice = '\0';  //erase choice
     printMenu();    //reprint user menu
@@ -145,20 +151,27 @@ void loop() {
         choice = Serial.read();
         readColourN(reading, NUMREADS);  // read sensor
         //Serial.println("Reading: " + (String)reading[0] + "," + (String)reading[1] + "," + (String)reading[2]);
-        Input[j + (3 * i)][0] = (float)reading[0] / 100.0;  //red
-        Input[j + (3 * i)][1] = (float)reading[1] / 100.0;  //green
-        Input[j + (3 * i)][2] = (float)reading[2] / 100.0;  //blue
+        Input[j + (3 * i)][0] = (float)reading[0];  //red
+        Input[j + (3 * i)][1] = (float)reading[1];  //green
+        Input[j + (3 * i)][2] = (float)reading[2];  //blue
         Serial.println("Reading: " + (String)Input[j + (3 * i)][0] + "," + (String)Input[j + (3 * i)][1] + "," + (String)Input[j + (3 * i)][2]);
       }
     }
     solveNN();
-    Serial.println("Saving weights to EEPROM.");
+    Serial.println(F("Saving weights to EEPROM."));
     EEPROM.put(0, NN);  // write weights to EEPROM
-    Serial.println("Weights saved.");
+    Serial.println(F("Weights saved."));
+    choice = '\0';  //erase choice
+    printMenu();    //reprint user menu
+  } else if (choice == 'h') {
+    solveNN();
+    Serial.println(F("Saving weights to EEPROM."));
+    EEPROM.put(0, NN);  // write weights to EEPROM
+    Serial.println(F("Weights saved."));
     choice = '\0';  //erase choice
     printMenu();    //reprint user menu
   } else if (choice != '\0') {
-    Serial.println("\nInvalid option.");
+    Serial.println(F("\nInvalid option."));
     choice = '\0';  //erase choice
     printMenu();    //reprint user menu
   }
@@ -203,7 +216,7 @@ void solveNN() {  // neural network fitting routine
       NN.OutputWeights[j][i] = 2.0 * (Rando - 0.5) * InitialWeightMax;
     }
   }
-  Serial.println("Initial/Untrained Outputs: ");
+  Serial.println(F("Initial/Untrained Outputs: "));
   toTerminal();
   /******************************************************************
 * Begin training 
@@ -295,9 +308,9 @@ void solveNN() {  // neural network fitting routine
     if (ReportEvery1000 == 0) {
       Serial.println();
       Serial.println();
-      Serial.print("TrainingCycle: ");
+      Serial.print(F("TrainingCycle: "));
       Serial.print(TrainingCycle);
-      Serial.print("  Error = ");
+      Serial.print(F("  Error = "));
       Serial.println(Error, 5);
       toTerminal();
       if (TrainingCycle == 1) {
@@ -314,9 +327,9 @@ void solveNN() {  // neural network fitting routine
   }
   Serial.println();
   Serial.println();
-  Serial.print("TrainingCycle: ");
+  Serial.print(F("TrainingCycle: "));
   Serial.print(TrainingCycle);
-  Serial.print("  Error = ");
+  Serial.print(F("  Error = "));
   Serial.println(Error, 5);
   toTerminal();
 
@@ -324,42 +337,42 @@ void solveNN() {  // neural network fitting routine
 * Send HiddenWeights and OutputWeights to Serial
 ******************************************************************/
   Serial.println();
-  Serial.println("  HiddenWeights: ");
+  Serial.println(F("  HiddenWeights: "));
   for (int j = 0; j <= InputNodes; j++) {
     for (int i = 0; i < HiddenNodes; i++) {
       Serial.print(NN.HiddenWeights[j][i], DEC);
-      Serial.print(", ");
+      Serial.print(F(", "));
     }
     Serial.println("");
   }
   Serial.println();
-  Serial.println("  OutputWeights: ");
+  Serial.println(F("  OutputWeights: "));
   for (int j = 0; j <= HiddenNodes; j++) {
     for (int i = 0; i < OutputNodes; i++) {
       Serial.print(NN.OutputWeights[j][i], DEC);
-      Serial.print(", ");
+      Serial.print(F(", "));
     }
     Serial.println("");
   }
-  Serial.println("\n\nTraining Set Solved! ");
-  Serial.println("--------\n\n");
+  Serial.println(F("\n\nTraining Set Solved! "));
+  Serial.println(F("--------\n\n"));
   ReportEvery1000 = 1;
 }
 
 void toTerminal() {
   for (int p = 0; p < PatternCount; p++) {
     Serial.println();
-    Serial.print("  Training Pattern: ");
+    Serial.print(F("  Training Pattern: "));
     Serial.println(p);
-    Serial.print("  Input ");
+    Serial.print(F("  Input "));
     for (int i = 0; i < InputNodes; i++) {
       Serial.print(Input[p][i], DEC);
-      Serial.print(" ");
+      Serial.print(F(" "));
     }
-    Serial.print("  Target ");
+    Serial.print(F("  Target "));
     for (int i = 0; i < OutputNodes; i++) {
       Serial.print(Target[p][i], DEC);
-      Serial.print(" ");
+      Serial.print(F(" "));
     }
     /******************************************************************
 * Compute hidden layer activations
@@ -382,20 +395,20 @@ void toTerminal() {
       }
       Output[i] = 1.0 / (1.0 + exp(-Accum));
     }
-    Serial.print("  Output ");
+    Serial.print(F("  Output "));
     for (int i = 0; i < OutputNodes; i++) {
       Serial.print(Output[i], 5);
-      Serial.print(" ");
+      Serial.print(F(" "));
     }
   }
-  Serial.println("\nSolving neural network. Please wait.");
+  Serial.println(F("\nSolving neural network. Please wait."));
 }
 
-void useNN(int R, int G, int B) {  // use NN hidden and output weights to compute outcome
+void useNN(float R, float G, float B) {  // use NN hidden and output weights to compute outcome
   float measuredInput[3];
-  measuredInput[0] = R / 100.0;
-  measuredInput[1] = G / 100.0;
-  measuredInput[2] = B / 100.0;
+  measuredInput[0] = R;
+  measuredInput[1] = G;
+  measuredInput[2] = B;
   /******************************************************************
 * Compute hidden layer activations
 ******************************************************************/
@@ -421,23 +434,30 @@ void useNN(int R, int G, int B) {  // use NN hidden and output weights to comput
 
 // This function takes an array as an input agument, and calculates the average
 // of n readings on each colour channel.
-void readColourN(int colourArr[3], int n) {  // arrays are always passed by value
+void readColourN(float colourArr[3], int n) {  // arrays are always passed by value
   unsigned long thisRead[3] = { 0, 0, 0 };   // for data averaging
+  int maxRead = 0;  // maximum reading (for normalizing the colour signal to the highest intensity)
   bool pinStates[3][2] = {
     { LOW, LOW },    // S2,S3 are LOW for RED
     { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
     { LOW, HIGH }    // S2=LOW,S3=HIGH for BLUE
   };
-  for (int i = 0; i < 3; i++) {          // i=0: red, i=1: green, i=2: blue
+  for (int i = 0; i < 3; i++) {          //i=0: red, i=1: green, i=2: blue
     digitalWrite(S2, pinStates[i][0]);   // set S2 to correct pin state
     digitalWrite(S3, pinStates[i][1]);   // set S3 to correct pin state
-    thisRead[i] = 0;                     // initialize colour
+    thisRead[i] = 0;                     //initialize colour
     delay(100);                          // wait for reading to stabilize
     for (int j = 0; j < n; j++) {        // collect n readings on channel i
-      thisRead[i] += pulseIn(OUT, LOW);  // read colour (iterative mean)
+      thisRead[i] += pulseIn(OUT, LOW);  //read colour (iterative mean)
     }
     thisRead[i] /= n;            // report the average
-    colourArr[i] = thisRead[i];  // write back to colourArr
+    colourArr[i] = (float)thisRead[i];  //write back to colourArr
+    if(thisRead[i]>maxRead)maxRead=thisRead[i]; // find maximum intensity
+  }
+  // normalize to highest intensity:
+  for (int i = 0; i < 3; i++) {          //i=0: red, i=1: green, i=2: blue
+    colourArr[i]=colourArr[i]/(float)maxRead; // Normalize here. Divide by highest reading.
+    //colourArr[i]=((float)maxRead-corlourArr[i])/(float)maxRead; // Normalize here. Convert to % colour.
   }
 }
 
@@ -453,7 +473,7 @@ void readSample() {                // take one reading and apply neural network 
       maxC = Output[i];
       maxIdx = i;
     }
-    Serial.print(" ");
+    Serial.print(F(" "));
   }
   if (maxC > 0.8) {
     Serial.print(" <--- " + (String)TargetNames[maxIdx] + " detected");
@@ -462,8 +482,10 @@ void readSample() {                // take one reading and apply neural network 
 }
 
 void printMenu() {  // user menu
-  Serial.println("r: Read one sample");
-  Serial.println("c: Continuous reads");
-  Serial.println("t: train neural network with new values");
+  Serial.println(F("r: Read one sample"));
+  Serial.println(F("c: Continuous reads"));
+  Serial.println(F("h: train neural network with historical values"));
+  Serial.println(F("t: train neural network with new values"));
+
   Serial.println("Enter choice: ");
 }
