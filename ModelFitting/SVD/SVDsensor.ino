@@ -550,22 +550,23 @@ float useSVD(int R, int G, int B) {  // use SVD model to solve for wavelength
 // This function takes an array as an input agument, and calculates the average
 // of n readings on each colour channel.
 void readColourN(int colourArr[3], int n) {  // arrays are always passed by value
-  unsigned long thisRead[3] = { 0, 0, 0 };   // for data averaging
+#define TIMEOUT 1000                           // for timeout (in microseconds) on reading a colour
+  unsigned long thisRead[3] = { 0, 0, 0 };     // for data averaging
   bool pinStates[3][2] = {
     { LOW, LOW },    // S2,S3 are LOW for RED
     { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
     { LOW, HIGH }    // S2=LOW,S3=HIGH for BLUE
   };
-  for (int i = 0; i < 3; i++) {          // i=0: red, i=1: green, i=2: blue
-    digitalWrite(S2, pinStates[i][0]);   // set S2 to correct pin state
-    digitalWrite(S3, pinStates[i][1]);   // set S3 to correct pin state
-    thisRead[i] = 0;                     // initialize colour
-    delay(100);                          // wait for reading to stabilize
-    for (int j = 0; j < n; j++) {        // collect n readings on channel i
-      thisRead[i] += pulseIn(OUT, LOW);  // read colour
+  for (int i = 0; i < 3; i++) {                   // i=0: red, i=1: green, i=2: blue
+    digitalWrite(S2, pinStates[i][0]);            // set S2 to correct pin state
+    digitalWrite(S3, pinStates[i][1]);            // set S3 to correct pin state
+    thisRead[i] = 0;                              // initialize colour
+    delay(100);                                   // wait for reading to stabilize
+    for (int j = 0; j < n; j++) {                 // collect n readings on channel i
+      thisRead[i] += pulseIn(OUT, LOW, TIMEOUT);  // read colour
     }
-    thisRead[i] /= n;            // report the average
-    colourArr[i] = thisRead[i];  // write back to colourArr
+    thisRead[i] /= n;                   // report the average
+    colourArr[i] = thisRead[i];  //write back to colourArr
   }
 }
 
