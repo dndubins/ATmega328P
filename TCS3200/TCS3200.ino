@@ -3,9 +3,8 @@
  * and it also has a function for multiple reads with data averaging.
  * Author: D. Dubins
  * Date: 16-Dec-24
- * Sketch adapted from: https://electronicsforu.com/electronics-projects/rgb-color-detector-tcs3200-sensor-module
+ * Sketch inspired from: https://electronicsforu.com/electronics-projects/rgb-color-detector-tcs3200-sensor-module
  * http://www.efymag.com/admin/issuepdf/RGB-Colour-Detection-Using-TCS3200_3-17.rar
- * There are three functions presented here:
  * readColour() gives you one raw reading from the TCS3200.
  * readColourN() gives you an average of N readings.
  *
@@ -83,7 +82,7 @@ void readColour() {
 
 // This function takes an array as an input agument, and calculates the average
 // of n readings on each colour channel.
-void readColourN(float colourArr[3], int n) {  // arrays are always passed by value
+void readColourN(int colourArr[3], int n) {  // arrays are always passed by value
 #define TIMEOUT 1000                           // for timeout (in microseconds) on reading a colour
   unsigned long thisRead[3] = { 0, 0, 0 };     // for data averaging
   bool pinStates[3][2] = {
@@ -100,6 +99,6 @@ void readColourN(float colourArr[3], int n) {  // arrays are always passed by va
       thisRead[i] += pulseIn(OUT, LOW, TIMEOUT);  // read colour
     }
     thisRead[i] /= n;                   // report the average
-    colourArr[i] = (float)thisRead[i];  //write back to colourArr
+    colourArr[i] = thisRead[i];  //write back to colourArr
   }
 }
