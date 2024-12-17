@@ -101,7 +101,7 @@ void readColourN(float colourArr[3], int n) {  // arrays are always passed by va
     thisRead[i] = 0;                     // initialize colour
     delay(100);                          // wait for reading to stabilize
     for (int j = 0; j < n; j++) {        // collect n readings on channel i
-      thisRead[i] += pulseIn(OUT, LOW);  // read colour (iterative mean)
+      thisRead[i] += pulseIn(OUT, LOW);  // read colour
     }
     thisRead[i] /= n;                                  // report the average
     colourArr[i] = (float)thisRead[i];                 //write back to colourArr
@@ -114,58 +114,67 @@ void readColourN(float colourArr[3], int n) {  // arrays are always passed by va
 }
 
 colour decodeColour(float colourArr[3]) {
-  if (colourArr[0] > 0.25) {                                                               // strong red channel
-    if (colourArr[1] < 0.15 && colourArr[2] < 0.25) return RED;                            // 0 green channel, weak blue channel
-    if (colourArr[1] >= 0.15 && colourArr[1] < 0.25 && colourArr[2] < 0.25) return ORANGE;  // weak green channel, 0 blue channel
-    if (colourArr[1] > 0.25 && colourArr[2] < 0.25) return YELLOW;                         // weak green channel, 0 blue channel
-    if (colourArr[1] < 0.25 && colourArr[2] > 0.25) return PURPLE;                         // 0 green channel, strong blue channel
+  const float RED_THRESHOLD = 0.25;
+  const float GREEN_THRESHOLD = 0.25;
+  const float BLUE_THRESHOLD = 0.25;
+  const float ORANGE_THRESHOLD = 0.15;
+  if (colourArr[0] > RED_THRESHOLD) {
+    if (colourArr[1] < ORANGE_THRESHOLD && colourArr[2] < BLUE_THRESHOLD) return RED;
+    if (colourArr[1] >= ORANGE_THRESHOLD && colourArr[1] < GREEN_THRESHOLD && colourArr[2] < BLUE_THRESHOLD) return ORANGE;
+    if (colourArr[1] > GREEN_THRESHOLD && colourArr[2] < BLUE_THRESHOLD) return YELLOW;
+    if (colourArr[1] < GREEN_THRESHOLD && colourArr[2] > BLUE_THRESHOLD) return PURPLE;
   }
-  if (colourArr[1] > 0.25) {                                       // strong green channel
-    if (colourArr[0] < 0.25 && colourArr[2] < 0.25) return GREEN;  // strong green channel
-    if (colourArr[0] < 0.25 && colourArr[2] > 0.25) return BLUE;   // strong blue channel
+  if (colourArr[1] > GREEN_THRESHOLD) {
+    if (colourArr[0] < RED_THRESHOLD && colourArr[2] < BLUE_THRESHOLD) return GREEN;
+    if (colourArr[0] < RED_THRESHOLD && colourArr[2] > BLUE_THRESHOLD) return BLUE;
   }
-  return NOT_DETECTED;  // if no colour was detected
+  if (colourArr[2] > BLUE_THRESHOLD){
+    if (colourArr[0] < RED_THRESHOLD && colourArr[1] < GREEN_THRESHOLD) return BLUE; // just in case (blue colour usually triggers green)
+  }
+  return NOT_DETECTED;
 }
 
 void lightLED(colour c) {
-  if (c == RED) {
-    Serial.println("RED detected.");
-    digitalWrite(REDPIN, HIGH);
-    digitalWrite(GREENPIN, LOW);
-    digitalWrite(BLUEPIN, LOW);
-  }
-  if (c == ORANGE) {
-    Serial.println("ORANGE detected.");
-    digitalWrite(REDPIN, HIGH);
-    analogWrite(GREENPIN, 50);  //less green for orange light
-    digitalWrite(BLUEPIN, LOW);
-  }
-  if (c == YELLOW) {
-    Serial.println("YELLOW detected.");
-    digitalWrite(REDPIN, HIGH);
-    digitalWrite(GREENPIN, HIGH);
-    digitalWrite(BLUEPIN, LOW);
-  }
-  if (c == GREEN) {
-    Serial.println("GREEN detected.");
-    digitalWrite(REDPIN, LOW);
-    digitalWrite(GREENPIN, HIGH);
-    digitalWrite(BLUEPIN, LOW);
-  }
-  if (c == BLUE) {
-    Serial.println("BLUE detected.");
-    digitalWrite(REDPIN, LOW);
-    digitalWrite(GREENPIN, LOW);
-    digitalWrite(BLUEPIN, HIGH);
-  }
-  if (c == PURPLE) {
-    Serial.println("PURPLE detected.");
-    digitalWrite(REDPIN, HIGH);
-    digitalWrite(GREENPIN, LOW);
-    digitalWrite(BLUEPIN, HIGH);
-  }
-  if (c == NOT_DETECTED) {
-    Serial.println("No colour detected.");
+  switch (c) {
+    case RED:
+      Serial.println("RED detected.");
+      digitalWrite(REDPIN, HIGH);
+      digitalWrite(GREENPIN, LOW);
+      digitalWrite(BLUEPIN, LOW);
+      break;
+    case ORANGE:
+      Serial.println("ORANGE detected.");
+      digitalWrite(REDPIN, HIGH);
+      analogWrite(GREENPIN, 50);  // less green for orange light
+      digitalWrite(BLUEPIN, LOW);
+      break;
+    case YELLOW:
+      Serial.println("YELLOW detected.");
+      digitalWrite(REDPIN, HIGH);
+      digitalWrite(GREENPIN, HIGH);
+      digitalWrite(BLUEPIN, LOW);
+      break;
+    case GREEN:
+      Serial.println("GREEN detected.");
+      digitalWrite(REDPIN, LOW);
+      digitalWrite(GREENPIN, HIGH);
+      digitalWrite(BLUEPIN, LOW);
+      break;
+    case BLUE:
+      Serial.println("BLUE detected.");
+      digitalWrite(REDPIN, LOW);
+      digitalWrite(GREENPIN, LOW);
+      digitalWrite(BLUEPIN, HIGH);
+      break;
+    case PURPLE:
+      Serial.println("PURPLE detected.");
+      digitalWrite(REDPIN, HIGH);
+      digitalWrite(GREENPIN, LOW);
+      digitalWrite(BLUEPIN, HIGH);
+      break;
+    case NOT_DETECTED:
+      Serial.println("No colour detected.");
+      break;
   }
 }
 
