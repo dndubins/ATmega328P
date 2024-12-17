@@ -85,7 +85,7 @@ void loop() {
 // This function takes an array as an input agument, and calculates the average
 // of n readings on each colour channel.
 void readColourN(float colourArr[3], int n) {  // arrays are always passed by value
-#define TIMEOUT 2000                           // for timeout on reading a colour
+#define TIMEOUT 1000                           // for timeout (in microseconds) on reading a colour
   unsigned long thisRead[3] = { 0, 0, 0 };     // for data averaging
   int maxRead = 0;                             // maximum reading (for normalizing the colour signal to the highest intensity)
   bool pinStates[3][2] = {
