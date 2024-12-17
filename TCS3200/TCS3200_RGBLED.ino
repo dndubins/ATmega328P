@@ -16,12 +16,12 @@
  *  OE  - GND
  *  GND - GND
  *
- * RGB LED - Arduino Uno
- * ---------------------
- * Red - 1K - 5
- * Green - 220R - 6
- * Blue - 220R - 7
- * GND - GND
+ * RGB LED Module - Arduino Uno
+ * ---------------------------
+ * Red   - 5
+ * Green - 6
+ * Blue  - 4
+ * GND   - GND
 */
 
 // Colour sensor module pins and setup
