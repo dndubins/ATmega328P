@@ -24,8 +24,6 @@
  * GND   - GND
 */
 
-#define NUMREADS 100  // number of readings for data averaging
-
 // Colour sensor module pins and setup
 #define S0 11
 #define S1 12
@@ -38,6 +36,8 @@
 #define GREENPIN 6
 #define BLUEPIN 4
 
+// To hold readings
+#define NUMREADS 1000  // number of readings for data averaging
 float reading[3] = { 0, 0, 0 };  // to store RED, GREEN, BLUE reading
 
 enum colour {  // define enum Colour with members RED, ORANGE, YELLOW, GREEN, BLUE, VIOLET.
