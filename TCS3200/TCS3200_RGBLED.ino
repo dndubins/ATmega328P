@@ -116,7 +116,7 @@ void readColourN(float colourArr[3], int n) {  // arrays are always passed by va
 colour decodeColour(float colourArr[3]) {
   if (colourArr[0] > 0.25) {                                                               // strong red channel
     if (colourArr[1] < 0.15 && colourArr[2] < 0.25) return RED;                            // 0 green channel, weak blue channel
-    if (colourArr[1] >= 0.15 && colourArr[1] < 0.25 & colourArr[2] < 0.25) return ORANGE;  // weak green channel, 0 blue channel
+    if (colourArr[1] >= 0.15 && colourArr[1] < 0.25 && colourArr[2] < 0.25) return ORANGE;  // weak green channel, 0 blue channel
     if (colourArr[1] > 0.25 && colourArr[2] < 0.25) return YELLOW;                         // weak green channel, 0 blue channel
     if (colourArr[1] < 0.25 && colourArr[2] > 0.25) return PURPLE;                         // 0 green channel, strong blue channel
   }
