@@ -15,7 +15,6 @@ An important realization I made about this sensor is that once you set the colou
 void readColourN(float colourArr[3], int n) {  // arrays are always passed by value
 #define TIMEOUT 1000                           // for timeout (in microseconds) on reading a colour
   unsigned long thisRead[3] = { 0, 0, 0 };     // for data averaging
-  int maxRead = 0;                             // maximum reading (for normalizing the colour signal to the highest intensity)
   bool pinStates[3][2] = {
     { LOW, LOW },    // S2,S3 are LOW for RED
     { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
