@@ -1,18 +1,15 @@
-/* NNsensor.ino for TCS3200
+/* NNsensor.ino for TCS3200 Colour Sensor
  * This sketch provides a serial menu, where you can train a sensor using a neural network algorithm, and save it to EPROM memory.
  * This can be retreived and used later. The menu also provides a reading mode to use your trained network on new colours.
  *
  * Neural network coding based on:
  * ArduinoANN - An artificial neural network for the Arduino
- * All basic settings can be controlled via the Network Configuration
+ * All basic settings for the neural network can be controlled via the Network Configuration
  * section.
- * See http://robotics.hobbizine.com/arduinoann.html for details.
- * TCS3200 color recognition sensor 
- * Sensor connection pins to Arduino are shown in comments
- * Neural network code and algorithm adapted from: http://robotics.hobbizine.com/arduinoann.html
+ * See http://robotics.hobbizine.com/arduinoann.html for more details.
  * Sketch: David Dubins
  * Date: 3-Feb-19
- * Last Updated: 16-Dec-24
+ * Last Updated: 17-Dec-24
  *
  * Connections:
  * TCS3200 - Arduino Uno
@@ -151,9 +148,9 @@ void loop() {
         choice = Serial.read();
         readColourN(reading, NUMREADS);  // read sensor
         //Serial.println("Reading: " + (String)reading[0] + "," + (String)reading[1] + "," + (String)reading[2]);
-        Input[j + (3 * i)][0] = (float)reading[0];  //red
-        Input[j + (3 * i)][1] = (float)reading[1];  //green
-        Input[j + (3 * i)][2] = (float)reading[2];  //blue
+        Input[j + (3 * i)][0] = reading[0];  //red
+        Input[j + (3 * i)][1] = reading[1];  //green
+        Input[j + (3 * i)][2] = reading[2];  //blue
         Serial.println("Reading: " + (String)Input[j + (3 * i)][0] + "," + (String)Input[j + (3 * i)][1] + "," + (String)Input[j + (3 * i)][2]);
       }
     }
@@ -195,7 +192,7 @@ void solveNN() {  // neural network fitting routine
     RandomizedIndex[p] = p;
   }
 
-/******************************************************************
+  /******************************************************************
 * Initialize HiddenWeights and ChangeHiddenWeights 
 ******************************************************************/
   for (int i = 0; i < HiddenNodes; i++) {
@@ -206,7 +203,7 @@ void solveNN() {  // neural network fitting routine
     }
   }
 
-/******************************************************************
+  /******************************************************************
 * Initialize OutputWeights and ChangeOutputWeights
 ******************************************************************/
   for (int i = 0; i < OutputNodes; i++) {
@@ -218,12 +215,12 @@ void solveNN() {  // neural network fitting routine
   }
   Serial.println(F("Initial/Untrained Outputs: "));
   toTerminal();
-/******************************************************************
+  /******************************************************************
 * Begin training 
 ******************************************************************/
   for (TrainingCycle = 1; TrainingCycle < 2147483647; TrainingCycle++) {
 
-/******************************************************************
+    /******************************************************************
 * Randomize order of training patterns
 ******************************************************************/
     for (p = 0; p < PatternCount; p++) {
@@ -234,7 +231,7 @@ void solveNN() {  // neural network fitting routine
     }
     Error = 0.0;
 
-/******************************************************************
+    /******************************************************************
 * Cycle through each training pattern in the randomized order
 ******************************************************************/
     for (int q = 0; q < PatternCount; q++) {
@@ -301,7 +298,7 @@ void solveNN() {  // neural network fitting routine
       }
     }
 
-/******************************************************************
+    /******************************************************************
 * Every 1000 cycles send data to terminal for display
 ******************************************************************/
     ReportEvery1000 = ReportEvery1000 - 1;
@@ -320,7 +317,7 @@ void solveNN() {  // neural network fitting routine
       }
     }
 
-/******************************************************************
+    /******************************************************************
 * If error rate is less than pre-determined threshold then end
 ******************************************************************/
     if (Error < Success) break;
@@ -333,7 +330,7 @@ void solveNN() {  // neural network fitting routine
   Serial.println(Error, 5);
   toTerminal();
 
-/******************************************************************
+  /******************************************************************
 * Send HiddenWeights and OutputWeights to Serial
 ******************************************************************/
   Serial.println();
@@ -374,7 +371,7 @@ void toTerminal() {
       Serial.print(Target[p][i], DEC);
       Serial.print(F(" "));
     }
-/******************************************************************
+    /******************************************************************
 * Compute hidden layer activations
 ******************************************************************/
     for (int i = 0; i < HiddenNodes; i++) {
@@ -385,7 +382,7 @@ void toTerminal() {
       Hidden[i] = 1.0 / (1.0 + exp(-Accum));
     }
 
-/******************************************************************
+    /******************************************************************
 * Compute output layer activations and calculate errors
 ******************************************************************/
     for (int i = 0; i < OutputNodes; i++) {
@@ -409,8 +406,8 @@ void useNN(float R, float G, float B) {  // use NN hidden and output weights to 
   measuredInput[0] = R;
   measuredInput[1] = G;
   measuredInput[2] = B;
-  
-/******************************************************************
+
+  /******************************************************************
 * Compute hidden layer activations
 ******************************************************************/
   for (int i = 0; i < HiddenNodes; i++) {
@@ -421,7 +418,7 @@ void useNN(float R, float G, float B) {  // use NN hidden and output weights to 
     Hidden[i] = 1.0 / (1.0 + exp(-Accum));
   }
 
-/******************************************************************
+  /******************************************************************
 * Compute output layer activations and calculate errors
 ******************************************************************/
   for (int i = 0; i < OutputNodes; i++) {
@@ -435,29 +432,33 @@ void useNN(float R, float G, float B) {  // use NN hidden and output weights to 
 
 // This function takes an array as an input agument, and calculates the average
 // of n readings on each colour channel.
+// The function then normalizes the intensities to the highest number.
 void readColourN(float colourArr[3], int n) {  // arrays are always passed by value
-  unsigned long thisRead[3] = { 0, 0, 0 };   // for data averaging
-  int maxRead = 0;  // maximum reading (for normalizing the colour signal to the highest intensity)
+  unsigned long thisRead[3] = { 0, 0, 0 };     // for data averaging
+#define TIMEOUT 1000                           // for timeout (in microseconds) on reading a colour
+  int maxRead = 0;                             // maximum reading (for normalizing the colour signal to the highest intensity)
   bool pinStates[3][2] = {
     { LOW, LOW },    // S2,S3 are LOW for RED
     { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
     { LOW, HIGH }    // S2=LOW,S3=HIGH for BLUE
   };
-  for (int i = 0; i < 3; i++) {          // i=0: red, i=1: green, i=2: blue
-    digitalWrite(S2, pinStates[i][0]);   // set S2 to correct pin state
-    digitalWrite(S3, pinStates[i][1]);   // set S3 to correct pin state
-    thisRead[i] = 0;                     // initialize colour
-    delay(100);                          // wait for reading to stabilize
-    for (int j = 0; j < n; j++) {        // collect n readings on channel i
-      thisRead[i] += pulseIn(OUT, LOW);  // read colour
+  for (int i = 0; i < 3; i++) {                   // i=0: red, i=1: green, i=2: blue
+    digitalWrite(S2, pinStates[i][0]);            // set S2 to correct pin state
+    digitalWrite(S3, pinStates[i][1]);            // set S3 to correct pin state
+    thisRead[i] = 0;                              // initialize colour
+    delay(100);                                   // wait for reading to stabilize
+    for (int j = 0; j < n; j++) {                 // collect n readings on channel i
+      thisRead[i] += pulseIn(OUT, LOW, TIMEOUT);  // read colour
     }
-    thisRead[i] /= n;            // report the average
-    colourArr[i] = (float)thisRead[i];  //write back to colourArr
-    if(thisRead[i]>maxRead)maxRead=thisRead[i]; // find maximum intensity
+    thisRead[i] /= n;                                  // report the average
+    colourArr[i] = (float)thisRead[i];                 //write back to colourArr
+    if (thisRead[i] > maxRead) maxRead = thisRead[i];  // find maximum intensity
   }
   // normalize to highest intensity:
-  for (int i = 0; i < 3; i++) {          // i=0: red, i=1: green, i=2: blue
-    colourArr[i]=colourArr[i]/(float)maxRead; // Normalize here for NN routine. Divide by highest reading.
+  if (maxRead > 0) {                                 // protect against dividing by zero
+    for (int i = 0; i < 3; i++) {                    // i=0: red, i=1: green, i=2: blue
+      colourArr[i] = colourArr[i] / (float)maxRead;  // Normalize here for NN routine. Divide by highest reading.
+    }
   }
 }
 
