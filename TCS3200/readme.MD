@@ -1,4 +1,4 @@
-This script is a very simple read of the TCS3200 colour sensor.<p>
+TCS3200.ino is a very simple read of the TCS3200 colour sensor.<p>
 
 There are better sketches out there. This one just gives you the raw readings. If you would like to interpret colour, I was particularly proud of this neural network sketch:
 https://github.com/dndubins/ATmega328P/blob/main/ModelFitting/NN/NNsensor.ino<p>
@@ -32,6 +32,8 @@ void readColourN(int colourArr[3], int n) {  // arrays are always passed by valu
   }
 }
 ```
-This function takes an array as an input argument (remember, arrays in this context are call-by-value), and takes n readings *of each colour*. This speeds up a reading considerably since you should wait at least ~100msec before taking a colour reading after setting S2 and S3. But then you can take multiple readings, and take the average over that colour, rather than start all over with three separate readings.
+This function takes an array as an input argument (remember, arrays in this context are call-by-value), and takes n readings *of each colour*. This speeds up a reading considerably since you should wait at least ~100msec before taking a colour reading after setting S2 and S3. But then you can take multiple readings, and take the average over that colour, rather than start all over with three separate readings.<p>
 
-Also remember that a LOW reading on a channel means that there's a lot of that colour detected. I think my rookie mistake was looking at an RGB reading like  "11, 43, 39" and thinking there was no red in it. Nope, that's red. Think physics - you are filtering OUT that channel with a red filter. So if there's red light, it won't get to the sensor as well.
+Also remember that a LOW reading on a channel means that there's a lot of that colour detected. I think my rookie mistake was looking at an RGB reading like  "11, 43, 39" and thinking there was no red in it. Nope, that's red. Think physics - you are filtering OUT that channel with a red filter. So if there's red light, it won't get to the sensor as well. <p>
+
+You can crudely define ranges that "colours" can be identified. TCS3200_RGBLED.ino is my first use of enums. I normalized the RGB signal by taking the maximum reading value of the three channels (max of R,G,B), then calculating normalized signal = (max - signal)/max. This gives a value for each channel between 0 and 1. The number 0.25 serves as a useful cutoff of a "meaningful" signal. Orange and red are a bit more tricky difficult to resolve. Once the sketch decodes the colour, it lights up a little RGB module with the corresponding colour.
