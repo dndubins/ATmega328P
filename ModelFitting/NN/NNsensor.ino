@@ -7,7 +7,7 @@
  * All basic settings can be controlled via the Network Configuration
  * section.
  * See http://robotics.hobbizine.com/arduinoann.html for details.
- * TCS230 color recognition sensor 
+ * TCS3200 color recognition sensor 
  * Sensor connection pins to Arduino are shown in comments
  * Neural network code and algorithm adapted from: http://robotics.hobbizine.com/arduinoann.html
  * Sketch: David Dubins
