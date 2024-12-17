@@ -105,17 +105,16 @@ void readColourN(int colourArr[3], int n) {  // arrays are always passed by valu
   }
 }
 
-colour decodeColour(int colourArr[3]) {
+colour decodeColour(int colourArr[3]) {  // decodes an RGB sensor reading into colour buckets defined in the enum "colour".
   float maxRead = 0.0;
   float norm[3] = { 0.0, 0.0, 0.0 };  // to store RED, GREEN, BLUE reading
     // normalize to highest intensity:
   for (int i = 0; i < 3; i++) {
     if (colourArr[i] > maxRead) maxRead = (float)colourArr[i];  // find maximum intensity
   }
-  if (maxRead > 0) {                                                     // protect against dividing by zero
-    for (int i = 0; i < 3; i++) {                                        // i=0: red, i=1: green, i=2: blue
-      norm[i] = (maxRead - (float)colourArr[i]) / maxRead;  // Normalize here. Subtract from highest then divide by highest reading.
-    }
+  if(colourArr[0]==0 | colourArr[1]==0 | colourArr[2]==0)return NOT_DETECTED; // if any channel times out, return a null reading and don't normalize.
+  for (int i = 0; i < 3; i++) {                                        // i=0: red, i=1: green, i=2: blue
+    norm[i] = (maxRead - (float)colourArr[i]) / maxRead;  // Normalize here. Subtract from highest then divide by highest reading.
   }
   Serial.print("Normalized: ");
   Serial.print(norm[0]);  // output RED channel
@@ -142,6 +141,7 @@ colour decodeColour(int colourArr[3]) {
   }
   return NOT_DETECTED;
 }
+
 
 void lightLED(colour c) {
   switch (c) {
