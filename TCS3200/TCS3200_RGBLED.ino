@@ -24,6 +24,8 @@
  * GND   - GND
 */
 
+#define NUMREADS 100  // number of readings for data averaging
+
 // Colour sensor module pins and setup
 #define S0 11
 #define S1 12
@@ -49,8 +51,6 @@ enum colour {  // define enum Colour with members RED, ORANGE, YELLOW, GREEN, BL
 };
 
 colour thisColour = NOT_DETECTED;  // initialized thisColour as NOT_DETECTED
-
-#define NUMREADS 100  // number of readings for data averaging
 
 void setup() {
   Serial.begin(9600);   // start the Serial Monitor
