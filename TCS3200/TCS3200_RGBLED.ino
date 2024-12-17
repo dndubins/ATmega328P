@@ -62,7 +62,7 @@ void setup() {
   pinMode(REDPIN, OUTPUT);  // set LED pins to OUTPUT mode
   pinMode(GREENPIN, OUTPUT);
   pinMode(BLUEPIN, OUTPUT);
-  pinMode(7, OUTPUT);  // set up pin 5 as a GND
+  pinMode(7, OUTPUT);  // set up pin 7 as a GND from the RGB module
   digitalWrite(7, LOW);
   digitalWrite(S0, HIGH);  // set on LEDs on front to HIGH
   digitalWrite(S1, HIGH);  // (setting S0 & S1 LOW turns LEDs off)
