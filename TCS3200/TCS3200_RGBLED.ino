@@ -38,7 +38,7 @@
 
 // To hold readings
 #define NUMREADS 1000            // number of readings for data averaging
-float reading[3] = { 0, 0, 0 };  // to store RED, GREEN, BLUE reading
+int reading[3] = { 0, 0, 0 };  // to store RED, GREEN, BLUE reading
 
 enum colour {  // define enum Colour with members RED, ORANGE, YELLOW, GREEN, BLUE, VIOLET.
   RED,
@@ -84,10 +84,9 @@ void loop() {
 
 // This function takes an array as an input agument, and calculates the average
 // of n readings on each colour channel.
-void readColourN(float colourArr[3], int n) {  // arrays are always passed by value
+void readColourN(int colourArr[3], int n) {  // arrays are always passed by value
 #define TIMEOUT 1000                           // for timeout (in microseconds) on reading a colour
   unsigned long thisRead[3] = { 0, 0, 0 };     // for data averaging
-  int maxRead = 0;                             // maximum reading (for normalizing the colour signal to the highest intensity)
   bool pinStates[3][2] = {
     { LOW, LOW },    // S2,S3 are LOW for RED
     { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
@@ -102,20 +101,20 @@ void readColourN(float colourArr[3], int n) {  // arrays are always passed by va
       thisRead[i] += pulseIn(OUT, LOW, TIMEOUT);  // read colour
     }
     thisRead[i] /= n;                   // report the average
-    colourArr[i] = (float)thisRead[i];  //write back to colourArr
+    colourArr[i] = thisRead[i];  //write back to colourArr
   }
 }
 
-colour decodeColour(float colourArr[3]) {
-  int maxRead = 0;
+colour decodeColour(int colourArr[3]) {
+  float maxRead = 0.0;
   float norm[3] = { 0.0, 0.0, 0.0 };  // to store RED, GREEN, BLUE reading
     // normalize to highest intensity:
   for (int i = 0; i < 3; i++) {
-    if (colourArr[i] > maxRead) maxRead = colourArr[i];  // find maximum intensity
+    if (colourArr[i] > maxRead) maxRead = (float)colourArr[i];  // find maximum intensity
   }
   if (maxRead > 0) {                                                     // protect against dividing by zero
     for (int i = 0; i < 3; i++) {                                        // i=0: red, i=1: green, i=2: blue
-      norm[i] = ((float)maxRead - colourArr[i]) / (float)maxRead;  // Normalize here. Subtract from highest then divide by highest reading.
+      norm[i] = (maxRead - (float)colourArr[i]) / maxRead;  // Normalize here. Subtract from highest then divide by highest reading.
     }
   }
   Serial.print("Normalized: ");
