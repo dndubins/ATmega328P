@@ -117,7 +117,7 @@ colour decodeColour(float colourArr[3]) {
   const float RED_THRESHOLD = 0.25;
   const float GREEN_THRESHOLD = 0.25;
   const float BLUE_THRESHOLD = 0.25;
-  const float ORANGE_THRESHOLD = 0.15;
+  const float ORANGE_THRESHOLD = 0.10;
   if (colourArr[0] > RED_THRESHOLD) {
     if (colourArr[1] < ORANGE_THRESHOLD && colourArr[2] < BLUE_THRESHOLD) return RED;
     if (colourArr[1] >= ORANGE_THRESHOLD && colourArr[1] < GREEN_THRESHOLD && colourArr[2] < BLUE_THRESHOLD) return ORANGE;
