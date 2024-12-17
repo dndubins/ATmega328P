@@ -37,7 +37,7 @@
 #define BLUEPIN 4
 
 // To hold readings
-#define NUMREADS 1000  // number of readings for data averaging
+#define NUMREADS 1000            // number of readings for data averaging
 float reading[3] = { 0, 0, 0 };  // to store RED, GREEN, BLUE reading
 
 enum colour {  // define enum Colour with members RED, ORANGE, YELLOW, GREEN, BLUE, VIOLET.
@@ -78,16 +78,14 @@ void loop() {
   Serial.print(",");
   Serial.println(reading[2]);  // output BLUE channel
   thisColour = decodeColour(reading);
-  if (thisColour == NOT_DETECTED) {
-    flashRed(5);  // flash the red light 5X
-  } else {
-    lightLED(thisColour);
-  }
+  lightLED(thisColour);
+  if (thisColour == NOT_DETECTED) flashRed(5);  // flash the red light 5X
 }
 
 // This function takes an array as an input agument, and calculates the average
 // of n readings on each colour channel.
 void readColourN(float colourArr[3], int n) {  // arrays are always passed by value
+#define TIMEOUT 2000                           // for timeout on reading a colour
   unsigned long thisRead[3] = { 0, 0, 0 };     // for data averaging
   int maxRead = 0;                             // maximum reading (for normalizing the colour signal to the highest intensity)
   bool pinStates[3][2] = {
@@ -95,41 +93,53 @@ void readColourN(float colourArr[3], int n) {  // arrays are always passed by va
     { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
     { LOW, HIGH }    // S2=LOW,S3=HIGH for BLUE
   };
-  for (int i = 0; i < 3; i++) {          // i=0: red, i=1: green, i=2: blue
-    digitalWrite(S2, pinStates[i][0]);   // set S2 to correct pin state
-    digitalWrite(S3, pinStates[i][1]);   // set S3 to correct pin state
-    thisRead[i] = 0;                     // initialize colour
-    delay(100);                          // wait for reading to stabilize
-    for (int j = 0; j < n; j++) {        // collect n readings on channel i
-      thisRead[i] += pulseIn(OUT, LOW);  // read colour
+  for (int i = 0; i < 3; i++) {                   // i=0: red, i=1: green, i=2: blue
+    digitalWrite(S2, pinStates[i][0]);            // set S2 to correct pin state
+    digitalWrite(S3, pinStates[i][1]);            // set S3 to correct pin state
+    thisRead[i] = 0;                              // initialize colour
+    delay(100);                                   // wait for reading to stabilize
+    for (int j = 0; j < n; j++) {                 // collect n readings on channel i
+      thisRead[i] += pulseIn(OUT, LOW, TIMEOUT);  // read colour
     }
-    thisRead[i] /= n;                                  // report the average
-    colourArr[i] = (float)thisRead[i];                 //write back to colourArr
-    if (thisRead[i] > maxRead) maxRead = thisRead[i];  // find maximum intensity
-  }
-  // normalize to highest intensity:
-  for (int i = 0; i < 3; i++) {                                // i=0: red, i=1: green, i=2: blue
-    colourArr[i] = (maxRead - colourArr[i]) / (float)maxRead;  // Normalize here. Subtract from highest then divide by highest reading.
+    thisRead[i] /= n;                   // report the average
+    colourArr[i] = (float)thisRead[i];  //write back to colourArr
   }
 }
 
 colour decodeColour(float colourArr[3]) {
+  int maxRead = 0;
+  float norm[3] = { 0.0, 0.0, 0.0 };  // to store RED, GREEN, BLUE reading
+    // normalize to highest intensity:
+  for (int i = 0; i < 3; i++) {
+    if (colourArr[i] > maxRead) maxRead = colourArr[i];  // find maximum intensity
+  }
+  if (maxRead > 0) {                                                     // protect against dividing by zero
+    for (int i = 0; i < 3; i++) {                                        // i=0: red, i=1: green, i=2: blue
+      norm[i] = ((float)maxRead - colourArr[i]) / (float)maxRead;  // Normalize here. Subtract from highest then divide by highest reading.
+    }
+  }
+  Serial.print("Normalized: ");
+  Serial.print(norm[0]);  // output RED channel
+  Serial.print(",");
+  Serial.print(norm[1]);  // output GREEN channel
+  Serial.print(",");
+  Serial.println(norm[2]);  // output BLUE channel
   const float RED_THRESHOLD = 0.25;
   const float GREEN_THRESHOLD = 0.25;
   const float BLUE_THRESHOLD = 0.25;
   const float ORANGE_THRESHOLD = 0.10;
-  if (colourArr[0] > RED_THRESHOLD) {
-    if (colourArr[1] < ORANGE_THRESHOLD && colourArr[2] < BLUE_THRESHOLD) return RED;
-    if (colourArr[1] >= ORANGE_THRESHOLD && colourArr[1] < GREEN_THRESHOLD && colourArr[2] < BLUE_THRESHOLD) return ORANGE;
-    if (colourArr[1] > GREEN_THRESHOLD && colourArr[2] < BLUE_THRESHOLD) return YELLOW;
-    if (colourArr[1] < GREEN_THRESHOLD && colourArr[2] > BLUE_THRESHOLD) return PURPLE;
+  if (norm[0] > RED_THRESHOLD) {
+    if (norm[1] < ORANGE_THRESHOLD && norm[2] < BLUE_THRESHOLD) return RED;
+    if (norm[1] >= ORANGE_THRESHOLD && norm[1] < GREEN_THRESHOLD && norm[2] < BLUE_THRESHOLD) return ORANGE;
+    if (norm[1] > GREEN_THRESHOLD && norm[2] < BLUE_THRESHOLD) return YELLOW;
+    if (norm[1] < GREEN_THRESHOLD && norm[2] > BLUE_THRESHOLD) return PURPLE;
   }
-  if (colourArr[1] > GREEN_THRESHOLD) {
-    if (colourArr[0] < RED_THRESHOLD && colourArr[2] < BLUE_THRESHOLD) return GREEN;
-    if (colourArr[0] < RED_THRESHOLD && colourArr[2] > BLUE_THRESHOLD) return BLUE;
+  if (norm[1] > GREEN_THRESHOLD) {
+    if (norm[0] < RED_THRESHOLD && norm[2] < BLUE_THRESHOLD) return GREEN;
+    if (norm[0] < RED_THRESHOLD && norm[2] > BLUE_THRESHOLD) return BLUE;
   }
-  if (colourArr[2] > BLUE_THRESHOLD){
-    if (colourArr[0] < RED_THRESHOLD && colourArr[1] < GREEN_THRESHOLD) return BLUE; // just in case (blue colour usually triggers green)
+  if (norm[2] > BLUE_THRESHOLD) {
+    if (norm[0] < RED_THRESHOLD && norm[1] < GREEN_THRESHOLD) return BLUE;  // just in case (blue colour usually triggers green)
   }
   return NOT_DETECTED;
 }
@@ -174,6 +184,9 @@ void lightLED(colour c) {
       break;
     case NOT_DETECTED:
       Serial.println("No colour detected.");
+      digitalWrite(REDPIN, LOW);
+      digitalWrite(GREENPIN, LOW);
+      digitalWrite(BLUEPIN, LOW);
       break;
   }
 }
