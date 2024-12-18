@@ -456,7 +456,7 @@ void readColourN(float colourArr[3], int n) {  // arrays are always passed by va
     colourArr[i] = (float)thisRead[i];                 //write back to colourArr
     if (thisRead[i] > maxRead) maxRead = thisRead[i];  // find maximum intensity
   }
-  // normalize to highest intensity:
+  // normalize to highest reading:
   if (maxRead > 0) {                                 // protect against dividing by zero
     for (int i = 0; i < 3; i++) {                    // i=0: red, i=1: green, i=2: blue
       colourArr[i] = colourArr[i] / (float)maxRead;  // Normalize here for NN routine. Divide by highest reading.
