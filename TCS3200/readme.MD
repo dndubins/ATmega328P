@@ -52,10 +52,10 @@ BLUE = BLUE / TOTAL<p>
 
 This gives a signal that varies between 0 and 1 that is normalized by signal intensity. A low number in the normalized channel still means more of that colour. In C++. the code looks like this:
 ```
-  float total = 0.0;                                                                   // to store total
-  for (int i = 0; i < 3; i++) {                                                        // subtract each colour from CLEAR signal
-    norm[i] = (float)(colourArr[i] - colourArr[3]);                                    // subtract W from each signal
-    total += norm[i];                                                                  // add signal to total
+  float total = 0.0;                                       // to store total
+  for (int i = 0; i < 3; i++) {                            // subtract each colour from CLEAR signal
+    norm[i] = (float)(colourArr[i] - colourArr[3]);        // subtract W from each signal
+    total += norm[i];                                      // add signal to total
   }
   for (int i = 0; i < 3; i++) {
     norm[i] = norm[i] / total;  // divide by total
