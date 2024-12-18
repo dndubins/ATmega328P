@@ -63,9 +63,9 @@ This gives a signal that varies between 0 and 1 that is normalized by signal int
 ```
 
 This gave rise to the following sketches:
-TCS3200_4CH.ino - takes readings on all 4 channels (R, G, B, CLEAR). It has a function to take 1 reading "readColour()", and a function to take N readings "readColourN()".
-TCS3200_4CH_colourID.ino - this takes N readings and decodes them into colour buckets RED, ORANGE, YELLOW, GREEN, BLUE, and PURPLE (or NOT_DETECTED if the colour doesn't fit nicely into these buckets).
-TCS3200_RGBLED.ino - it's the colourID sketch above. Once the colour is detected, the sketch lights up an RGB LED accordingly with the identified colour.
+* TCS3200_4CH.ino - takes readings on all 4 channels (R, G, B, CLEAR). It has a function to take 1 reading "readColour()", and a function to take N readings "readColourN()".
+* TCS3200_4CH_colourID.ino - this takes N readings and decodes them into colour buckets RED, ORANGE, YELLOW, GREEN, BLUE, and PURPLE (or NOT_DETECTED if the colour doesn't fit nicely into these buckets).
+* TCS3200_RGBLED.ino - it's the colourID sketch above. Once the colour is detected, the sketch lights up an RGB LED accordingly with the identified colour.
 
 
 
