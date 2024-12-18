@@ -37,4 +37,28 @@ This function takes an array as an input argument (remember, arrays in this cont
 
 Also remember that a LOW reading on a channel means that there's a lot of that colour detected. I think my rookie mistake was looking at an RGB reading like  "11, 43, 39" and thinking there was no red in it. Nope, that's red. Think physics - you are filtering OUT that channel with a red filter. So if there's red light, it won't get to the sensor as well. <p>
 
-You can crudely define ranges that "colours" can be identified. TCS3200_RGBLED.ino is my first use of enums. I normalized the RGB signal by taking the maximum reading value of the three channels (max of R,G,B), then calculating normalized signal = (max - signal)/max. This gives a value for each channel between 0 and 1. The number 0.25 serves as a useful cutoff of a "meaningful" signal. Orange and red are a bit more tricky difficult to resolve. Once the sketch decodes the colour, it lights up a little RGB module with the corresponding colour.
+After a lot of experimenting with normalizing the channels, I realized that there is a "CLEAR" channel that is very useful as a baseline to normalize against. I found that the following normalization algorithm worked very well in terms of normalizing the relative signals to intensity, and then coming up with a %intensity for each colour:<p>
+
+1) Calculate the difference from each colour from the CLEAR channel:
+RED=(RED - CLEAR)
+GREEN=(GREEN-CLEAR)
+BLUE=(BLUE-CLEAR)
+2) Add up the differences for a total:
+TOTAL = RED + GREEN + BLUE
+3) Divide each signal by the total:
+RED = RED / TOTAL
+GREEN = GREEN / TOTAL
+BLUE = BLUE / TOTAL<p>
+
+This gives a signal that varies between 0 and 1 that is normalized by signal intensity. A low number in the normalized channel still means more of that colour. In C++. the code looks like this:
+```
+  float total = 0.0;                                                                   // to store total
+  for (int i = 0; i < 3; i++) {                                                        // subtract each colour from CLEAR signal
+    norm[i] = (float)(colourArr[i] - colourArr[3]);                                    // subtract W from each signal
+    total += norm[i];                                                                  // add signal to total
+  }
+  for (int i = 0; i < 3; i++) {
+    norm[i] = norm[i] / total;  // divide by total
+  }
+```
+
