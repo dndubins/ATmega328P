@@ -2,7 +2,7 @@
  * TCS3200 color recognition sensor 
  * This sketch measures colour and lights up an RGB LED module accordingly.
  * Author: D. Dubins
- * Date: 17-Dec-24
+ * Date: 18-Dec-24
  *
  * Connections:
  * TCS3200 - Arduino Uno
@@ -36,9 +36,9 @@
 #define GREENPIN 6
 #define BLUEPIN 4
 
-// To hold readings
-#define NUMREADS 1000            // number of readings for data averaging
-int reading[3] = { 0, 0, 0 };  // to store RED, GREEN, BLUE reading
+// For reading data
+#define NUMREADS 1000             // number of readings for data averaging
+int reading[4] = { 0, 0, 0, 0 };  // to store RED, GREEN, BLUE, CLEAR reading
 
 enum colour {  // define enum Colour with members RED, ORANGE, YELLOW, GREEN, BLUE, VIOLET.
   RED,
@@ -62,7 +62,7 @@ void setup() {
   pinMode(REDPIN, OUTPUT);  // set LED pins to OUTPUT mode
   pinMode(GREENPIN, OUTPUT);
   pinMode(BLUEPIN, OUTPUT);
-  pinMode(7, OUTPUT);  // set up pin 7 as a GND from the RGB module
+  pinMode(7, OUTPUT);  // set up pin 7 as a GND for the RGB module
   digitalWrite(7, LOW);
   digitalWrite(S0, HIGH);  // set on LEDs on front to HIGH
   digitalWrite(S1, HIGH);  // (setting S0 & S1 LOW turns LEDs off)
@@ -72,11 +72,7 @@ void setup() {
 void loop() {
   readColourN(reading, 1000);  // take n colour readings
   Serial.print("Reading: ");
-  Serial.print(reading[0]);  // output RED channel
-  Serial.print(",");
-  Serial.print(reading[1]);  // output GREEN channel
-  Serial.print(",");
-  Serial.println(reading[2]);  // output BLUE channel
+  printColourArr(reading);   // print contents of reading
   thisColour = decodeColour(reading);
   lightLED(thisColour);
   if (thisColour == NOT_DETECTED) flashRed(5);  // flash the red light 5X
@@ -84,64 +80,56 @@ void loop() {
 
 // This function takes an array as an input agument, and calculates the average
 // of n readings on each colour channel.
-void readColourN(int colourArr[3], int n) {  // arrays are always passed by value
-#define TIMEOUT 1000                           // for timeout (in microseconds) on reading a colour
-  unsigned long thisRead[3] = { 0, 0, 0 };     // for data averaging
-  bool pinStates[3][2] = {
+void readColourN(int colourArr[4], int n) {    // arrays are always passed by value
+#define TIMEOUT 200                            // timeout for pulseIN() routine
+  unsigned long thisRead[4] = { 0, 0, 0, 0 };  // for data averaging
+  bool pinStates[4][2] = {
     { LOW, LOW },    // S2,S3 are LOW for RED
     { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
-    { LOW, HIGH }    // S2=LOW,S3=HIGH for BLUE
+    { LOW, HIGH },   // S2=LOW,S3=HIGH for BLUE
+    { HIGH, LOW }    // S2=HIGH,S3=LOW for CLEAR
   };
-  for (int i = 0; i < 3; i++) {                   // i=0: red, i=1: green, i=2: blue
+  for (int i = 0; i < 4; i++) {                   //i=0:RED, i=1:GREEN, i=2:BLUE
     digitalWrite(S2, pinStates[i][0]);            // set S2 to correct pin state
     digitalWrite(S3, pinStates[i][1]);            // set S3 to correct pin state
-    thisRead[i] = 0;                              // initialize colour
+    thisRead[i] = 0;                              //initialize colour
     delay(100);                                   // wait for reading to stabilize
     for (int j = 0; j < n; j++) {                 // collect n readings on channel i
-      thisRead[i] += pulseIn(OUT, LOW, TIMEOUT);  // read colour
+      thisRead[i] += pulseIn(OUT, LOW, TIMEOUT);  //read colour
     }
-    thisRead[i] /= n;                   // report the average
-    colourArr[i] = thisRead[i];  //write back to colourArr
+    thisRead[i] /= n;            // report the average
+    colourArr[i] = thisRead[i];  //write values back to colourArr
   }
 }
 
-colour decodeColour(int colourArr[3]) {  // decodes an RGB sensor reading into colour buckets defined in the enum "colour".
-  float maxRead = 0.0;
-  float norm[3] = { 0.0, 0.0, 0.0 };  // to store RED, GREEN, BLUE reading
-    // normalize to lowest intensity (highest reading):
-  for (int i = 0; i < 3; i++) {
-    if (colourArr[i] > maxRead) maxRead = (float)colourArr[i];  // find maximum intensity
+colour decodeColour(int colourArr[4]) {  // decodes an RGB sensor reading into colour buckets defined in the enum "colour".
+  float norm[3] = { 0.0, 0.0, 0.0 };     // to store RED, GREEN, BLUE, CLEAR reading
+    // Normalize: (CLEAR - COLOUR)/[(CLEAR-RED)+(CLEAR-GREEN)+(CLEAR-BLUE)]
+  if (colourArr[0] == 0 | colourArr[1] == 0 | colourArr[2] == 0) return NOT_DETECTED;  // if any channel times out, return a null reading and don't normalize.
+  float total = 0.0;                                                                   // to store total
+  for (int i = 0; i < 3; i++) {                                                        // subtract each colour from CLEAR signal
+    norm[i] = (float)(colourArr[i] - colourArr[3]);                                    // subtract W from each signal
+    total += norm[i];                                                                  // add signal to total
   }
-  if(colourArr[0]==0 | colourArr[1]==0 | colourArr[2]==0)return NOT_DETECTED; // if any channel times out, return a null reading and don't normalize.
-  for (int i = 0; i < 3; i++) {                                        // i=0: red, i=1: green, i=2: blue
-    norm[i] = (maxRead - (float)colourArr[i]) / maxRead;  // Normalize here. Subtract from highest then divide by highest reading.
+  for (int i = 0; i < 3; i++) {
+    norm[i] = norm[i] / total;  // divide by total
   }
   Serial.print("Normalized: ");
-  Serial.print(norm[0]);  // output RED channel
-  Serial.print(",");
-  Serial.print(norm[1]);  // output GREEN channel
-  Serial.print(",");
-  Serial.println(norm[2]);  // output BLUE channel
-  const float RED_THRESHOLD = 0.25;
-  const float GREEN_THRESHOLD = 0.25;
-  const float BLUE_THRESHOLD = 0.25;
-  const float ORANGE_THRESHOLD = 0.10;
-  if (norm[0] > RED_THRESHOLD) {
-    if (norm[1] < ORANGE_THRESHOLD && norm[2] < BLUE_THRESHOLD) return RED;
-    if (norm[1] >= ORANGE_THRESHOLD && norm[1] < GREEN_THRESHOLD && norm[2] < BLUE_THRESHOLD) return ORANGE;
-    if (norm[1] > GREEN_THRESHOLD && norm[2] < BLUE_THRESHOLD) return YELLOW;
-    if (norm[1] < GREEN_THRESHOLD && norm[2] > BLUE_THRESHOLD) return PURPLE;
+  printNormArr(norm);  // print the normalized array
+  const float RED_THRESHOLD = 0.3;
+  const float GREEN_THRESHOLD = 0.3;
+  const float BLUE_THRESHOLD = 0.2;
+  const float ORANGE_THRESHOLD = 0.45;                                                                        // this is the GREEN threshold for orange (orange happens when green signal is between ~0.3-0.45)
+  if (norm[0] < RED_THRESHOLD) {                                                                              // if RED has a signal
+    if (norm[1] > ORANGE_THRESHOLD && norm[2] > BLUE_THRESHOLD) return RED;                                   // RED is dominant
+    if (norm[1] <= ORANGE_THRESHOLD && norm[1] > GREEN_THRESHOLD && norm[2] > BLUE_THRESHOLD) return ORANGE;  // RED and a little bit of GREEN make ORANGE
+    if (norm[1] < GREEN_THRESHOLD && norm[2] > BLUE_THRESHOLD) return YELLOW;                                 // RED and GREEN make YELLOW
+    if (norm[1] > GREEN_THRESHOLD && norm[2] < BLUE_THRESHOLD) return PURPLE;                                 // RED and BLUE make PURPLE
   }
-  if (norm[1] > GREEN_THRESHOLD) {
-    if (norm[0] < RED_THRESHOLD && norm[2] < BLUE_THRESHOLD) return GREEN;
-    if (norm[0] < RED_THRESHOLD && norm[2] > BLUE_THRESHOLD) return BLUE;
-  }
-  if (norm[2] > BLUE_THRESHOLD) {
-    if (norm[0] < RED_THRESHOLD && norm[1] < GREEN_THRESHOLD) return BLUE;  // just in case (blue colour usually triggers green)
-  }
-  return NOT_DETECTED;
+  if (norm[0] > RED_THRESHOLD && norm[1] < GREEN_THRESHOLD && norm[2] > BLUE_THRESHOLD) return GREEN;  // GREEN is dominant
+  if (norm[0] > RED_THRESHOLD && norm[2] < BLUE_THRESHOLD) return BLUE;                                // BLUE is dominant. Ignore GREEN signal. (We are ignoring BLUE+GREEN=CYAN, and calling this "BLUE".)
+  return NOT_DETECTED;                                                                                 // if the routine gets this far, we haven't identified a colour.
 }
-
 
 void lightLED(colour c) {
   switch (c) {
@@ -199,4 +187,24 @@ void flashRed(byte n) {
     digitalWrite(REDPIN, LOW);
     delay(100);
   }
+}
+
+// Prints contents of colourArr[i]
+void printColourArr(int colourArr[4]) {
+  Serial.print(colourArr[0]);  // output RED channel
+  Serial.print(",");
+  Serial.print(colourArr[1]);  // output GREEN channel
+  Serial.print(",");
+  Serial.print(colourArr[2]);  // output BLUE channel
+  Serial.print(",");
+  Serial.println(colourArr[3]);  // output CLEAR channel
+}
+
+// Prints contents of colourArr[i]
+void printNormArr(float normArr[3]) {
+  Serial.print(normArr[0], 3);  // output RED channel
+  Serial.print(",");
+  Serial.print(normArr[1], 3);  // output GREEN channel
+  Serial.print(",");
+  Serial.println(normArr[2], 3);  // output BLUE channel
 }
