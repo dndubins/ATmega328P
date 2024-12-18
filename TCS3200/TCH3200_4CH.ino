@@ -44,7 +44,7 @@ void setup() {
   pinMode(OUT, INPUT);     // set OUT pin to INPUT mode
   digitalWrite(S0, HIGH);  // set on LEDs on front to HIGH
   digitalWrite(S1, HIGH);  // (setting S0 & S1 LOW turns LEDs off)
-  Serial.println("R,G,B,C: ");
+  Serial.println("R,G,B,CL: ");
 }
 
 void loop() {
