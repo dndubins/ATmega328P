@@ -25,7 +25,6 @@
  */
 
 #include <EEPROM.h>    // for saving AI matrix
-#define NUMREADS 1000  // number of readings per colour reading (for averaging)
 
 // Global Network Configuration Variables
 const int InputNodes = 3;   // The number of input neurons (can be sensor readings, <=7 for Arduino)
@@ -49,6 +48,9 @@ struct NNweights {
 #define S2 9
 #define S3 10
 #define OUT 8
+
+// For reading data
+#define NUMREADS 1000  // number of readings per colour reading (for averaging)
 float reading[3] = { 0.0, 0.0, 0.0 };  // to store RED, GREEN, BLUE reading
 
 char choice = '\0';  // For serial menu. Initialize choice with NULL.
@@ -432,11 +434,11 @@ void useNN(float R, float G, float B) {  // use NN hidden and output weights to 
 
 // This function takes an array as an input agument, and calculates the average
 // of n readings on each colour channel.
-// The function then normalizes the intensities to the highest number.
+// The function then normalizes the intensities to the lowest intensity (highest number).
 void readColourN(float colourArr[3], int n) {  // arrays are always passed by value
   unsigned long thisRead[3] = { 0, 0, 0 };     // for data averaging
 #define TIMEOUT 1000                           // for timeout (in microseconds) on reading a colour
-  int maxRead = 0;                             // maximum reading (for normalizing the colour signal to the highest intensity)
+  int maxRead = 0;                             // maximum reading (for normalizing the colour signal to the lowest intensity)
   bool pinStates[3][2] = {
     { LOW, LOW },    // S2,S3 are LOW for RED
     { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
