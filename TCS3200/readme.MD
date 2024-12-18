@@ -13,7 +13,7 @@ An important realization I made about this sensor is that once you set the colou
 // This function takes an array as an input agument, and calculates the average
 // of n readings on each colour channel.
 void readColourN(float colourArr[3], int n) {  // arrays are always passed by value
-#define TIMEOUT 1000                           // for timeout (in microseconds) on reading a colour
+#define TIMEOUT 200                            // for timeout (in microseconds) on reading a colour
   unsigned long thisRead[3] = { 0, 0, 0 };     // for data averaging
   bool pinStates[3][2] = {
     { LOW, LOW },    // S2,S3 are LOW for RED
