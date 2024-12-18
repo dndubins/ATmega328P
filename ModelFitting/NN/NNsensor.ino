@@ -24,7 +24,7 @@
  *  GND - GND
  */
 
-#include <EEPROM.h>    // for saving AI matrix
+#include <EEPROM.h>  // for saving AI matrix
 
 // Global Network Configuration Variables
 const int InputNodes = 3;   // The number of input neurons (can be sensor readings, <=7 for Arduino)
@@ -50,8 +50,8 @@ struct NNweights {
 #define OUT 8
 
 // For reading data
-#define NUMREADS 1000  // number of readings per colour reading (for averaging)
-float reading[3] = { 0.0, 0.0, 0.0 };  // to store RED, GREEN, BLUE reading
+#define NUMREADS 1000                       // number of readings per colour reading (for averaging)
+float reading[4] = { 0.0, 0.0, 0.0, 0.0 };  // to store RED, GREEN, BLUE, CLEAR reading
 
 char choice = '\0';  // For serial menu. Initialize choice with NULL.
 
@@ -71,24 +71,24 @@ const float Success = 0.01;          // The threshold for error at which the net
 
 // For inputting training set manually:
 float Input[PatternCount][InputNodes] = {
-  { 0.224, 1.000, 0.816 },  // red
-  { 0.234, 1.000, 0.809 },  // red
-  { 0.231, 1.000, 0.808 },  // red
-  { 0.278, 0.889, 1.000 },  // orange
-  { 0.281, 0.844, 1.000 },  // orange
-  { 0.251, 0.856, 1.000 },  // orange
-  { 0.357, 0.571, 1.000 },  // yellow
-  { 0.333, 0.593, 1.000 },  // yellow
-  { 0.385, 0.583, 1.000 },  // yellow
-  { 1.000, 0.630, 0.778 },  // green
-  { 1.000, 0.640, 0.840 },  // green
-  { 1.000, 0.625, 0.875 },  // green
-  { 1.000, 0.600, 0.367 },  // blue
-  { 1.000, 0.667, 0.417 },  // blue
-  { 1.000, 0.600, 0.367 },  // blue
-  { 0.559, 1.000, 0.471 },  // purple
-  { 0.545, 1.000, 0.455 },  // purple
-  { 0.556, 1.000, 0.472 }   // purple
+  { 0.044, 0.506, 0.45 },   //RED
+  { 0.035, 0.523, 0.442 },  //RED
+  { 0.047, 0.496, 0.457 },  //RED
+  { 0.079, 0.365, 0.556 },  //ORANGE
+  { 0.063, 0.381, 0.556 },  //ORANGE
+  { 0.066, 0.393, 0.541 },  //ORANGE
+  { 0.2, 0.236, 0.564 },    //YELLOW
+  { 0.161, 0.25, 0.589 },   //YELLOW
+  { 0.164, 0.255, 0.582 },  //YELLOW
+  { 0.483, 0.207, 0.31 },   //GREEN
+  { 0.471, 0.216, 0.314 },  //GREEN
+  { 0.479, 0.208, 0.312 },  //GREEN
+  { 0.58, 0.3, 0.12 },      //BLUE
+  { 0.556, 0.315, 0.13 },   //BLUE
+  { 0.574, 0.296, 0.13 },   //BLUE
+  { 0.254, 0.576, 0.169 },  //PURPLE
+  { 0.259, 0.569, 0.172 },  //PURPLE
+  { 0.309, 0.529, 0.162 }   //PURPLE
 };
 
 const byte Target[PatternCount][OutputNodes] = {
@@ -148,7 +148,7 @@ void loop() {
         Serial.println("Enter 'r' to read response " + (String)(j + 1) + " for " + TargetNames[i] + ">");
         while (!Serial.available()) { ; }  // wait for input
         choice = Serial.read();
-        readColourN(reading, NUMREADS);  // read sensor
+        readColourN_norm(reading, NUMREADS);  // read sensor
         //Serial.println("Reading: " + (String)reading[0] + "," + (String)reading[1] + "," + (String)reading[2]);
         Input[j + (3 * i)][0] = reading[0];  //red
         Input[j + (3 * i)][1] = reading[1];  //green
@@ -239,7 +239,7 @@ void solveNN() {  // neural network fitting routine
     for (int q = 0; q < PatternCount; q++) {
       p = RandomizedIndex[q];
 
-/******************************************************************
+      /******************************************************************
 * Compute hidden layer activations
 ******************************************************************/
       for (int i = 0; i < HiddenNodes; i++) {
@@ -250,7 +250,7 @@ void solveNN() {  // neural network fitting routine
         Hidden[i] = 1.0 / (1.0 + exp(-Accum));
       }
 
-/******************************************************************
+      /******************************************************************
 * Compute output layer activations and calculate errors
 ******************************************************************/
       for (int i = 0; i < OutputNodes; i++) {
@@ -263,7 +263,7 @@ void solveNN() {  // neural network fitting routine
         Error += 0.5 * (Target[p][i] - Output[i]) * (Target[p][i] - Output[i]);
       }
 
-/******************************************************************
+      /******************************************************************
 * Backpropagate errors to hidden layer
 ******************************************************************/
       for (int i = 0; i < HiddenNodes; i++) {
@@ -275,7 +275,7 @@ void solveNN() {  // neural network fitting routine
       }
 
 
-/******************************************************************
+      /******************************************************************
 * Update Inner-->Hidden Weights
 ******************************************************************/
       for (int i = 0; i < HiddenNodes; i++) {
@@ -287,7 +287,7 @@ void solveNN() {  // neural network fitting routine
         }
       }
 
-/******************************************************************
+      /******************************************************************
 * Update Hidden-->Output Weights
 ******************************************************************/
       for (int i = 0; i < OutputNodes; i++) {
@@ -434,40 +434,40 @@ void useNN(float R, float G, float B) {  // use NN hidden and output weights to 
 
 // This function takes an array as an input agument, and calculates the average
 // of n readings on each colour channel.
-// The function then normalizes the intensities to the lowest intensity (highest number).
-void readColourN(float colourArr[3], int n) {  // arrays are always passed by value
-  unsigned long thisRead[3] = { 0, 0, 0 };     // for data averaging
-#define TIMEOUT 1000                           // for timeout (in microseconds) on reading a colour
-  int maxRead = 0;                             // maximum reading (for normalizing the colour signal to the lowest intensity)
-  bool pinStates[3][2] = {
+void readColourN_norm(float colourArr[4], int n) {  // arrays are always passed by value
+#define TIMEOUT 200                                 // timeout for pulseIN() routine
+  unsigned long thisRead[4] = { 0, 0, 0, 0 };       // for data averaging
+  bool pinStates[4][2] = {
     { LOW, LOW },    // S2,S3 are LOW for RED
     { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
-    { LOW, HIGH }    // S2=LOW,S3=HIGH for BLUE
+    { LOW, HIGH },   // S2=LOW,S3=HIGH for BLUE
+    { HIGH, LOW }    // S2=HIGH,S3=LOW for CLEAR
   };
-  for (int i = 0; i < 3; i++) {                   // i=0: red, i=1: green, i=2: blue
+  for (int i = 0; i < 4; i++) {                   //i=0:RED, i=1:GREEN, i=2:BLUE
     digitalWrite(S2, pinStates[i][0]);            // set S2 to correct pin state
     digitalWrite(S3, pinStates[i][1]);            // set S3 to correct pin state
-    thisRead[i] = 0;                              // initialize colour
+    thisRead[i] = 0;                              //initialize colour
     delay(100);                                   // wait for reading to stabilize
     for (int j = 0; j < n; j++) {                 // collect n readings on channel i
-      thisRead[i] += pulseIn(OUT, LOW, TIMEOUT);  // read colour
+      thisRead[i] += pulseIn(OUT, LOW, TIMEOUT);  //read colour
     }
-    thisRead[i] /= n;                                  // report the average
-    colourArr[i] = (float)thisRead[i];                 //write back to colourArr
-    if (thisRead[i] > maxRead) maxRead = thisRead[i];  // find maximum intensity
+    thisRead[i] /= n;            // report the average
+    colourArr[i] = thisRead[i];  // write values back to colourArr
   }
-  // normalize to highest reading:
-  if (maxRead > 0) {                                 // protect against dividing by zero
-    for (int i = 0; i < 3; i++) {                    // i=0: red, i=1: green, i=2: blue
-      colourArr[i] = colourArr[i] / (float)maxRead;  // Normalize here for NN routine. Divide by highest reading.
-    }
+  // Normalize: (CLEAR - COLOUR)/[(CLEAR-RED)+(CLEAR-GREEN)+(CLEAR-BLUE)]
+  float total = 0.0;                             // to store total
+  for (int i = 0; i < 3; i++) {                  // subtract each colour from CLEAR signal
+    colourArr[i] = colourArr[i] - colourArr[3];  // subtract W from each signal
+    total += colourArr[i];                       // add signal to total
+  }
+  for (int i = 0; i < 3; i++) {
+    colourArr[i] = colourArr[i] / total;  // divide by total
   }
 }
 
 void readSample() {                // take one reading and apply neural network weights to calculate output
-  readColourN(reading, NUMREADS);  // take measurement
+  readColourN_norm(reading, NUMREADS);  // take measurement
   useNN(reading[0], reading[1], reading[2]);
-  //Serial.print ("  Output ");
   float maxC = 0.0;
   byte maxIdx = 0;
   for (int i = 0; i < OutputNodes; i++) {
