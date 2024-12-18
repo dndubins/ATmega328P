@@ -29,7 +29,7 @@
 #define DEBUG          //comment out to remove extra serial debugging messages
 #define MENU           //comment out for just continous readings
 //#define EPROMLOAD    //comment out if not loading/saving weights from EPROM (useful for first time running sketch)
-const int MP = 14;  // total number of experimental observations in the system
+const int MP = 18;  // total number of experimental observations in the system
 const int NP = 4;   // number of parameters (# columns + intercept)
 
 // Colour sensor module pins and setup
@@ -38,7 +38,7 @@ const int NP = 4;   // number of parameters (# columns + intercept)
 #define S2 9
 #define S3 10
 #define OUT 8
-int reading[3] = { 0, 0, 0 };  // to store red, green, blue reading
+float reading[4] = { 0.0, 0.0, 0.0, 0.0 };  // to store red, green, blue, clear reading
 
 struct SVDweights {
   float Input[MP][NP - 1];
@@ -53,20 +53,24 @@ const char* TargetNames[7] = { "red", "orange", "yellow", "green", "cyan", "blue
 #ifndef EPROMLOAD
 float Input[MP][NP - 1] = {
   //training set (sensor readings)
-  { 11, 43, 39 },    // red
-  { 11, 47, 43 },    // red
-  { 7, 24, 27 },     // orange
-  { 6, 20, 24 },     // orange
-  { 10, 18, 28 },    // yellow
-  { 10, 16, 27 },    // yellow
-  { 19, 17, 26 },    // green
-  { 20, 18, 25 },    // green
-  { 36, 35, 26 },    // cyan
-  { 32, 29, 22 },    // cyan
-  { 61, 61, 33 },    // blue
-  { 113, 105, 58 },  // blue
-  { 21, 31, 17 },    // violet
-  { 22, 38, 23 }     // violet
+  { 0.044, 0.506, 0.450 },  //RED
+  { 0.035, 0.523, 0.442 },  //RED
+  { 0.047, 0.496, 0.457 },  //RED
+  { 0.079, 0.365, 0.556 },  //ORANGE
+  { 0.063, 0.381, 0.556 },  //ORANGE
+  { 0.066, 0.393, 0.541 },  //ORANGE
+  { 0.200, 0.236, 0.564 },  //YELLOW
+  { 0.161, 0.250, 0.589 },  //YELLOW
+  { 0.164, 0.255, 0.582 },  //YELLOW
+  { 0.483, 0.207, 0.310 },  //GREEN
+  { 0.471, 0.216, 0.314 },  //GREEN
+  { 0.479, 0.208, 0.312 },  //GREEN
+  { 0.580, 0.300, 0.120 },  //BLUE
+  { 0.556, 0.315, 0.130 },  //BLUE
+  { 0.574, 0.296, 0.130 },  //BLUE
+  { 0.254, 0.576, 0.169 },  //PURPLE
+  { 0.259, 0.569, 0.172 },  //PURPLE
+  { 0.309, 0.529, 0.162 }   //PURPLE
 };
 #endif
 
@@ -74,18 +78,22 @@ float Input[MP][NP - 1] = {
 float Y[MP] = {
   700,  //red
   700,  //red
+  700,  //red
+  620,  //orange
   620,  //orange
   620,  //orange
   590,  //yellow
   590,  //yellow
+  590,  //yellow
   520,  //green
   520,  //green
-  490,  //cyan
-  490,  //cyan
-  460,  //blue
-  460,  //blue
-  400,  //violet
-  400   //violet
+  520,  //green
+  470,  //blue
+  470,  //blue
+  470,  //blue
+  400,  //purple
+  400,  //purple
+  400   //purple
 };
 
 //SVD variables:
@@ -150,7 +158,7 @@ void loop() {
       Serial.print(F("Reading response for "));
       Serial.print(SVD.Y[i]);
       Serial.println(F(" nm."));
-      readColourN(reading, NUMREADS);  // read sensor NUMREADS times
+      readColourN_norm(reading, NUMREADS);  // read sensor NUMREADS times
       Serial.print(F("Reading: "));
       Serial.print(reading[0]);
       Serial.print(F(","));
@@ -535,7 +543,7 @@ void funcs(int x, float p[], int np) {  // coefficients of matrix A
   }
 }
 
-float useSVD(int R, int G, int B) {  // use SVD model to solve for wavelength
+float useSVD(float R, float G, float B) {  // use SVD model to solve for wavelength
   float measuredInput[3];
   measuredInput[0] = R;
   measuredInput[1] = G;
@@ -549,30 +557,40 @@ float useSVD(int R, int G, int B) {  // use SVD model to solve for wavelength
 
 // This function takes an array as an input agument, and calculates the average
 // of n readings on each colour channel.
-void readColourN(int colourArr[3], int n) {  // arrays are always passed by value
-#define TIMEOUT 1000                           // for timeout (in microseconds) on reading a colour
-  unsigned long thisRead[3] = { 0, 0, 0 };     // for data averaging
-  bool pinStates[3][2] = {
+void readColourN_norm(float colourArr[4], int n) {  // arrays are always passed by value
+#define TIMEOUT 200                                 // timeout for pulseIN() routine
+  unsigned long thisRead[4] = { 0, 0, 0, 0 };       // for data averaging
+  bool pinStates[4][2] = {
     { LOW, LOW },    // S2,S3 are LOW for RED
     { HIGH, HIGH },  // S2,S3 are HIGH for GREEN
-    { LOW, HIGH }    // S2=LOW,S3=HIGH for BLUE
+    { LOW, HIGH },   // S2=LOW,S3=HIGH for BLUE
+    { HIGH, LOW }    // S2=HIGH,S3=LOW for CLEAR
   };
-  for (int i = 0; i < 3; i++) {                   // i=0: red, i=1: green, i=2: blue
+  for (int i = 0; i < 4; i++) {                   //i=0:RED, i=1:GREEN, i=2:BLUE
     digitalWrite(S2, pinStates[i][0]);            // set S2 to correct pin state
     digitalWrite(S3, pinStates[i][1]);            // set S3 to correct pin state
-    thisRead[i] = 0;                              // initialize colour
+    thisRead[i] = 0;                              //initialize colour
     delay(100);                                   // wait for reading to stabilize
     for (int j = 0; j < n; j++) {                 // collect n readings on channel i
-      thisRead[i] += pulseIn(OUT, LOW, TIMEOUT);  // read colour
+      thisRead[i] += pulseIn(OUT, LOW, TIMEOUT);  //read colour
     }
-    thisRead[i] /= n;                   // report the average
-    colourArr[i] = thisRead[i];  //write back to colourArr
+    thisRead[i] /= n;            // report the average
+    colourArr[i] = thisRead[i];  // write values back to colourArr
+  }
+  // Normalize: (CLEAR - COLOUR)/[(CLEAR-RED)+(CLEAR-GREEN)+(CLEAR-BLUE)]
+  float total = 0.0;                             // to store total
+  for (int i = 0; i < 3; i++) {                  // subtract each colour from CLEAR signal
+    colourArr[i] = colourArr[i] - colourArr[3];  // subtract W from each signal
+    total += colourArr[i];                       // add signal to total
+  }
+  for (int i = 0; i < 3; i++) {
+    colourArr[i] = colourArr[i] / total;  // divide by total
   }
 }
 
 void readSample() {                // take one reading and apply model to calculate output
-  readColourN(reading, NUMREADS);  // take measurement
-  int wavelength = useSVD(reading[0], reading[1], reading[2]);
+  readColourN_norm(reading, NUMREADS);  // take measurement
+  float wavelength = useSVD(reading[0], reading[1], reading[2]);
 #ifdef DEBUG
   Serial.print(F("R:"));
   Serial.print(reading[0]);
@@ -591,7 +609,7 @@ void readSample() {                // take one reading and apply model to calcul
   if (wavelength < 560 && wavelength >= 520) colourname = "green";
   if (wavelength < 520 && wavelength >= 490) colourname = "cyan";
   if (wavelength < 490 && wavelength >= 450) colourname = "blue";
-  if (wavelength < 450 && wavelength >= 400) colourname = "violet";
+  if (wavelength < 450 && wavelength >= 400) colourname = "purple";
   Serial.println("   " + colourname);
 #else
   Serial.println(wavelength);
