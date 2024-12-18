@@ -28,9 +28,9 @@
 #define S3 10
 #define OUT 8
 
-int reading[3] = { 0, 0, 0 };  // to store RED, GREEN, BLUE reading
-
+// For reading data
 #define NUMREADS 1000  // number of readings for data averaging
+int reading[3] = { 0, 0, 0 };  // to store RED, GREEN, BLUE reading
 
 void setup() {
   Serial.begin(9600);   // start the Serial Monitor
