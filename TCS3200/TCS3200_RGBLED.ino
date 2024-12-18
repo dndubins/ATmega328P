@@ -108,7 +108,7 @@ void readColourN(int colourArr[3], int n) {  // arrays are always passed by valu
 colour decodeColour(int colourArr[3]) {  // decodes an RGB sensor reading into colour buckets defined in the enum "colour".
   float maxRead = 0.0;
   float norm[3] = { 0.0, 0.0, 0.0 };  // to store RED, GREEN, BLUE reading
-    // normalize to highest intensity:
+    // normalize to lowest intensity (highest reading):
   for (int i = 0; i < 3; i++) {
     if (colourArr[i] > maxRead) maxRead = (float)colourArr[i];  // find maximum intensity
   }
