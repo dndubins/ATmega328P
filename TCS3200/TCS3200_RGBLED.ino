@@ -66,7 +66,7 @@ void setup() {
   digitalWrite(7, LOW);
   digitalWrite(S0, HIGH);  // set on LEDs on front to HIGH
   digitalWrite(S1, HIGH);  // (setting S0 & S1 LOW turns LEDs off)
-  Serial.println("R,G,B: ");
+  Serial.println("R,G,B,W: ");
 }
 
 void loop() {
