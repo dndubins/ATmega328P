@@ -79,24 +79,24 @@ float Input[MP][NP - 1] = {
 
 //Read in Y matrix (outcomes to map to - this is "wavelength")
 float Y[MP] = {
-  700,  // RED
-  700,  // RED
-  700,  // RED
-  620,  // ORANGE
-  620,  // ORANGE
-  620,  // ORANGE
-  590,  // YELLOW
-  590,  // YELLOW
-  590,  // YELLOW
-  520,  // GREEN
-  520,  // GREEN
-  520,  // GREEN
-  470,  // BLUE
-  470,  // BLUE
-  470,  // BLUE
-  400,  // PURPLE
-  400,  // PURPLE
-  400   // PURPLE
+  700,  //RED
+  700,  //RED
+  700,  //RED
+  620,  //ORANGE
+  620,  //ORANGE
+  620,  //ORANGE
+  590,  //YELLOW
+  590,  //YELLOW
+  590,  //YELLOW
+  520,  //GREEN
+  520,  //GREEN
+  520,  //GREEN
+  470,  //BLUE
+  470,  //BLUE
+  470,  //BLUE
+  400,  //PURPLE
+  400,  //PURPLE
+  400   //PURPLE
 };
 
 //SVD variables:
@@ -161,7 +161,7 @@ void loop() {
       Serial.print(F("Reading response for "));
       Serial.print(SVD.Y[i]);
       Serial.println(F(" nm."));
-      if(!readColourN_norm(reading, NUMREADS)){   // read sensor and check value
+      if (!readColourN_norm(reading, NUMREADS)) {  // read sensor and check value
         Serial.println(F("Warning: bad reading. Try again."));
         i--;  // try again
       }
