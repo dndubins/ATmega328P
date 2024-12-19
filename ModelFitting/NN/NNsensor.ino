@@ -1,6 +1,10 @@
 /* NNsensor.ino for TCS3200 Colour Sensor
+ *
  * This sketch provides a serial menu, where you can train a sensor using a neural network algorithm, and save it to EPROM memory.
  * This can be retreived and used later. The menu also provides a reading mode to use your trained network on new colours.
+ * For simplicity, I rolled up the sensor reading function into one - read and average a bunch of readings, convert to Hz, 
+ * then normalize R,G, B to the CLEAR channel. This should make it easier to swap out this code with another multi-dimensional
+ * sensor, and change the "colours" in TargetNames[] to something else.
  *
  * Neural network coding based on:
  * ArduinoANN - An artificial neural network for the Arduino
@@ -9,7 +13,7 @@
  * See http://robotics.hobbizine.com/arduinoann.html for more details.
  * Sketch: David Dubins
  * Date: 3-Feb-19
- * Last Updated: 18-Dec-24
+ * Last Updated: 19-Dec-24
  *
  * Connections:
  * TCS3200 - Arduino Uno
@@ -34,7 +38,7 @@ const int OutputNodes = 6;  // The number of output neurons (<=4 for Arduino)
 float Hidden[HiddenNodes];
 float Output[OutputNodes];
 float Accum;
-const char* TargetNames[OutputNodes] = { "red", "orange", "yellow", "green", "blue", "purple" };  // titles to match training set
+const char* TargetNames[OutputNodes] = { "RED", "ORANGE", "YELLOW", "GREEN", "BLUE", "PURPLE" };  // titles to match training set
 
 struct NNweights {
   char name[10];
@@ -71,24 +75,24 @@ const float Success = 0.01;          // The threshold for error at which the net
 
 // For inputting training set manually:
 float Input[PatternCount][InputNodes] = {
-  { 0.044, 0.506, 0.450 },  //RED
-  { 0.035, 0.523, 0.442 },  //RED
-  { 0.047, 0.496, 0.457 },  //RED
-  { 0.079, 0.365, 0.556 },  //ORANGE
-  { 0.063, 0.381, 0.556 },  //ORANGE
-  { 0.066, 0.393, 0.541 },  //ORANGE
-  { 0.200, 0.236, 0.564 },  //YELLOW
-  { 0.161, 0.250, 0.589 },  //YELLOW
-  { 0.164, 0.255, 0.582 },  //YELLOW
-  { 0.483, 0.207, 0.310 },  //GREEN
-  { 0.471, 0.216, 0.314 },  //GREEN
-  { 0.479, 0.208, 0.312 },  //GREEN
-  { 0.580, 0.300, 0.120 },  //BLUE
-  { 0.556, 0.315, 0.130 },  //BLUE
-  { 0.574, 0.296, 0.130 },  //BLUE
-  { 0.254, 0.576, 0.169 },  //PURPLE
-  { 0.259, 0.569, 0.172 },  //PURPLE
-  { 0.309, 0.529, 0.162 }   //PURPLE
+  { 0.733, 0.157, 0.193 },  //RED
+  { 0.714, 0.154, 0.189 },  //RED
+  { 0.667, 0.149, 0.182 },  //RED
+  { 0.625, 0.200, 0.167 },  //ORANGE
+  { 0.600, 0.214, 0.162 },  //ORANGE
+  { 0.538, 0.250, 0.171 },  //ORANGE
+  { 0.429, 0.333, 0.171 },  //YELLOW
+  { 0.417, 0.312, 0.167 },  //YELLOW
+  { 0.467, 0.368, 0.200 },  //YELLOW
+  { 0.276, 0.444, 0.308 },  //GREEN
+  { 0.250, 0.400, 0.296 },  //GREEN
+  { 0.241, 0.412, 0.280 },  //GREEN
+  { 0.176, 0.300, 0.545 },  //BLUE
+  { 0.176, 0.316, 0.545 },  //BLUE
+  { 0.147, 0.294, 0.500 },  //BLUE
+  { 0.370, 0.208, 0.476 },  //PURPLE
+  { 0.385, 0.213, 0.476 },  //PURPLE
+  { 0.370, 0.204, 0.455 }   //PURPLE
 };
 
 const byte Target[PatternCount][OutputNodes] = {
@@ -148,8 +152,10 @@ void loop() {
         Serial.println("Enter 'r' to read response " + (String)(j + 1) + " for " + TargetNames[i] + ">");
         while (!Serial.available()) { ; }  // wait for input
         choice = Serial.read();
-        readColourN_norm(reading, NUMREADS);  // read sensor
-        //Serial.println("Reading: " + (String)reading[0] + "," + (String)reading[1] + "," + (String)reading[2]);
+        if(!readColourN_norm(reading, NUMREADS)){   // read sensor and check value
+          Serial.println(F("Warning: bad reading. Try again."));
+          j--;  // try again
+        }
         Input[j + (3 * i)][0] = reading[0];  //red
         Input[j + (3 * i)][1] = reading[1];  //green
         Input[j + (3 * i)][2] = reading[2];  //blue
@@ -433,8 +439,9 @@ void useNN(float R, float G, float B) {  // use NN hidden and output weights to 
 }
 
 // This function takes an array as an input agument, and calculates the average
-// of n readings on each colour channel.
-void readColourN_norm(float colourArr[4], int n) {  // arrays are always passed by value
+// of n readings on each colour channel. Then it normalizes it, and returns false if
+// pulseIn() timed out.
+bool readColourN_norm(float colourArr[4], int n) {  // arrays are always passed by value
 #define TIMEOUT 200                                 // timeout for pulseIN() routine
   unsigned long thisRead[4] = { 0, 0, 0, 0 };       // for data averaging
   bool pinStates[4][2] = {
@@ -451,37 +458,40 @@ void readColourN_norm(float colourArr[4], int n) {  // arrays are always passed 
     for (int j = 0; j < n; j++) {                 // collect n readings on channel i
       thisRead[i] += pulseIn(OUT, LOW, TIMEOUT);  //read colour
     }
-    thisRead[i] /= n;            // report the average
-    colourArr[i] = thisRead[i];  // write values back to colourArr
+    thisRead[i] /= n;                   // report the average
+    colourArr[i] = (float)thisRead[i];  // write values back to colourArr
   }
-  // Normalize: (CLEAR - COLOUR)/[(CLEAR-RED)+(CLEAR-GREEN)+(CLEAR-BLUE)]
-  float total = 0.0;                             // to store total
-  for (int i = 0; i < 3; i++) {                  // subtract each colour from CLEAR signal
-    colourArr[i] = colourArr[i] - colourArr[3];  // subtract W from each signal
-    total += colourArr[i];                       // add signal to total
+  if (colourArr[0] == 0 | colourArr[1] == 0 | colourArr[2] == 0) return false;  // if any channel times out, return false, and don't normalize.
+  // Convert to Hz and normalize: RED/CLEAR, GREEN/CLEAR, BLUE/CLEAR:
+  for (int i = 0; i < 4; i++) {
+    colourArr[i] = 1000000.0 / colourArr[i];  // calculate each signal in Hz (R, G, B, CLEAR)
   }
-  for (int i = 0; i < 3; i++) {
-    colourArr[i] = colourArr[i] / total;  // divide by total
+  for (int i = 0; i < 3; i++) {   // subtract each colour from CLEAR signal
+    colourArr[i] = colourArr[i] / colourArr[3];  // calculate %signal of R, G, B (relative to CLEAR signal)
   }
+  return true;
 }
 
-void readSample() {                // take one reading and apply neural network weights to calculate output
-  readColourN_norm(reading, NUMREADS);  // take measurement
-  useNN(reading[0], reading[1], reading[2]);
-  float maxC = 0.0;
-  byte maxIdx = 0;
-  for (int i = 0; i < OutputNodes; i++) {
-    Serial.print(Output[i], 3);
-    if (Output[i] > maxC) {
-      maxC = Output[i];
-      maxIdx = i;
+void readSample() {                     // take one reading and apply neural network weights to calculate output
+  if(readColourN_norm(reading, NUMREADS)){   // take measurement and check value
+    useNN(reading[0], reading[1], reading[2]); // use only R, G, B channels (CLEAR not needed - we've normalized to it)
+    float maxC = 0.0;
+    byte maxIdx = 0;
+    for (int i = 0; i < OutputNodes; i++) {
+      Serial.print(Output[i], 3);
+      if (Output[i] > maxC) {
+        maxC = Output[i];
+        maxIdx = i;
+      }
+      Serial.print(F(" "));
     }
-    Serial.print(F(" "));
+    if (maxC > 0.8) {
+      Serial.print(" <--- " + (String)TargetNames[maxIdx] + " detected");
+    }
+    Serial.print(F("\n")); // new line
+  }else{
+    Serial.println(F("Bad reading. Place object closer to sensor."));
   }
-  if (maxC > 0.8) {
-    Serial.print(" <--- " + (String)TargetNames[maxIdx] + " detected");
-  }
-  Serial.println("");
 }
 
 void printMenu() {  // user menu
