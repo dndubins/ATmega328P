@@ -1,5 +1,10 @@
 /* SVDsensor.ino (for TCS3200 Colour Sensor)
- * Singular Value Decomposition coding based on:
+ * This sketch provides a serial menu, where you can solve a series of linear equations using an Singular Value Decomposition (SVD) algorithm,
+ * and save it to EPROM memory. This can be retreived and used later. The menu also provides a reading mode to use your trained network on 
+ * new colours. For simplicity, I rolled up the sensor reading function into one - read and average a bunch of readings, convert to Hz, 
+ * then normalize R,G, B to the CLEAR channel. This should make it easier to swap out this code with another multi-dimensional
+ * sensor.
+ * SVD coding based on:
  * William H. Press. Numerical recipes in C (2nd ed.): the art of scientific computing
  * Cambridge University Press New York, NY, USA ©1992 
  * 
@@ -9,7 +14,7 @@
  *
  * Author of this sketch: David Dubins
  * Date: 6-Feb-19
- * Last updated: 16-Dec-24
+ * Last updated: 19-Dec-24
  * 
  * Connections:
  * TCS3200 - Arduino Uno
@@ -47,30 +52,28 @@ struct SVDweights {
 
 char choice = '\0';  // For serial menu. Initialize choice with NULL.
 
-const char* TargetNames[7] = { "red", "orange", "yellow", "green", "cyan", "blue", "violet" };  // titles to match training set
-
 // for defining SVD matrix manually: (not needed with EPROMLOAD)
 #ifndef EPROMLOAD
 float Input[MP][NP - 1] = {
   //training set (sensor readings)
-  { 0.044, 0.506, 0.450 },  //RED
-  { 0.035, 0.523, 0.442 },  //RED
-  { 0.047, 0.496, 0.457 },  //RED
-  { 0.079, 0.365, 0.556 },  //ORANGE
-  { 0.063, 0.381, 0.556 },  //ORANGE
-  { 0.066, 0.393, 0.541 },  //ORANGE
-  { 0.200, 0.236, 0.564 },  //YELLOW
-  { 0.161, 0.250, 0.589 },  //YELLOW
-  { 0.164, 0.255, 0.582 },  //YELLOW
-  { 0.483, 0.207, 0.310 },  //GREEN
-  { 0.471, 0.216, 0.314 },  //GREEN
-  { 0.479, 0.208, 0.312 },  //GREEN
-  { 0.580, 0.300, 0.120 },  //BLUE
-  { 0.556, 0.315, 0.130 },  //BLUE
-  { 0.574, 0.296, 0.130 },  //BLUE
-  { 0.254, 0.576, 0.169 },  //PURPLE
-  { 0.259, 0.569, 0.172 },  //PURPLE
-  { 0.309, 0.529, 0.162 }   //PURPLE
+  { 0.733, 0.157, 0.193 },  //RED
+  { 0.714, 0.154, 0.189 },  //RED
+  { 0.667, 0.149, 0.182 },  //RED
+  { 0.625, 0.200, 0.167 },  //ORANGE
+  { 0.600, 0.214, 0.162 },  //ORANGE
+  { 0.538, 0.250, 0.171 },  //ORANGE
+  { 0.429, 0.333, 0.171 },  //YELLOW
+  { 0.417, 0.312, 0.167 },  //YELLOW
+  { 0.467, 0.368, 0.200 },  //YELLOW
+  { 0.276, 0.444, 0.308 },  //GREEN
+  { 0.250, 0.400, 0.296 },  //GREEN
+  { 0.241, 0.412, 0.280 },  //GREEN
+  { 0.176, 0.300, 0.545 },  //BLUE
+  { 0.176, 0.316, 0.545 },  //BLUE
+  { 0.147, 0.294, 0.500 },  //BLUE
+  { 0.370, 0.208, 0.476 },  //PURPLE
+  { 0.385, 0.213, 0.476 },  //PURPLE
+  { 0.370, 0.204, 0.455 }   //PURPLE
 };
 #endif
 
@@ -158,7 +161,10 @@ void loop() {
       Serial.print(F("Reading response for "));
       Serial.print(SVD.Y[i]);
       Serial.println(F(" nm."));
-      readColourN_norm(reading, NUMREADS);  // read sensor NUMREADS times
+      if(!readColourN_norm(reading, NUMREADS)){   // read sensor and check value
+        Serial.println(F("Warning: bad reading. Try again."));
+        i--;  // try again
+      }
       Serial.print(F("Reading: "));
       Serial.print(reading[0]);
       Serial.print(F(","));
@@ -556,8 +562,9 @@ float useSVD(float R, float G, float B) {  // use SVD model to solve for wavelen
 }
 
 // This function takes an array as an input agument, and calculates the average
-// of n readings on each colour channel.
-void readColourN_norm(float colourArr[4], int n) {  // arrays are always passed by value
+// of n readings on each colour channel. Then it normalizes it, and returns false if
+// pulseIn() timed out.
+bool readColourN_norm(float colourArr[4], int n) {  // arrays are always passed by value
 #define TIMEOUT 200                                 // timeout for pulseIN() routine
   unsigned long thisRead[4] = { 0, 0, 0, 0 };       // for data averaging
   bool pinStates[4][2] = {
@@ -574,44 +581,47 @@ void readColourN_norm(float colourArr[4], int n) {  // arrays are always passed 
     for (int j = 0; j < n; j++) {                 // collect n readings on channel i
       thisRead[i] += pulseIn(OUT, LOW, TIMEOUT);  //read colour
     }
-    thisRead[i] /= n;            // report the average
-    colourArr[i] = thisRead[i];  // write values back to colourArr
+    thisRead[i] /= n;                   // report the average
+    colourArr[i] = (float)thisRead[i];  // write values back to colourArr
   }
-  // Normalize: (CLEAR - COLOUR)/[(CLEAR-RED)+(CLEAR-GREEN)+(CLEAR-BLUE)]
-  float total = 0.0;                             // to store total
+  if (colourArr[0] == 0 | colourArr[1] == 0 | colourArr[2] == 0) return false;  // if any channel times out, return false, and don't normalize.
+  // Convert to Hz and normalize: RED/CLEAR, GREEN/CLEAR, BLUE/CLEAR:
+  for (int i = 0; i < 4; i++) {
+    colourArr[i] = 1000000.0 / colourArr[i];  // calculate each signal in Hz (R, G, B, CLEAR)
+  }
   for (int i = 0; i < 3; i++) {                  // subtract each colour from CLEAR signal
-    colourArr[i] = colourArr[i] - colourArr[3];  // subtract W from each signal
-    total += colourArr[i];                       // add signal to total
+    colourArr[i] = colourArr[i] / colourArr[3];  // calculate %signal of R, G, B (relative to CLEAR signal)
   }
-  for (int i = 0; i < 3; i++) {
-    colourArr[i] = colourArr[i] / total;  // divide by total
-  }
+  return true;
 }
 
-void readSample() {                // take one reading and apply model to calculate output
-  readColourN_norm(reading, NUMREADS);  // take measurement
-  float wavelength = useSVD(reading[0], reading[1], reading[2]);
+void readSample() {                           // take one reading and apply model to calculate output
+  if (readColourN_norm(reading, NUMREADS)) {  // take measurement and check value
+    float wavelength = useSVD(reading[0], reading[1], reading[2]);
 #ifdef DEBUG
-  Serial.print(F("R:"));
-  Serial.print(reading[0]);
-  Serial.print(F(" G:"));
-  Serial.print(reading[1]);
-  Serial.print(F(" B:"));
-  Serial.print(reading[2]);
-  Serial.print(F("  wavelength:"));
-  Serial.print(wavelength);
-  String colourname = "";
-  //Wavelengths from https://en.wikipedia.org/wiki/Color
-  //https://academo.org/demos/wavelength-to-colour-relationship/
-  if (wavelength < 700 && wavelength >= 635) colourname = "red";
-  if (wavelength < 635 && wavelength >= 590) colourname = "orange";
-  if (wavelength < 590 && wavelength >= 560) colourname = "yellow";
-  if (wavelength < 560 && wavelength >= 520) colourname = "green";
-  if (wavelength < 520 && wavelength >= 490) colourname = "cyan";
-  if (wavelength < 490 && wavelength >= 450) colourname = "blue";
-  if (wavelength < 450 && wavelength >= 400) colourname = "purple";
-  Serial.println("   " + colourname);
+    Serial.print(F("R:"));
+    Serial.print(reading[0]);
+    Serial.print(F(" G:"));
+    Serial.print(reading[1]);
+    Serial.print(F(" B:"));
+    Serial.print(reading[2]);
+    Serial.print(F("  wavelength:"));
+    Serial.print(wavelength);
+    String colourname = "";
+    //Wavelengths from https://en.wikipedia.org/wiki/Color
+    //https://academo.org/demos/wavelength-to-colour-relationship/
+    if (wavelength < 700 && wavelength >= 635) colourname = "RED";
+    if (wavelength < 635 && wavelength >= 590) colourname = "ORANGE";
+    if (wavelength < 590 && wavelength >= 560) colourname = "YELLOW";
+    if (wavelength < 560 && wavelength >= 520) colourname = "GREEN";
+    if (wavelength < 520 && wavelength >= 490) colourname = "CYAN";
+    if (wavelength < 490 && wavelength >= 450) colourname = "BLUE";
+    if (wavelength < 450 && wavelength >= 400) colourname = "PURPLE";
+    Serial.println("   " + colourname);
 #else
-  Serial.println(wavelength);
+    Serial.println(wavelength);
 #endif
+  } else {
+    Serial.println(F("Bad reading. Place object closer to sensor."));
+  }
 }
