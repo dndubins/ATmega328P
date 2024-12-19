@@ -42,14 +42,14 @@ The function pulseIn() is used to measure the period of the square wave on each 
 After a lot of experimenting with normalizing the channels, I realized that there is a "CLEAR" channel that is very useful as a baseline to normalize against. I found that the following normalization algorithm worked very well in terms of normalizing the relative signals to intensity, and then coming up with a %intensity for each colour:<p>
 
 1) Convert each channel from microseconds to Hz:
-RED=1000000/RED
-GREEN=1000000/GREEN
-BLUE=1000000/BLUE
-CLEAR=100000/CLEAR
+* RED=1000000/RED
+* GREEN=1000000/GREEN
+* BLUE=1000000/BLUE
+* CLEAR=100000/CLEAR
 2) Divide each channel by the CLEAR signal in Hz:
-RED=RED/CLEAR
-GREEN=GREEN/CLEAR
-BLUE=BLUE/CLEAR<p>
+* RED=RED/CLEAR
+* GREEN=GREEN/CLEAR
+* BLUE=BLUE/CLEAR<p>
 
 This gives a signal that varies between 0 and 1 that is normalized by CLEAR signal intensity. A high number in the normalized channel now means more of that colour. In C++. the code looks like this:
 ```
