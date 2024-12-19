@@ -53,6 +53,7 @@ After a lot of experimenting with normalizing the channels, I realized that ther
 
 This gives a signal that varies between 0 and 1 that is normalized by CLEAR signal intensity. A high number in the normalized channel now means more of that colour. In C++. the code looks like this:
 ```
+  // Convert to Hz and normalize: RED/CLEAR, GREEN/CLEAR, BLUE/CLEAR:
   float norm[4] = { 0.0, 0.0, 0.0, 0.0 };  // to store normalized RED, GREEN, BLUE, CLEAR reading
   for (int i = 0; i < 4; i++) {
     norm[i] = 1000000.0 / (float)colourArr[i];  // calculate each signal in Hz (R, G, B, CLEAR)
