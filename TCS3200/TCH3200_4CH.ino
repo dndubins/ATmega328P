@@ -1,10 +1,10 @@
 /* TCH3200_4CH.ino
  * TCS3200 color recognition sensor 
- * This sketch spits out single reads from each channel of the TCS3200, including clear (red, green, blue, clear),
+ * This sketch spits out single reads from each channel of the TCS3200, including clear (RED, GREEN, BLUE, CLEAR),
  * and it also has a function for multiple reads with data averaging.
  *
  * Author: D. Dubins
- * Date: 18-Dec-24
+ * Date: 19-Dec-24
  * Sketch adapted from: https://electronicsforu.com/electronics-projects/rgb-color-detector-tcs3200-sensor-module
  * http://www.efymag.com/admin/issuepdf/RGB-Colour-Detection-Using-TCS3200_3-17.rar
  * There are three functions presented here:
