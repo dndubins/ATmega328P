@@ -2,7 +2,7 @@
  * TCS3200 color recognition sensor 
  * This sketch measures colour and lights up an RGB LED module accordingly.
  * Author: D. Dubins
- * Date: 18-Dec-24
+ * Date: 19-Dec-24
  *
  * Connections:
  * TCS3200 - Arduino Uno
@@ -102,33 +102,31 @@ void readColourN(int colourArr[4], int n) {    // arrays are always passed by va
   }
 }
 
-colour decodeColour(int colourArr[4]) {  // decodes an RGB sensor reading into colour buckets defined in the enum "colour".
-  float norm[3] = { 0.0, 0.0, 0.0 };     // to store RED, GREEN, BLUE, CLEAR reading
-    // Normalize: (CLEAR - COLOUR)/[(CLEAR-RED)+(CLEAR-GREEN)+(CLEAR-BLUE)]
+colour decodeColour(int colourArr[4]) {                                                // decodes an RGB sensor reading into colour buckets defined in the enum "colour".
   if (colourArr[0] == 0 | colourArr[1] == 0 | colourArr[2] == 0) return NOT_DETECTED;  // if any channel times out, return a null reading and don't normalize.
-  float total = 0.0;                                                                   // to store total
-  for (int i = 0; i < 3; i++) {                                                        // subtract each colour from CLEAR signal
-    norm[i] = (float)(colourArr[i] - colourArr[3]);                                    // subtract W from each signal
-    total += norm[i];                                                                  // add signal to total
+  // Convert to Hz and normalize: RED/CLEAR, GREEN/CLEAR, BLUE/CLEAR:
+  float norm[4] = { 0.0, 0.0, 0.0, 0.0 };  // to store normalized RED, GREEN, BLUE, CLEAR reading
+  for (int i = 0; i < 4; i++) {
+    norm[i] = 1000000.0 / (float)colourArr[i];  // calculate each signal in Hz (R, G, B, CLEAR)
   }
-  for (int i = 0; i < 3; i++) {
-    norm[i] = norm[i] / total;  // divide by total
+  for (int i = 0; i < 3; i++) {   // subtract each colour from CLEAR signal
+    norm[i] = norm[i] / norm[3];  // calculate %signal of R, G, B (relative to CLEAR signal)
   }
   Serial.print("Normalized: ");
   printNormArr(norm);  // print the normalized array
   const float RED_THRESHOLD = 0.3;
   const float GREEN_THRESHOLD = 0.3;
-  const float BLUE_THRESHOLD = 0.2;
-  const float ORANGE_THRESHOLD = 0.45;                                                                        // this is the GREEN threshold for orange (orange happens when green signal is between ~0.3-0.45)
-  if (norm[0] < RED_THRESHOLD) {                                                                              // if RED has a signal
-    if (norm[1] > ORANGE_THRESHOLD && norm[2] > BLUE_THRESHOLD) return RED;                                   // RED is dominant
-    if (norm[1] <= ORANGE_THRESHOLD && norm[1] > GREEN_THRESHOLD && norm[2] > BLUE_THRESHOLD) return ORANGE;  // RED and a little bit of GREEN make ORANGE
-    if (norm[1] < GREEN_THRESHOLD && norm[2] > BLUE_THRESHOLD) return YELLOW;                                 // RED and GREEN make YELLOW
-    if (norm[1] > GREEN_THRESHOLD && norm[2] < BLUE_THRESHOLD) return PURPLE;                                 // RED and BLUE make PURPLE
+  const float BLUE_THRESHOLD = 0.4;
+  const float ORANGE_THRESHOLD = 0.2;                                                                         // this is the GREEN threshold for orange
+  if (norm[0] >= RED_THRESHOLD) {                                                                             // if RED has a signal
+    if (norm[1] < ORANGE_THRESHOLD && norm[2] < BLUE_THRESHOLD) return RED;                                   // RED is dominant
+    if (norm[1] >= ORANGE_THRESHOLD && norm[1] < GREEN_THRESHOLD && norm[2] < BLUE_THRESHOLD) return ORANGE;  // RED and a little bit of GREEN make ORANGE
+    if (norm[1] >= GREEN_THRESHOLD && norm[2] < BLUE_THRESHOLD) return YELLOW;                               // RED and GREEN make YELLOW
+    if (norm[1] < GREEN_THRESHOLD && norm[2] >= BLUE_THRESHOLD) return PURPLE;                                // RED and BLUE make PURPLE
   }
-  if (norm[0] > RED_THRESHOLD && norm[1] < GREEN_THRESHOLD && norm[2] > BLUE_THRESHOLD) return GREEN;  // GREEN is dominant
-  if (norm[0] > RED_THRESHOLD && norm[2] < BLUE_THRESHOLD) return BLUE;                                // BLUE is dominant. Ignore GREEN signal. (We are ignoring BLUE+GREEN=CYAN, and calling this "BLUE".)
-  return NOT_DETECTED;                                                                                 // if the routine gets this far, we haven't identified a colour.
+  if (norm[0] < RED_THRESHOLD && norm[1] >= GREEN_THRESHOLD && norm[2] < BLUE_THRESHOLD) return GREEN;  // GREEN is dominant
+  if (norm[0] < RED_THRESHOLD && norm[2] >= BLUE_THRESHOLD) return BLUE;                                 // BLUE is dominant. Ignore GREEN signal. (We are ignoring BLUE+GREEN=CYAN, and calling this "BLUE".)
+  return NOT_DETECTED;                                                                                   // if the routine gets this far, we haven't identified a colour.
 }
 
 void lightLED(colour c) {
@@ -200,11 +198,13 @@ void printColourArr(int colourArr[4]) {
   Serial.println(colourArr[3]);  // output CLEAR channel
 }
 
-// Prints contents of colourArr[i]
-void printNormArr(float normArr[3]) {
+// Prints contents of normArr[i]
+void printNormArr(float normArr[4]) {
   Serial.print(normArr[0], 3);  // output RED channel
   Serial.print(",");
   Serial.print(normArr[1], 3);  // output GREEN channel
   Serial.print(",");
   Serial.println(normArr[2], 3);  // output BLUE channel
+  //Serial.print(",");
+  //Serial.println(normArr[3]); // output CLEAR channel in Hz
 }
