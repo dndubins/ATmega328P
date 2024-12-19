@@ -35,30 +35,30 @@ void readColourN(float colourArr[3], int n) {  // arrays are always passed by va
 ```
 This function takes an array as an input argument (remember, arrays in this context are call-by-value), and takes n readings *of each colour*. This speeds up a reading considerably since you should wait at least ~100msec before taking a colour reading after setting S2 and S3. But then you can take multiple readings, and take the average over that colour, rather than start all over with three separate readings.<p>
 
-Also remember that a LOW reading on a channel means that there's a lot of that colour detected. I think my rookie mistake was looking at an RGB reading like  "11, 43, 39" and thinking there was no red in it. Nope, that's red. Think physics - you are filtering OUT that channel with a red filter. So if there's red light, it won't get to the sensor as well. <p>
+Also remember that a LOW reading on a channel means that there's a lot of that colour detected. I think my rookie mistake was looking at an RGB reading like  "11, 43, 39" and thinking there was no red in it. Nope, that's red. What happens on the TCS3200 is essentially a light-intensity-to-frequency converter. Each channel reports a square wave, with the frequency of proportional to the intensity of light. The higher the intensity, the higher the frequency.<p>
+
+The function pulseIn() is used to measure the period of the square wave on each channel (R, G, B, CLEAR). A higher frequency means a shorter period. This means that if there is more RED in the signal, pulseIn() will return a lower number.
 
 After a lot of experimenting with normalizing the channels, I realized that there is a "CLEAR" channel that is very useful as a baseline to normalize against. I found that the following normalization algorithm worked very well in terms of normalizing the relative signals to intensity, and then coming up with a %intensity for each colour:<p>
 
-1) Calculate the difference from each colour from the CLEAR channel:
-RED=(RED - CLEAR)
-GREEN=(GREEN-CLEAR)
-BLUE=(BLUE-CLEAR)
-2) Add up the differences for a total:
-TOTAL = RED + GREEN + BLUE
-3) Divide each signal by the total:
-RED = RED / TOTAL
-GREEN = GREEN / TOTAL
-BLUE = BLUE / TOTAL<p>
+1) Convert each channel from microseconds to Hz:
+RED=1000000/RED
+GREEN=1000000/GREEN
+BLUE=1000000/BLUE
+CLEAR=100000/CLEAR
+2) Divide each channel by the CLEAR signal in Hz:
+RED=RED/CLEAR
+GREEN=GREEN/CLEAR
+BLUE=BLUE/CLEAR<p>
 
-This gives a signal that varies between 0 and 1 that is normalized by signal intensity. A low number in the normalized channel still means more of that colour. In C++. the code looks like this:
+This gives a signal that varies between 0 and 1 that is normalized by CLEAR signal intensity. A high number in the normalized channel now means more of that colour. In C++. the code looks like this:
 ```
-  float total = 0.0;                                       // to store total
-  for (int i = 0; i < 3; i++) {                            // subtract each colour from CLEAR signal
-    norm[i] = (float)(colourArr[i] - colourArr[3]);        // subtract W from each signal
-    total += norm[i];                                      // add signal to total
+  float norm[4] = { 0.0, 0.0, 0.0, 0.0 };  // to store normalized RED, GREEN, BLUE, CLEAR reading
+  for (int i = 0; i < 4; i++) {
+    norm[i] = 1000000.0 / (float)colourArr[i];  // calculate each signal in Hz (R, G, B, CLEAR)
   }
-  for (int i = 0; i < 3; i++) {
-    norm[i] = norm[i] / total;  // divide by total
+  for (int i = 0; i < 3; i++) {   // subtract each colour from CLEAR signal
+    norm[i] = norm[i] / norm[3];  // calculate %signal of R, G, B (relative to CLEAR signal)
   }
 ```
 
@@ -66,6 +66,3 @@ This gave rise to the following sketches:
 * TCS3200_4CH.ino - takes readings on all 4 channels (R, G, B, CLEAR). It has a function to take 1 reading "readColour()", and a function to take N readings "readColourN()".
 * TCS3200_4CH_colourID.ino - this takes N readings and decodes them into colour buckets RED, ORANGE, YELLOW, GREEN, BLUE, and PURPLE (or NOT_DETECTED if the colour doesn't fit nicely into these buckets).
 * TCS3200_RGBLED.ino - it's the colourID sketch above. Once the colour is detected, the sketch lights up an RGB LED accordingly with the identified colour.
-
-
-
