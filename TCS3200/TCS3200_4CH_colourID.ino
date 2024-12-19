@@ -4,7 +4,7 @@
  * It normalizes the readings using the CLEAR intensity, and identifies colour on the Serial Monitor.
  *
  * Author: D. Dubins
- * Date: 18-Dec-24
+ * Date: 19-Dec-24
  * Sketch adapted from: https://electronicsforu.com/electronics-projects/rgb-color-detector-tcs3200-sensor-module
  * http://www.efymag.com/admin/issuepdf/RGB-Colour-Detection-Using-TCS3200_3-17.rar
  *
@@ -130,13 +130,15 @@ void printColourArr(int colourArr[4]) {
   Serial.println(colourArr[3]);  // output CLEAR channel
 }
 
-// Prints contents of colourArr[i]
-void printNormArr(float normArr[3]) {
+// Prints contents of normArr[i]
+void printNormArr(float normArr[4]) {
   Serial.print(normArr[0], 3);  // output RED channel
   Serial.print(",");
   Serial.print(normArr[1], 3);  // output GREEN channel
   Serial.print(",");
   Serial.print(normArr[2], 3);  // output BLUE channel
+  //Serial.print(",");
+  //Serial.print(normArr[3], 0);  // output CLEAR channel in Hz
 }
 
 // Prints identified colour n
