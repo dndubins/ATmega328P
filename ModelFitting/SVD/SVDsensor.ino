@@ -79,24 +79,24 @@ float Input[MP][NP - 1] = {
 
 //Read in Y matrix (outcomes to map to - this is "wavelength")
 float Y[MP] = {
-  700,  //red
-  700,  //red
-  700,  //red
-  620,  //orange
-  620,  //orange
-  620,  //orange
-  590,  //yellow
-  590,  //yellow
-  590,  //yellow
-  520,  //green
-  520,  //green
-  520,  //green
-  470,  //blue
-  470,  //blue
-  470,  //blue
-  400,  //purple
-  400,  //purple
-  400   //purple
+  700,  // RED
+  700,  // RED
+  700,  // RED
+  620,  // ORANGE
+  620,  // ORANGE
+  620,  // ORANGE
+  590,  // YELLOW
+  590,  // YELLOW
+  590,  // YELLOW
+  520,  // GREEN
+  520,  // GREEN
+  520,  // GREEN
+  470,  // BLUE
+  470,  // BLUE
+  470,  // BLUE
+  400,  // PURPLE
+  400,  // PURPLE
+  400   // PURPLE
 };
 
 //SVD variables:
