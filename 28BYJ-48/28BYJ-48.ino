@@ -1,6 +1,6 @@
 /* Test sketch: 28BYJ-48 Stepper with ULN2003
  * David Dubins 15-Dec-20
- * Last Updated: 25-Dec-21
+ * Last Updated: 06-Mar-25
  *
  * Connections:
  * Plug the connector of the 28BYJ-48 stepper motor directly into the socket of the ULN2003.
@@ -46,7 +46,7 @@ void motorStep(int nSteps, float rpm){
     {1, 0, 0, 0}, // step 6
     {1, 0, 0, 1}  // step 7   
   };
-  static int mStep; // remember last val of mStep
+  static int mStep=0; // remember last value of mStep
   for(int i=0;i<abs(nSteps);i++){ // STEP pulses
     if(nSteps>0){ // clockwise
       mStep++;
