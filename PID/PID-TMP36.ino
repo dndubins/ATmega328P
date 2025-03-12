@@ -43,7 +43,9 @@ void myPID(float kP, float kI, float kD) {
   TOLERANCE: Acceptable range from SETPOINT (adjust the system until Error is within TOLERANCE).
   kP: Proportional gain; kI: Integrator gain; kD: Derivative Gain
   IntThresh: Only run integrator only if Error < IntThresh (if control is almost done). Make this smallish, but greater than TOLERANCE (otherwise it will never engage).
-  ScaleFactor: factor to scale P+I+D to a response (then after, impose 0-255 limits). A negative scale factor here will deactivate DRIVE if MEASURED > SETPOINT.
+  ScaleFactor: factor to scale P+I+D to a response (then after, impose 0-255 limits). 
+               A negative scale factor will engage DRIVE if MEASURED < SETPOINT. 
+               A positive scale factor will engage DRIVE if MEASURED > SETPOINT.
   */
   float TOLERANCE = 1.0; // tolerance of control (in this
                        // case, 1 means that PID won't do
@@ -63,7 +65,7 @@ void myPID(float kP, float kI, float kD) {
                        // plan on using this routine to
                        // continuously check (keep track of
                        // last globally)
-  float DRIVE = 0.0;   // to store DRIVE value
+  long DRIVE = 0;      // to store DRIVE value
   do {                 // You can get rid of the do..while
                        // loop if you want the PID routine to
                        // adjust the drive ONCE, i.e. not keep
@@ -90,8 +92,9 @@ void myPID(float kP, float kI, float kD) {
     I = Integral*kI;   // integral term      
     D = (LAST-MEASURED)*kD; // derivative term     
     DRIVE = P + I + D; // Total DRIVE = P+I+D      
-    DRIVE = (long)(DRIVE*ScaleFactor); // scale DRIVE to be in
-                       // the range 0-255
+    DRIVE = (long)(DRIVE*ScaleFactor); // used to reverse
+                    // direction, and scale DRIVE to be
+                    // in the range 0-255. 
     DRIVE = constrain(DRIVE,0,255); // make sure DRIVE is an
                        // integer between 0 and 255. An offset
                        // can be used to get the DRIVE moving,
