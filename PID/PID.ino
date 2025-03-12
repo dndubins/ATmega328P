@@ -74,8 +74,8 @@ void myPID(float kP, float kI, float kD) {
       Serial.println("SETPOINT within TOLERANCE.");
       return; // leave function
     }
-    if (abs(Error) < IntThresh){ // prevent integral wind-up by
-                       // only engaging it close to SET.
+    if (abs(Error) < IntThresh){ // prevent integral wind-up
+                       // by only engaging it close to SET.
       Integral = Integral + Error; // add to Error Integral
     } else {     
       Integral=0.0;    // zero Integral if out of bounds    
@@ -111,7 +111,7 @@ void myPID(float kP, float kI, float kD) {
     //Serial.println((String)SETPOINT+", "+(String)MEASURED);
     LAST = MEASURED;   // save current value for next time
     analogWrite(DRIVEPin, DRIVE); // send DRIVE as PWM signal
-    delay(500);        // optional delay (affects derivative term)
+    delay(500);        // optional delay (affects D term)
   } while (abs(SETPOINT-MEASURED)>TOLERANCE);    // End of DO
                        // loop condition. do..while will
                        // always run at least once (while is
