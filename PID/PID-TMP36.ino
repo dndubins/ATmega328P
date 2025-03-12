@@ -62,7 +62,7 @@ void myPID(float kP, float kI, float kD) {
                        // plan on using this routine to
                        // continuously check (keep track of
                        // last globally)
-  long DRIVE = 0.0;    // Nothing quite like a long drive.
+  float DRIVE = 0.0;   // to store DRIVE value
   do {                 // You can get rid of the do..while
                        // loop if you want the PID routine to
                        // adjust the drive ONCE, i.e. not keep
@@ -73,6 +73,12 @@ void myPID(float kP, float kI, float kD) {
     MEASURED = ((analogRead(MESPin)*5.0/1023.0)-0.5)*100.0; // convert
                        // from divs to degC
     Error = SETPOINT - MEASURED;
+    if (abs(Error)<TOLERANCE){
+      LAST = MEASURED;
+      I = 0;
+      Serial.println("SETPOINT within TOLERANCE.");
+      return; // leave function
+    }
     if (abs(Error) < IntThresh){ // prevent integral wind-up by
                        // only engaging it close to SET.
       Integral = Integral + Error; // add to Error Integral
