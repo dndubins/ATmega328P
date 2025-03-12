@@ -59,7 +59,6 @@ void myPID(float kP, float kI, float kD) {
   float D = 0.0;
   static float LAST=0.0; // remember LAST value after function exits
   float DRIVE = 0.0;   // to store DRIVE value
-  if(
   do {                 // You can get rid of the do..while
                        // loop if you want the PID routine to
                        // adjust the drive ONCE, i.e. not keep
