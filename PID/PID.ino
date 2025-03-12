@@ -57,7 +57,7 @@ void myPID(float kP, float kI, float kD) {
   float P = 0.0;
   float I = 0.0;
   float D = 0.0;
-  static float LAST=0;.0   // remember LAST value after function exits
+  static float LAST=0.0; // remember LAST value after function exits
   float DRIVE = 0.0;   // to store DRIVE value
   if(
   do {                 // You can get rid of the do..while
