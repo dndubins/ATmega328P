@@ -52,7 +52,8 @@ void myPID(float kP, float kI, float kD) {
                        // (proximity to SET)
   float ScaleFactor=-1.0; // Use this to change direction, and
                        // rescale DRIVE if necessary
-                       // ScaleFactor=-1: Cooling. ScaleFactor=1.0: Heating.
+                       // ScaleFactor=-1.0: Cooling. 
+                       // ScaleFactor=1.0: Heating.
   float Error = 0.0;    
   float Integral = 0.0; // make this a global variable if not
                         // using the do-while loop
