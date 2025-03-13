@@ -28,7 +28,7 @@ void loop(){
   myPID(1.0, 0.0, 0.0); // call PID control here, entering
                         // values for kP, kI, and kD (other
                         // options available in PID subroutine)
-  delay(500);           // delay statement
+  // Other code can go here
 }
 
 void myPID(float kP, float kI, float kD) {
@@ -107,4 +107,5 @@ void myPID(float kP, float kI, float kD) {
   //Serial.println((String)SETPOINT+", "+(String)MEASURED);
   LAST = MEASURED;   // save current value for next time
   analogWrite(DRIVEPin, DRIVE); // send DRIVE as PWM signal
+  delay(500);        // add a short delay here
 }
