@@ -30,6 +30,7 @@ void loop(){
   myPID(10.0, 1.0, 0.0); // call PID control here, entering
                        // values for kP, kI, and kD (other
                        // options available in PID subroutine)
+  delay(500);          // add a short delay here
   // Other code can go here.
 }
 
@@ -58,15 +59,11 @@ void myPID(float kP, float kI, float kD) {
                        // ScaleFactor=-1.0: Cooling.
                        // ScaleFactor=1.0: Heating.
   float Error = 0.0;    
-  float Integral = 0.0; // make this a global variable if not
-                        // using the do-while loop
+  static float Integral = 0.0; // static remembers Integral on exit 
   float P = 0.0;
   float I = 0.0;
   float D = 0.0;
-  static float LAST;   // Make this a global variable if you
-                       // plan on using this routine to
-                       // continuously check (keep track of
-                       // last globally)
+  static float LAST;    // static remembers LAST on exit 
   long DRIVE = 0;      // to store DRIVE value
   // -0.5V here is the offset for TMP36
   MEASURED = ((analogRead(MESPin)*5.0/1023.0)-0.5)*100.0; // convert
@@ -116,5 +113,4 @@ void myPID(float kP, float kI, float kD) {
   //Serial.println((String)SETPOINT+", "+(String)MEASURED);
   LAST = MEASURED;   // save current value for next time
   analogWrite(DRIVEPin, DRIVE); // send DRIVE as PWM signal
-  delay(500);        // add a short delay here
 }
