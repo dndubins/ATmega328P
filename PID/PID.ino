@@ -27,7 +27,7 @@ void setup() {
 void loop(){
   myPID(1.0, 0.0, 0.0); // call PID control here, entering
                         // values for kP, kI, and kD (other
-                        // options available in PID subroutine)
+                        // options available in PID function)
   // Other code can go here
 }
 
