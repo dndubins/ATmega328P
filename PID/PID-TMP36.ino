@@ -30,6 +30,7 @@ void loop(){
   myPID(10.0, 1.0, 0.0); // call PID control here, entering
                        // values for kP, kI, and kD (other
                        // options available in PID subroutine)
+  // Other code can go here.
 }
 
 void myPID(float kP, float kI, float kD) {
@@ -52,8 +53,10 @@ void myPID(float kP, float kI, float kD) {
                        // is within 1 degC of the setpoint)
   float IntThresh=3.0; // narrow region of integral term
                        // (proximity to SET)
-  float ScaleFactor=-1.0; // Use this to change direction and
+  float ScaleFactor=-1.0; // Use this to change direction, and
                        // rescale DRIVE if necessary
+                       // ScaleFactor=-1.0: Cooling.
+                       // ScaleFactor=1.0: Heating.
   float Error = 0.0;    
   float Integral = 0.0; // make this a global variable if not
                         // using the do-while loop
