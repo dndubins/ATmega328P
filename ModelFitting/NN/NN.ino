@@ -6,7 +6,8 @@
  * See http://robotics.hobbizine.com/arduinoann.html for details.
  * TCS230 color recognition sensor 
  * Sensor connection pins to Arduino are shown in comments
- * Neural network code and algorithm adapted from: http://robotics.hobbizine.com/arduinoann.html 
+ * Neural network code and algorithm adapted from: http://robotics.hobbizine.com/arduinoann.html, 
+ * by Ralph Heymsfeld in Hobbizine.
  * Sketch: David Dubins
  * Date: 3-Feb-19
  * Last Updated: 13-Dec-24
