@@ -1,7 +1,7 @@
 # Brute-Force PWM
 Before you go down the rabbit hole of mucking with MCU timers, if you just need a short routine to make a cusom PWM signal on any digital pin, you could try the following function. This should work across platforms:
 ```
-void PWMwrite(byte pin, unsigned int freq, byte duty, int dur) {      
+void PWMwrite(byte pin, unsigned int freq, byte duty, unsigned int dur) {      
   //pin: any digital pin that can be set to OUTPUT mode
   //freq: frequency of signal
   //duty: duty cycle (0-255)
