@@ -1,3 +1,25 @@
+# Brute-Force PWM
+Before you go down the rabbit hole of mucking with MCU timers, if you just need a short routine to make a cusom PWM signal on any digital pin, you could try the following function. This should work across platforms:
+```
+void PWMwrite(byte pin, unsigned int freq, byte duty, int dur) {      
+  //pin: any digital pin that can be set to OUTPUT mode
+  //freq: frequency of signal
+  //duty: duty cycle (0-255)
+  //dur: duration of signal in msec
+  pinMode(pin,OUTPUT);                //pin should be in OUTPUT mode 
+  float period = 1000000/freq;        //period in microseconds
+  unsigned int tON = period*duty/255; //how long to stay on
+  unsigned int tOFF = period-tON;     //when to turn off
+  unsigned long timer1 = millis();    //start the timer
+  while (millis() - timer1 < dur) {
+    if(duty>0)digitalWrite(pin, HIGH);
+    (tON<16383)?delayMicroseconds(tON):delay(tON/1000);
+    if(duty<255)digitalWrite(pin, LOW);
+    (tOFF<16383)?delayMicroseconds(tOFF):delay(tOFF/1000);
+  }
+}
+```
+
 # Fast PWM on the ATmega328p
 
 Unfortunately, since the Arduino Playground shut their doors as a Wiki and became a website, I have nowhere particularly great to post this code. So, I'm posting it here!
