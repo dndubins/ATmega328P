@@ -13,6 +13,27 @@ However, when it comes to **printing those values in exponential format**, the A
 
 I wrote this sketch (with some **AMAZING debugging help from ChatGPT**) to create a function called `float2exp()` that converts a `float` value into a string in **scientific (exponential) notation**, with a specified number of **significant digits**.
 
+### Code
+```
+String float2exp(float num, byte sigDigits) {
+  if (num == 0) return "0.00e+0";
+  if (isnan(num)) return "NaN";
+  int exponent = floor(log10(abs(num))); // find out the order
+  float scaled = num / pow(10, exponent); // scale the number
+  // Round scaled to (sigDigits - 1) decimal places
+  float rounded = round(scaled * pow(10, sigDigits - 1)) / pow(10, sigDigits - 1); // round it
+  // Handle rounding edge case where 9.999... rounds to 10.0
+  if (rounded >= 10.0) {
+    rounded /= 10.0;
+    exponent++;
+  }
+  // Build string
+  String expStr = String(rounded, sigDigits - 1);  // this controls how many decimal places show
+  expStr += "e" + String((exponent >= 0 ? "+" : "")) + String(exponent);
+  return expStr;
+}
+```
+
 ### Example
 
 ```cpp
