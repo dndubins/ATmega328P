@@ -36,15 +36,21 @@ void setup() {
 }
 
 void loop() {
-  readWord(W_SECURITY, 700);                                      // read "security", with 700 msec delay
-  readWord(W_ALARM, 500);                                         // read "alarm" with 500 msec delay
-  readWord(W_MESSAGE, 500);                                       // read "message" with 500 msec delay
+  // One word at a time:
+  readWord(W_SECURITY, 650);                                      // read "security", with 650 msec delay (from start of word)
+  readWord(W_ALARM, 500);                                         // read "alarm" with 500 msec delay (from start of word)
+  readWord(W_MESSAGE, 400);                                       // read "message" with 400 msec delay (from start of word)
   delay(1000);                                                    // wait a second
+  // Declare sentence_words[] as array of bytes, using define statements in LBT_words.h:
   byte sentence_words[] = { W_WARNING, W_INTRUDER, W_DETECTED };  // "warning intruder detected" (using LBT_words.h)
-  byte sentence_bytes[] = { 0xc5, 0xc7, 0xa5, 0xfc };             // "hello how are you" (using byte table below)
-  readSentence(sentence_words, 3);                                // read first sentence, 3 words long
-  readSentence(sentence_bytes, 4);                                // read second sentence, 4 words long
-  readCustomSentence();                                           // custom message "activate distruct sequence" in a void function
+  readSentence(sentence_words, 3);                                // read sentence_words (3 words long)
+
+  // bundle readWords in a void function, and play them here:
+  readCustomSentence();                                           // custom message "hello how are you" in a void function
+
+  // Declare sentence_bytes[] as array of bytes:
+  byte sentence_bytes[] = { 0x0a, 0x0d, 0xe8 };                   // "activate destruct sequence" (using byte table below)
+  readSentence(sentence_bytes, 3);                                // read second sentence_bytes (3 words long)
 
   // Uncomment to read all words:
   //for(byte i=0;i<256;i++){
@@ -69,10 +75,13 @@ void readSentence(byte words[], int n) {
   delay(1000);
 }
 
+// To read a custom sentence.
+// Modify delay times as needed. 700 msec works for most words.
 void readCustomSentence() {
-  readWord(W_ACTIVATE, 700);
-  readWord(W_DESTRUCT, 700);
-  readWord(W_SEQUENCE, 700);
+  readWord(W_HELLO, 800); // read "hello", with 700 msec delay (from start of word)
+  readWord(W_HOW, 400); // read "how", with 700 msec delay (from start of word)
+  readWord(W_ARE, 400); // read "are", with 600 msec delay (from start of word)
+  readWord(W_YOU, 500); // read "you", with 600 msec delay (from start of word)
   delay(1000);
 }
 
@@ -108,18 +117,18 @@ Address  Word        Category
 0x16     run         Command
 0x17     stop        Command
 0x18     turn        Command
-0x19     january     Months/Days/Time
-0x1a     february    Months/Days/Time
-0x1b     march       Months/Days/Time
-0x1c     april       Months/Days/Time
-0x1d     may         Months/Days/Time
-0x1e     june        Months/Days/Time
-0x1f     july        Months/Days/Time
-0x20     august      Months/Days/Time
-0x21     september   Months/Days/Time
-0x22     october     Months/Days/Time
-0x23     november    Months/Days/Time
-0x24     december    Months/Days/Time
+0x19     January     Months/Days/Time
+0x1a     February    Months/Days/Time
+0x1b     March       Months/Days/Time
+0x1c     April       Months/Days/Time
+0x1d     May         Months/Days/Time
+0x1e     June        Months/Days/Time
+0x1f     July        Months/Days/Time
+0x20     August      Months/Days/Time
+0x21     September   Months/Days/Time
+0x22     October     Months/Days/Time
+0x23     November    Months/Days/Time
+0x24     December    Months/Days/Time
 0x25     Monday      Months/Days/Time
 0x26     Tuesday     Months/Days/Time
 0x27     Wednesday   Months/Days/Time
@@ -209,7 +218,7 @@ Address  Word        Category
 0x7b     milli       Measurement
 0x7c     minutes     Measurement
 0x7d     nano        Measurement
-0x7e     newton      Measurement
+0x7e     Newton      Measurement
 0x7f     night       Measurement
 0x80     ohms        Measurement
 0x81     per         Measurement
@@ -241,7 +250,7 @@ Address  Word        Category
 0x9b     not         Math
 0x9c     plus        Math
 0x9d     square root Math
-0x9e     A           Words General
+0x9e     a           Words General
 0x9f     ahead       Words General
 0xa0     air         Words General
 0xa1     altitude    Words General
