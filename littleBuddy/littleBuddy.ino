@@ -40,7 +40,8 @@ void loop() {
   readWord(W_SECURITY, 650);                                      // read "security", with 650 msec delay (from start of word)
   readWord(W_ALARM, 500);                                         // read "alarm" with 500 msec delay (from start of word)
   readWord(W_MESSAGE, 400);                                       // read "message" with 400 msec delay (from start of word)
-  delay(1000);                                                    // wait a second
+  delay(1000);   
+                                                   // wait a second
   // Declare sentence_words[] as array of bytes, using define statements in LBT_words.h:
   byte sentence_words[] = { W_WARNING, W_INTRUDER, W_DETECTED };  // "warning intruder detected" (using LBT_words.h)
   readSentence(sentence_words, 3);                                // read sentence_words (3 words long)
@@ -49,8 +50,8 @@ void loop() {
   readCustomSentence();                                           // custom message "hello how are you" in a void function
 
   // Declare sentence_bytes[] as array of bytes:
-  byte sentence_bytes[] = { 0x0a, 0x0d, 0xe8 };                   // "activate destruct sequence" (using byte table below)
-  readSentence(sentence_bytes, 3);                                // read second sentence_bytes (3 words long)
+  byte sentence_bytes[] = { 0xb0, 0x0a, 0x0d, 0xe8 };             // "caution activate destruct sequence" (using byte table below)
+  readSentence(sentence_bytes, 4);                                // read second sentence_bytes (3 words long)
 
   // Uncomment to read all words:
   //for(byte i=0;i<256;i++){
@@ -78,10 +79,10 @@ void readSentence(byte words[], int n) {
 // To read a custom sentence.
 // Modify delay times as needed. 700 msec works for most words.
 void readCustomSentence() {
-  readWord(W_HELLO, 800); // read "hello", with 700 msec delay (from start of word)
-  readWord(W_HOW, 400); // read "how", with 700 msec delay (from start of word)
-  readWord(W_ARE, 400); // read "are", with 600 msec delay (from start of word)
-  readWord(W_YOU, 500); // read "you", with 600 msec delay (from start of word)
+  readWord(W_HELLO, 800); // read "hello", with 800 msec delay (from start of word)
+  readWord(W_HOW, 400); // read "how", with 400 msec delay (from start of word)
+  readWord(W_ARE, 400); // read "are", with 400 msec delay (from start of word)
+  readWord(W_YOU, 500); // read "you", with 500 msec delay (from start of word)
   delay(1000);
 }
 
