@@ -33,6 +33,7 @@ void setup() {
   SPI.transfer(0xA8);  //COUT ramp up
   SPI.transfer(0x00);
   digitalWrite(CS, HIGH);
+  delay(1000); // delay to prevent truncation of first word
 }
 
 void loop() {
