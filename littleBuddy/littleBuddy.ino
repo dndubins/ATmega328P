@@ -52,9 +52,9 @@ void loop() {
 
   // Declare sentence_bytes[] as array of bytes:
   byte sentence_bytes[] = { 0xb0, 0x0a, 0x0d, 0xe8 };             // "caution activate destruct sequence" (using byte table below)
-  readSentence(sentence_bytes, 4);                                // read second sentence_bytes (3 words long)
+  readSentence(sentence_bytes, 4);                                // read second sentence_bytes (4 words long)
 
-  // Uncomment to read all words:
+  // Uncomment to read all words in the library:
   //for(byte i=0;i<256;i++){
   //  readWord(i,700);
   //}
