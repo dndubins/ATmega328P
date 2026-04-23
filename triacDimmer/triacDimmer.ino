@@ -1,5 +1,8 @@
-//triacDimmer.ino: Example of forward-phase dimming
-//Set up a 10K pot as a voltage divider on pin A0
+/* triacDimmer.ino: Example of forward-phase dimming
+ * (Figure 5-29,5-30)
+ * Available here: https://github.com/dndubins/ATmega328P/tree/main/triacDimmer
+ * Set up a 10K pot as a voltage divider on pin A0
+ */
 byte crossPin=2; // Uno pin 2 -- H11AA1 pin 5
 byte triacPin=3; // Uno pin 3 -- 400R -- MOC3010 pin 1
 int dur=0; // duration for dimming 
