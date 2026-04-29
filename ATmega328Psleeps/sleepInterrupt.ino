@@ -18,7 +18,11 @@ void loop(){
 
 void sleep(){
   // Two options for ATmega328: 0 (Pin 2) or 1 (Pin 3)
+  // Uncomment the pin(s) you would like to wake the MCU with.
+  // Both pins can be uncommented and the MCU will wake if either
+  // is pushed.
   attachInterrupt(0, onWake, FALLING);
+  //attachInterrupt(1, onWake, FALLING);
   delay(100); // allow serial commands to finish
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   /* set_sleep_mode() options:
@@ -31,6 +35,7 @@ void sleep(){
   sleep_mode(); // MCU will sleep here
   sleep_disable(); // MCU will wake up here
   detachInterrupt(0); // detach INT0 while awake 
+  //detachInterrupt(1); // detach INT0 while awake 
 }
 
 void onWake(){ // ISR
