@@ -2,7 +2,7 @@
 
 The **ATmega328P** is the microprocessor used for the Arduino Uno.  
 
-With a bit of help from **ChatGPT** and **Claude.AI**, I wrote a few barebones `#define` functions that help keep memory usage minimal:  
+With assistance from **ChatGPT** and **Claude (Anthropic) -- claude.ai**, I wrote a few barebones `#define` functions that help keep memory usage minimal:  
 
 ```cpp
 // Fast pin modes, writes, and reads for the ATmega328P (digital pins 2-13)
