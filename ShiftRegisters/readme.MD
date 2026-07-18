@@ -4,4 +4,4 @@ The sketch ShiftInOut.ino sets up one 74HC165 shift-in register, and one 74HC595
 
 The sketch ShiftOut_nchips.ino sets up two 74HC595 shift-out registers in series, and sends data to both of them.
 
-The sketch LEDMatrix_nchips is for scrolling text across multiple shift-out registers daisy-chained to 8x8 LED screens.
+The sketch LEDMatrix_nchips.ino is for scrolling text across multiple shift-out registers daisy-chained to 8x8 LED screens. LEDfont.h was adapted from the Arduino community.
