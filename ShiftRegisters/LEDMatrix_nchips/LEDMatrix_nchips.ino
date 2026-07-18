@@ -1,9 +1,10 @@
 /*
-  Shift Register Example
- for 74HC595 shift register
-
- This sketch cycles through pins and keeps track of what the current state is so that you can
- independently turn on and off a specific shift pin without resetting the rest of them.
+LEDMatrix_nchips.ino
+Author: D. Dubins
+AI Assist: ChatGPT, Claude.AI, Perplexity.AI
+Date: 17-Jul-26
+Description: Drives a series of N 8x8 LED modules. Routines for displaying simple graphics, and scrolling text. Shift Register Example
+ for 74HC595 shift register.
 
  Hardware:
  * 74HC595 shift register attached to pins 4,5, and 6 of the Arduino,
