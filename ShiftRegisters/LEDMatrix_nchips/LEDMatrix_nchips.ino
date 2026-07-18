@@ -50,7 +50,7 @@ Row2      ...
 Row8
 
 */
-#include "LEDfont.h" // I got this from ...
+#include "LEDfont.h" // LED font data adapted from a community Arduino example for 8×8 matrix displays; no single canonical source.
 
 const int clockPin = 4;
 const int latchPin = 5;
