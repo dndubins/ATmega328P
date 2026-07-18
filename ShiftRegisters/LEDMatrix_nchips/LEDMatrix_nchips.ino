@@ -16,8 +16,6 @@ DS (pin 14) to Ardunio DigitalPin 6 (blue wire)
 Pins 10,16: +5V
 Pins 8,13: GND
 
--attach 0.1uF to pin 12
-
 First 74HC595 to Second 74HC595:
 Pin 11 to Pin 11 (yellow wire)
 Pin 12 to Pin 12 (green wire)
@@ -52,7 +50,7 @@ Row2      ...
 Row8
 
 */
-#include "LEDfont.h"
+#include "LEDfont.h" // I got this from ...
 
 const int clockPin = 4;
 const int latchPin = 5;
