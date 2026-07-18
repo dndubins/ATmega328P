@@ -3,3 +3,5 @@ If you run out of digital pins for your project (e.g. if you are making a 3D LED
 The sketch ShiftInOut.ino sets up one 74HC165 shift-in register, and one 74HC595 shift-out register. The shift-in register reads pin states, and outputs the answer to the shift-out register. It's a very simple illustration on how to wire up and use each chip.
 
 The sketch ShiftOut_nchips.ino sets up two 74HC595 shift-out registers in series, and sends data to both of them.
+
+The sketch LEDMatrix_nchips is for scrolling text across multiple shift-out registers daisy-chained to 8x8 LED screens.
