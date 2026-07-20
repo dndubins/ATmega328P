@@ -127,24 +127,29 @@ void setup() {
   // dur_total: total time for this effect
   randomSeed(analogRead(A0));  // seed random number generator
   //void LED_sparkles(byte graphic[8][MODULES], int rows, int cols, int seg, int n, int dur_step, int dur_total) {
-  LED_sparkles(displayBuffer[8][MODULES], 8, MODULES, 5, 50, 3000);  // last number is # steps
-  LEDMatrixClear();
 }
 
 void loop() {
+  // Play sparkes
+  LED_sparkles(displayBuffer[8][MODULES], 8, MODULES, 5, 50, 3000);  // last number is # steps
+  LEDMatrixClear();
+  delay(1000);
+
+  // Play hearts in all modules
   for (int i = 0; i < 5; i++) {
-    LEDplayHearts_all(50);  // play hearts in all modules
+    LEDplayHearts_all(50); 
   }
   delay(1000);
 
-  //for (int j = 0; j < 70; j++) {  // Show all characters
-  //  LEDshow(LEDchars[j], 0, 50);
+  //for (int j = 0; j < 70; j++) {  // Show all characters (diagnostic)
+  //  LEDshow(LEDchars[j], 0, 100);
   //}
 
-  // Scroll across multiple chips:
+  // Scroll message across multiple chips:
   char message[] = "Pharmaceutics is Phun!!! ";  // remember to leave one extra space for string terminator
   LEDscrollPlay(message, sizeof(message), 50);
 
+  // Play beating hearts in separate modules:
   for (int i = 0; i < 3; i++) {
     LEDplayHearts(50, 1);        // play hearts in module 1
     LEDplayHearts(50, 3);        // play hearts in module 0
@@ -158,7 +163,8 @@ void loop() {
     LEDshow(happyface, 0, 250);
   }
   delay(1000);
-
+  
+  // Play scrolling message:
   char message2[] = "Leslie Dan Faculty of Pharmacy, University of Toronto, Room PB860";
   LEDscrollPlay(message2, sizeof(message2), 50);
 }
