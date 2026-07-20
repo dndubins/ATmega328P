@@ -3,6 +3,7 @@ LEDMatrix_nchips.ino
 Author: D. Dubins
 AI Assist: ChatGPT, Claude.AI, Perplexity.AI
 Date: 17-Jul-26
+Last Revised: 20-Jul-26
 Description: Drives a series of N 8x8 LED modules. Routines for displaying simple graphics, and scrolling text. Shift Register Example
  for 74HC595 shift register.
 
@@ -16,6 +17,8 @@ ST_CP (pin 12) to Ardunio DigitalPin 5 (green wire)
 DS (pin 14) to Ardunio DigitalPin 6 (blue wire)
 Pins 10,16: +5V
 Pins 8,13: GND
+
+-attach 0.1uF to pin 12
 
 First 74HC595 to Second 74HC595:
 Pin 11 to Pin 11 (yellow wire)
@@ -51,7 +54,7 @@ Row2      ...
 Row8
 
 */
-#include "LEDfont.h" // LED font data adapted from a community Arduino example for 8×8 matrix displays; no single canonical source.
+#include "LEDfont.h"
 
 const int clockPin = 4;
 const int latchPin = 5;
@@ -117,6 +120,15 @@ void setup() {
   pinMode(clockPin, OUTPUT);
   LEDMatrixClear();
   //Serial.begin(9600);
+  // rows: 8
+  // cols: MODULES
+  // n: # random points to select in total (at least 1 per segment)
+  // dur_step: duration of one step (use ~50 msec for glittery transitions)
+  // dur_total: total time for this effect
+  randomSeed(analogRead(A0));  // seed random number generator
+  //void LED_sparkles(byte graphic[8][MODULES], int rows, int cols, int seg, int n, int dur_step, int dur_total) {
+  LED_sparkles(displayBuffer[8][MODULES], 8, MODULES, 5, 50, 3000);  // last number is # steps
+  LEDMatrixClear();
 }
 
 void loop() {
@@ -128,18 +140,18 @@ void loop() {
   //for (int j = 0; j < 70; j++) {  // Show all characters
   //  LEDshow(LEDchars[j], 0, 50);
   //}
-  
+
   // Scroll across multiple chips:
   char message[] = "Pharmaceutics is Phun!!! ";  // remember to leave one extra space for string terminator
   LEDscrollPlay(message, sizeof(message), 50);
 
   for (int i = 0; i < 3; i++) {
-    LEDplayHearts(50, 1);  // play hearts in module 1
-    LEDplayHearts(50, 3);  // play hearts in module 0
-    LEDplayHearts(50, 2);  // play hearts in module 0
-    LEDplayHearts(50, 4);  // play hearts in module 0
-    LEDplayHearts(50, 0);  // play hearts in module 0
-    LEDshow(happyface, 2, 250); // play happy faces
+    LEDplayHearts(50, 1);        // play hearts in module 1
+    LEDplayHearts(50, 3);        // play hearts in module 0
+    LEDplayHearts(50, 2);        // play hearts in module 0
+    LEDplayHearts(50, 4);        // play hearts in module 0
+    LEDplayHearts(50, 0);        // play hearts in module 0
+    LEDshow(happyface, 2, 250);  // play happy faces
     LEDshow(happyface, 4, 250);
     LEDshow(happyface, 1, 250);
     LEDshow(happyface, 3, 250);
@@ -149,7 +161,6 @@ void loop() {
 
   char message2[] = "Leslie Dan Faculty of Pharmacy, University of Toronto, Room PB860";
   LEDscrollPlay(message2, sizeof(message2), 50);
-
 }
 
 void registerMultiplex(byte graphic[8][MODULES]) {  // this will take displayBuffer[8][MODULES]
@@ -158,8 +169,8 @@ void registerMultiplex(byte graphic[8][MODULES]) {  // this will take displayBuf
   for (int p = 0; p < 8; p++) {      // p is the row
     columnbyte = ~(B10000000 >> p);  // only turn on column "p" (e.g. B11101111 is column 4 ON, everything else off)
     digitalWrite(latchPin, LOW);
-    for (int module = 0; module < MODULES; module++){
-    //for(int module = MODULES-1; module>=0; module--){   // to swap order of modules
+    for (int module = 0; module < MODULES; module++) {
+      //for(int module = MODULES-1; module>=0; module--){   // to swap order of modules
       byte output;
 #if ROTATE_90
       output = getRotatedByte(graphic, module, p);
@@ -168,25 +179,24 @@ void registerMultiplex(byte graphic[8][MODULES]) {  // this will take displayBuf
 #endif
       shiftOut(dataPin, clockPin, LSBFIRST, output);
       shiftOut(dataPin, clockPin, LSBFIRST, columnbyte);
-      //if(p==7)LEDMatrixClear();  // fixes the last bright row problem when mulitplexing.
     }
     digitalWrite(latchPin, HIGH);  // Set the latch HIGH to trigger the bits shifting OUT:
   }
 }
 
-void LEDMatrixClear(){ // clear the LED screens
+void LEDMatrixClear() {  // clear the LED screens
   reset_displayBuffer();
   registerMultiplex(displayBuffer);
 }
 
-void LEDshow(byte graphic[8], byte module, int wait) {
+void LEDshow(byte graphic[8], byte module, int wait) {  // show 8x8 graphic on one module (selected by "module")
   //Displays a single input graphic for "wait" msec then clears the screen (user friendly)
   reset_displayBuffer();  // reset the frame buffer (not needed?)
   //copy graphic to correct spot in displayBuffer:
   for (int row = 0; row < 8; row++) {  // p is the row
     displayBuffer[row][module] = graphic[row];
   }
-  long timer = millis();
+  unsigned long timer = millis();
   while (millis() - timer < wait) {
     registerMultiplex(displayBuffer);
   }
@@ -197,7 +207,7 @@ void LEDshow_all(byte graphic[8], int wait) {
   //Displays a single input graphic for "wait" msec then clears the screen (user friendly)
   reset_displayBuffer();  // reset the frame buffer (not needed?)
   //copy graphic to correct spot in displayBuffer:
-  for(int module=0; module<MODULES; module++){
+  for (int module = 0; module < MODULES; module++) {
     for (int row = 0; row < 8; row++) {  // p is the row
       displayBuffer[row][module] = graphic[row];
     }
@@ -239,9 +249,9 @@ void addCharacterColumn(byte graphic[][8], byte ID, byte column) {
   for (int row = 0; row < 8; row++) {
     byte pixel = (graphic[ID][row] >> column) & 1;
     // put pixel into the incoming right edge
-    if (pixel){
-      displayBuffer[row][0] |= 0x01; // New pixels always enter at the right-hand edge of the virtual display,
-    } else {                         // which corresponds to bit 0 of module 0 before shifting.  
+    if (pixel) {
+      displayBuffer[row][0] |= 0x01;  // New pixels always enter at the right-hand edge of the virtual display,
+    } else {                          // which corresponds to bit 0 of module 0 before shifting.
       displayBuffer[row][0] &= ~0x01;
     }
   }
@@ -270,8 +280,8 @@ void LEDscrollPlay(char msg[], int len, int duration) {
     while (millis() - timer < duration) registerMultiplex(displayBuffer);
   }
   for (int j = 0; j < len; j++) {
-    int idx=LEDlookup(msg[j]);
-    if(idx>=0)LEDscrollChar(LEDchars, idx, duration);
+    int idx = LEDlookup(msg[j]);
+    if (idx >= 0) LEDscrollChar(LEDchars, idx, duration);
   }
   for (int i = 0; i < DISPLAY_WIDTH; i++) {  // blank exit
     shiftDisplayLeft();
@@ -297,4 +307,42 @@ byte getRotatedByte(byte graphic[8][MODULES], int module, int column) {
     }
   }
   return result;
+}
+
+// Latin Hypercube Sampling for a 2D Array of Bytes
+// Algorithm: https://www.numberanalytics.com/blog/latin-hypercube-sampling-guide#sampling-algorithm
+// Set seg = modules in this strategy for the algorithm to work.
+void LatinHypercube_2D(byte graphic[8][MODULES], int rows, int cols, int n) {
+  // First clear the array
+  for (int row = 0; row < rows; row++) {  // initialize the displayBuffer
+    for (int col = 0; col < cols; col++) {
+      graphic[row][col] = 0;
+    }
+  }
+  // Select n pixels randomly, n/seg of them in each segment.
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < cols; j++) {             // in a true latin hypercube sampling this would be segments
+      int randrow = random(0, 8);                // random row number between 0 and 7
+      graphic[randrow][j] |= 1 << random(0, 8);  // random shift between 0 and 7
+    }
+  }
+}
+
+// Make the LED screen sparkle
+void LED_sparkles(byte graphic[8][MODULES], int rows, int cols, int n, int dur_step, int dur_total) {
+  // rows: 8
+  // cols: MODULES. We are using MODULES as our # segments in this algorithm, to work nicely with our array structure.
+  // n: # random points to select in total (at least 1 per segment)
+  // dur_step: duration of one step (use ~50 msec for glittery transitions)
+  // dur_total: total time for this effect
+
+  unsigned long timer = millis();
+  int steps = dur_total / dur_step;  // calculate # steps
+  for (int k = 0; k < steps; k++) {
+    LatinHypercube_2D(displayBuffer, 8, MODULES, n);  // rows, cols, segments, #random points
+    while (millis() - timer < dur_step) {
+      registerMultiplex(displayBuffer);
+    }
+    timer = millis();  //reset the timer
+  }
 }
