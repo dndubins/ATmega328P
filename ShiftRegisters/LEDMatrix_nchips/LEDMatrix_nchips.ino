@@ -130,7 +130,7 @@ void setup() {
 }
 
 void loop() {
-  // Play sparkes
+  // Play sparkles
   LED_sparkles(displayBuffer[8][MODULES], 8, MODULES, 5, 50, 3000);  // last number is # steps
   LEDMatrixClear();
   delay(1000);
