@@ -1,0 +1,78 @@
+:: StoryTitle
+Hitchhiker's Guide to the Galaxy
+
+
+:: StoryData
+{
+  "ifid": "A4B0F767-6EB8-4F16-ADE9-5663F98B7FAF",
+  "format": "Harlowe",
+  "format-version": "3.3.9",
+  "start": "Home",
+  "zoom": 1
+}
+
+
+:: Bed {"position":"700,375","size":"100,100"}
+With a great amount of effort, you manage to stand up. The room is spinning.
+
+<img src = "https://www.toplinemd.com/miami-obgyn/wp-content/uploads/sites/62/2017/04/a-dizzy-man-with-vertigo.jpg" alt="Dizzy!">
+
+[[Put on your robe.|Robe]]
+[[Go back to sleep.|Sleep]] 
+
+
+
+
+:: Breakfast {"position":"825,625","size":"100,100"}
+You manage to cook a wonderful breakfast. It's good - no it's great! A feta and spinach omelette that would make Gordan Ramsay blush. Too bad it will be your last - the house is demolished by the bulldozer driving through your house, crushing you and everything in it. Shortly after, the Earth is destroyed by Vogons to make way for a hyperspace bypass.
+
+<img src="https://www.straight.com/files/v3/styles/gs_large/public/2013/05/Vogon1_130515.jpg?itok=u7k5boAw" alt="Vogons. Can't trust them.">
+
+
+:: Construction {"position":"700,625","size":"100,100"}
+Behold, there's a bulldozer approaching your house, about to demolish it! You need to act quickly. A nervous man wearing a cheap polyester suit is holding a clipboard. The driver of the bulldozer is looking disgruntled.
+
+<img src="https://i0.wp.com/www.constructionequipmentuk.co.uk/wp-content/uploads/2022/05/all-you-need-to-know-about-bulldozers.jpg?w=1024&ssl=1" alt="Not such a nice day after all.">
+
+
+
+:: Home {"position":"700,250","size":"100,100"}
+<h1>The Hitchhiker's Guide to the Galaxy</h1>
+
+You are fast asleep, dreaming about life, the universe, and everything.
+
+You wake up and your head is spinning. It's dark.
+
+<img src="https://www.careprohs.com/uploads/userfiles/files/images/Blog/Sleep.jpg" alt="Arthur Dent">
+
+Will you [[get out of bed|Bed]]? Or will you [[go back to sleep|Sleep]]?
+
+<audio src="https://www.mediacollege.com/downloads/sound-effects/people/snoring/snore-02.wav" autoplay>
+
+
+
+
+
+
+
+:: Robe {"position":"700,500","size":"100,100"}
+
+(set: $putOnRobe to true)
+
+
+You put on your robe and look dashing. Really. For a guy who just woke up, you could be on the cover of Gentleman's Quarterly, the back section. But you have more important things to tend to. You are hungry, and you also hear some strange construction noises outside.
+
+(align: "==><==")[
+<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTplkrvcexMqxW4riDOuf6RKTfshNQrsQTsp3Cl0pFVe9s8HOzwGk5GVTk&s=10" alt="Arthur Dent">]
+
+Would you like to [[eat some breakfast|Breakfast]], or would you like to [[investigate the construction noises|Construction]] outside?
+
+
+:: Sleep {"position":"825,375","size":"100,100"}
+As you fall back into a deep slumber, a bulldozer runs through your house, crushing you and everything in it. Shortly after, the Earth is destroyed by Vogons to make way for a hyperspace bypass. 
+
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Operation_Upshot-Knothole_-_Badger_001.jpg/960px-Operation_Upshot-Knothole_-_Badger_001.jpg" alt="Oh well!">
+
+<audio src="https://mediacollege.com/downloads/sound-effects/explosion/bomb-06.mp3" autoplay>
+
+
