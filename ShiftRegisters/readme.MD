@@ -6,3 +6,5 @@ The sketch ShiftOut_nchips.ino sets up two 74HC595 shift-out registers in series
 
 The sketch LEDMatrix_nchips.ino is for scrolling text across multiple shift-out registers daisy-chained to 8x8 LED screens. LEDfont.h was adapted from the Arduino community.
 There's a webpage here to generate 8x8 graphics for the library, called hexgen.htm. I made this with some help from ChatGPT to help encode your own custom characters.
+
+https://htmlpreview.github.io/?https://github.com/dndubins/ATmega328P/blob/main/ShiftRegisters/LEDMatrix_nchips/hexgen.htm
