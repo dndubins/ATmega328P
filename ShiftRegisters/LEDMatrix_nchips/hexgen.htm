@@ -300,9 +300,9 @@ function refresh(){
     }
 
 
-    output += "\nC array:\n{\n    "
-        +array.join(", ")
-        +"\n};";
+    output += "\nC array:\n{"
+        +array.join(",")
+        +"}; // +document.getElementById("charName").value";
 
 
     document.getElementById("output").textContent=output;
