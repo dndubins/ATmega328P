@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>8x8 Bitmap Font Editor</title>
+
+<!--
+8x8 Bitmap Font Editor
+
+Author: D. Dubins
+
+AI Assistance:
+ChatGPT (OpenAI) — assisted with interface design,
+JavaScript functions, import/export routines,
+bitmap manipulation tools, and usability improvements.
+
+-->
+
+<style>
+body {
+    background:#202020;
+    color:white;
+    font-family:Consolas, monospace;
+    margin:25px;
+}
+
+h1 {
+    color:#6ff;
+}
+
+.container {
+    display:flex;
+    gap:50px;
+}
+
+.grid {
+    display:grid;
+    grid-template-columns:repeat(8,40px);
+    grid-template-rows:repeat(8,40px);
+    gap:2px;
+    background:#555;
+    padding:2px;
+}
+
+.pixel {
+    background:white;
+    cursor:pointer;
+}
+
+.pixel.on {
+    background:black;
+}
+
+canvas {
+    image-rendering:pixelated;
+    background:white;
+    border:2px solid #555;
+}
+
+button {
+    padding:8px 12px;
+    margin:3px;
+}
+
+input {
+    font-family:Consolas, monospace;
+    font-size:16px;
+    width:80px;
+}
+
+pre {
+    background:#111;
+    padding:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>8×8 Bitmap Font Editor</h1>
+
+Character:
+<input id="charName" value="A">
+
+<br><br>
+
+<div class="container">
+
+<div>
+
+<div id="grid" class="grid"></div>
+
+<br>
+
+<button onclick="clearGrid()">Clear</button>
+<button onclick="invert()">Invert</button>
+<button onclick="mirror()">Mirror</button>
+<button onclick="flip()">Flip</button>
+
+<br>
+
+<div style="text-align:center; width:140px;">
+
+    <button onclick="shiftUp()">▲</button>
+
+    <br>
+
+    <button onclick="shiftLeft()">◄</button>
+    <button onclick="shiftRight()">►</button>
+
+    <br>
+
+    <button onclick="shiftDown()">▼</button>
+
+</div>
+
+<br>
+
+Zoom:
+<input type="range" id="zoom" min="4" max="40" value="16"
+       oninput="drawPreview()">
+
+</div>
+
+
+<div>
+
+<h3>Preview</h3>
+
+<canvas id="preview" width="128" height="128"></canvas>
+
+<h3>Actual size</h3>
+
+<canvas id="tiny" width="8" height="8"></canvas>
+
+
+<h3>Export</h3>
+
+<pre id="output"></pre>
+
+<button onclick="copyCode()">Copy C Code</button>
+
+</div>
+
+</div>
+
+<h3>Import Hex</h3>
+
+<textarea id="importBox" 
+placeholder="Paste 8 bytes:
+0x18, 0x3C, 0x7E, 0xDB,
+0xFF, 0x7E, 0x24, 0x42"></textarea>
+
+<br>
+
+<button onclick="importHex()">Import</button>
+
+<script>
+
+let pixels=[];
+
+let drawing=false;
+let erase=false;
+
+for(let y=0;y<8;y++){
+    pixels[y]=[];
+    for(let x=0;x<8;x++){
+        pixels[y][x]=0;
+    }
+}
+
+
+const grid=document.getElementById("grid");
+
+
+for(let y=0;y<8;y++){
+
+    for(let x=0;x<8;x++){
+
+        let p=document.createElement("div");
+
+        p.className="pixel";
+
+        p.onmousedown=function(e){
+
+            drawing=true;
+            erase=(e.button===2);
+
+            paint(x,y);
+
+        };
+
+        p.onmouseenter=function(){
+
+            if(drawing)
+                paint(x,y);
+
+        };
+
+
+        p.oncontextmenu=function(e){
+            e.preventDefault();
+        };
+
+
+        grid.appendChild(p);
+
+    }
+
+}
+
+
+document.onmouseup=function(){
+    drawing=false;
+};
+
+
+function paint(x,y){
+
+    pixels[y][x]=erase?0:1;
+
+    refresh();
+
+}
+
+
+function importHex(){
+
+    let text = document.getElementById("importBox").value;
+
+    // Find pairs of hex digits, ignoring 0x, commas, spaces, etc.
+    let bytes = text.match(/[0-9A-Fa-f]{2}/g);
+
+    if(!bytes || bytes.length < 8){
+        alert("Please enter 8 hex bytes.");
+        return;
+    }
+
+    for(let y=0;y<8;y++){
+
+        let value = parseInt(bytes[y],16);
+
+        for(let x=0;x<8;x++){
+
+            pixels[y][x] =
+                (value & (1 << (7-x))) ? 1 : 0;
+
+        }
+
+    }
+
+    refresh();
+
+}
+
+function refresh(){
+
+    let cells=document.querySelectorAll(".pixel");
+
+    let i=0;
+
+    let output="Character: "
+        +document.getElementById("charName").value
+        +"\n\n";
+
+
+    let array=[];
+
+
+    for(let y=0;y<8;y++){
+
+        let value=0;
+        let bin="";
+
+
+        for(let x=0;x<8;x++){
+
+            if(pixels[y][x])
+                value |= (1<<(7-x));
+
+            cells[i].className =
+                "pixel"+(pixels[y][x]?" on":"");
+
+            i++;
+
+        }
+
+
+        bin=value.toString(2).padStart(8,"0");
+
+        let hex=value.toString(16)
+            .toUpperCase()
+            .padStart(2,"0");
+
+
+        output += bin+"  0x"+hex+"\n";
+
+        array.push("0x"+hex);
+
+    }
+
+
+    output += "\nC array:\n{\n    "
+        +array.join(", ")
+        +"\n};";
+
+
+    document.getElementById("output").textContent=output;
+
+
+    drawPreview();
+
+}
+
+
+
+function drawPreview(){
+
+    let zoom=document.getElementById("zoom").value;
+
+    let canvas=document.getElementById("preview");
+    let ctx=canvas.getContext("2d");
+
+
+    canvas.width=zoom*8;
+    canvas.height=zoom*8;
+
+
+    ctx.fillStyle="white";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+
+    ctx.fillStyle="black";
+
+
+    for(let y=0;y<8;y++)
+        for(let x=0;x<8;x++)
+            if(pixels[y][x])
+                ctx.fillRect(
+                    x*zoom,
+                    y*zoom,
+                    zoom,
+                    zoom
+                );
+
+
+    let tiny=document.getElementById("tiny");
+    let t=tiny.getContext("2d");
+
+
+    t.fillStyle="white";
+    t.fillRect(0,0,8,8);
+
+    t.fillStyle="black";
+
+
+    for(let y=0;y<8;y++)
+        for(let x=0;x<8;x++)
+            if(pixels[y][x])
+                t.fillRect(x,y,1,1);
+
+}
+
+
+
+function clearGrid(){
+
+    for(let y=0;y<8;y++)
+        for(let x=0;x<8;x++)
+            pixels[y][x]=0;
+
+    refresh();
+
+}
+
+
+function invert(){
+
+    for(let y=0;y<8;y++)
+        for(let x=0;x<8;x++)
+            pixels[y][x]^=1;
+
+    refresh();
+
+}
+
+
+function mirror(){
+
+    for(let y=0;y<8;y++)
+        pixels[y].reverse();
+
+    refresh();
+
+}
+
+
+function flip(){
+
+    pixels.reverse();
+
+    refresh();
+
+}
+
+
+function shiftLeft(){
+
+    for(let y=0;y<8;y++){
+
+        for(let x=0;x<7;x++){
+            pixels[y][x]=pixels[y][x+1];
+        }
+
+        pixels[y][7]=0;
+    }
+
+    refresh();
+
+}
+
+
+function shiftRight(){
+
+    for(let y=0;y<8;y++){
+
+        for(let x=7;x>0;x--){
+            pixels[y][x]=pixels[y][x-1];
+        }
+
+        pixels[y][0]=0;
+    }
+
+    refresh();
+
+}
+
+
+function shiftUp(){
+
+    for(let y=0;y<7;y++){
+
+        for(let x=0;x<8;x++){
+            pixels[y][x]=pixels[y+1][x];
+        }
+
+    }
+
+    for(let x=0;x<8;x++){
+        pixels[7][x]=0;
+    }
+
+    refresh();
+
+}
+
+
+function shiftDown(){
+
+    for(let y=7;y>0;y--){
+
+        for(let x=0;x<8;x++){
+            pixels[y][x]=pixels[y-1][x];
+        }
+
+    }
+
+    for(let x=0;x<8;x++){
+        pixels[0][x]=0;
+    }
+
+    refresh();
+
+}
+
+function copyCode(){
+
+    let name=document.getElementById("charName").value;
+
+    let values=[];
+
+    for(let y=0;y<8;y++){
+
+        let v=0;
+
+        for(let x=0;x<8;x++)
+            if(pixels[y][x])
+                v|=(1<<(7-x));
+
+        values.push(
+            "0x"+
+            v.toString(16)
+            .toUpperCase()
+            .padStart(2,"0")
+        );
+
+    }
+
+
+    let code="// Character: "+name+
+        "\n{\n    "+
+        values.join(", ")
+        +"\n}";
+
+
+    navigator.clipboard.writeText(code);
+
+    alert("Copied!");
+
+}
+
+
+refresh();
+
+</script>
+
+</body>
+</html>
