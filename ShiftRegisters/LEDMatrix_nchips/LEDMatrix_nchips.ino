@@ -65,7 +65,8 @@ const int dataPin = 6;
 #define DISPLAY_WIDTH (MODULES * 8)
 
 byte displayBuffer[8][MODULES];  // for the frame buffer (for more modules, Row0 will be [A][B][C][D][E])
-#define ROTATE_90 true
+#define ROTATE_90 true           // rotate screen 90 degrees (comment out if not needed)
+#define SCROLLSPEED 20           // speed for scrolling text (shorter=faster) Default: 20
 
 byte heart1[8] = {
   B00000000,  // the bit order is backwards here
@@ -148,7 +149,7 @@ void loop() {
 
   // Test a character in context
   //char message0[] = "Testing U: UUUUU";  // remember to leave one extra space for string terminator
-  //LEDscrollPlay(message0, sizeof(message0), 20);
+  //LEDscrollPlay(message0, sizeof(message0), SCROLLSPEED);
 
   // Show all characters (diagnostic)
   //for (int j = 0; j < 70; j++) {
@@ -169,7 +170,7 @@ void loop() {
 
   // Scroll message across multiple chips:
   char message[] = "Welcome Pharmacy Camp!!! ";  // remember to leave one extra space for string terminator
-  LEDscrollPlay(message, sizeof(message), 20);
+  LEDscrollPlay(message, sizeof(message), SCROLLSPEED);
 
   // Play beating hearts in separate modules:
   for (int i = 0; i < 3; i++) {
@@ -188,11 +189,11 @@ void loop() {
 
   // Play scrolling message:
   char message2[] = "Leslie Dan Faculty of Pharmacy, University of Toronto";
-  LEDscrollPlay(message2, sizeof(message2), 20);
+  LEDscrollPlay(message2, sizeof(message2), SCROLLSPEED);
 
   // Play scrolling message
-  char message3[] = "Remember to wear your PPE: lab coat and safety glasses at all times!";
-  LEDscrollPlay(message3, sizeof(message3), 20);
+  char message3[] = "Remember to wear your PPE at all times: lab coat and safety glasses!";
+  LEDscrollPlay(message3, sizeof(message3), SCROLLSPEED);
 
   // Play graphic (skulls):
   LEDplaySkulls_all(500);
