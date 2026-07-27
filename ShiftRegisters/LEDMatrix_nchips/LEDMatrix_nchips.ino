@@ -108,7 +108,18 @@ byte skull[8] = {
   B11101110,
   B01111100,
   B01010100,
-  B00000000
+  B00101000
+};
+
+byte filled[8] = { // light all LEDs (diagnostic)
+  B11111111,
+  B11111111,
+  B11111111,
+  B11111111,
+  B11111111,
+  B11111111,
+  B11111111,
+  B11111111
 };
 
 byte happyface[8] = { 0x7E, 0x81, 0xA5, 0x81, 0xBD, 0x99, 0x81, 0x7E };  //happy face
@@ -130,6 +141,21 @@ void setup() {
 }
 
 void loop() {
+
+  // Fill all LEDs (diagnostic)
+  //LEDshow_all(filled,1000);
+  //delay(1000);
+
+  // Test a character in context
+  //char message0[] = "Testing U: UUUUU";  // remember to leave one extra space for string terminator
+  //LEDscrollPlay(message0, sizeof(message0), 20);
+
+  // Show all characters (diagnostic)
+  //for (int j = 0; j < 70; j++) {
+  //  LEDshow_all(LEDchars[j], 400);
+  //}
+  //delay(1000);
+
   // Play sparkles
   LED_sparkles(displayBuffer[8][MODULES], 8, MODULES, 5, 50, 3000);  // last number is # steps
   LEDMatrixClear();
@@ -141,32 +167,37 @@ void loop() {
   }
   delay(1000);
 
-  //for (int j = 0; j < 70; j++) {  // Show all characters (diagnostic)
-  //  LEDshow(LEDchars[j], 0, 100);
-  //}
-
   // Scroll message across multiple chips:
-  char message[] = "Pharmaceutics is Phun!!! ";  // remember to leave one extra space for string terminator
-  LEDscrollPlay(message, sizeof(message), 50);
+  char message[] = "Welcome Pharmacy Camp!!! ";  // remember to leave one extra space for string terminator
+  LEDscrollPlay(message, sizeof(message), 20);
 
   // Play beating hearts in separate modules:
   for (int i = 0; i < 3; i++) {
-    LEDplayHearts(50, 1);        // play hearts in module 1
-    LEDplayHearts(50, 3);        // play hearts in module 0
-    LEDplayHearts(50, 2);        // play hearts in module 0
-    LEDplayHearts(50, 4);        // play hearts in module 0
-    LEDplayHearts(50, 0);        // play hearts in module 0
-    LEDshow(happyface, 2, 250);  // play happy faces
+    LEDplayHearts(1, 20);        // play hearts in module 1
+    LEDplayHearts(3, 20);        // play hearts in module 5
+    LEDplayHearts(2, 20);        // play hearts in module 2
+    LEDplayHearts(4, 20);        // play hearts in module 4
+    LEDplayHearts(5, 20);        // play hearts in module 3
+    LEDshow(happyface, 2, 250);  // play happy faces, staggered randomly
     LEDshow(happyface, 4, 250);
     LEDshow(happyface, 1, 250);
     LEDshow(happyface, 3, 250);
     LEDshow(happyface, 0, 250);
   }
   delay(1000);
-  
+
   // Play scrolling message:
-  char message2[] = "Leslie Dan Faculty of Pharmacy, University of Toronto, Room PB860";
-  LEDscrollPlay(message2, sizeof(message2), 50);
+  char message2[] = "Leslie Dan Faculty of Pharmacy, University of Toronto";
+  LEDscrollPlay(message2, sizeof(message2), 20);
+
+  // Play scrolling message
+  char message3[] = "Remember to wear your PPE: Lab Coat and Safety Glasses at all times!";
+  LEDscrollPlay(message3, sizeof(message3), 20);
+
+  // Play graphic (skulls):
+  LEDplaySkulls_all(500);
+
+  delay(1000);
 }
 
 void registerMultiplex(byte graphic[8][MODULES]) {  // this will take displayBuffer[8][MODULES]
@@ -225,7 +256,7 @@ void LEDshow_all(byte graphic[8], int wait) {
   LEDMatrixClear();
 }
 
-void LEDplayHearts(int wait, byte n) {
+void LEDplayHearts(byte n, int wait) {
   LEDshow(heart1, n, wait);
   LEDshow(heart2, n, wait);
   LEDshow(heart3, n, wait);
@@ -241,6 +272,13 @@ void LEDplayHearts_all(int wait) {
   LEDshow_all(heart3, wait);
   LEDshow_all(heart2, wait);
   LEDshow_all(heart1, wait);
+}
+
+void LEDplaySkulls_all(int wait){
+  for(int i=0;i<5;i++){
+    LEDshow_all(skull, wait); 
+    delay(wait);
+  }
 }
 
 void reset_displayBuffer() {
