@@ -3,7 +3,7 @@ LEDMatrix_nchips.ino
 Author: D. Dubins
 AI Assist: ChatGPT, Claude.AI, Perplexity.AI
 Date: 17-Jul-26
-Last Revised: 20-Jul-26
+Last Revised: 27-Jul-26
 Description: Drives a series of N 8x8 LED modules. Routines for displaying simple graphics, and scrolling text. Shift Register Example
  for 74HC595 shift register.
 
@@ -108,7 +108,7 @@ byte skull[8] = {
   B11101110,
   B01111100,
   B01010100,
-  B00101000
+  B00000000
 };
 
 byte filled[8] = { // light all LEDs (diagnostic)
@@ -191,7 +191,7 @@ void loop() {
   LEDscrollPlay(message2, sizeof(message2), 20);
 
   // Play scrolling message
-  char message3[] = "Remember to wear your PPE: Lab Coat and Safety Glasses at all times!";
+  char message3[] = "Remember to wear your PPE: lab coat and safety glasses at all times!";
   LEDscrollPlay(message3, sizeof(message3), 20);
 
   // Play graphic (skulls):
