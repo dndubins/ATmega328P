@@ -147,7 +147,7 @@ void loop() {
   //delay(1000);
 
   // Test a character in context
-  //char message0[] = "Testing U: () [] ; UUU*UU **";  // remember to leave one extra space for string terminator
+  //char message0[] = "Testing <>: >>>>><<<<<";  // remember to leave one extra space for string terminator
   //LEDscrollPlay(message0, sizeof(message0), SCROLLSPEED);
 
   // Show all characters (diagnostic)
