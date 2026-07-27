@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head>g
 <meta charset="UTF-8">
 <title>8x8 Bitmap Font Editor</title>
 
@@ -302,7 +302,9 @@ function refresh(){
 
     output += "\nC array:\n{"
         +array.join(",")
-        +"};";
+        +"};"
+        +" // "
+        + document.getElementById("charName").value;
 
 
     document.getElementById("output").textContent=output;
@@ -497,11 +499,11 @@ function copyCode(){
     }
 
 
-    let code="// Character: "+name+
-        "\n{\n    "+
-        values.join(", ")
-        +"\n}";
-
+    let code="{"+
+        values.join(",")
+        +"}"
+		+" // "+name
+		;
 
     navigator.clipboard.writeText(code);
 
