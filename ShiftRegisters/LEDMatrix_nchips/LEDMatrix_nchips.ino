@@ -11,19 +11,18 @@ Description: Drives a series of N 8x8 LED modules. Routines for displaying simpl
  * 74HC595 shift register attached to pins 4,5, and 6 of the Arduino,
  as detailed below.
  * LEDs attached to each of the outputs of the shift register
+ 
 First 74HC595 to Arduino:
-SH_CP (pin 11) to to Ardunio DigitalPin 4 (yellow wire)
-ST_CP (pin 12) to Ardunio DigitalPin 5 (green wire)
-DS (pin 14) to Ardunio DigitalPin 6 (blue wire)
+SH_CP (pin 11) to to Ardunio DigitalPin 4
+ST_CP (pin 12) to Ardunio DigitalPin 5
+DS (pin 14) to Ardunio DigitalPin 6
 Pins 10,16: +5V
 Pins 8,13: GND
 
--attach 0.1uF to pin 12
-
 First 74HC595 to Second 74HC595:
-Pin 11 to Pin 11 (yellow wire)
-Pin 12 to Pin 12 (green wire)
-Pin 9 to Pin 14 (blue wire)
+Pin 11 to Pin 11
+Pin 12 to Pin 12
+Pin 9 to Pin 14
 
 8x8 LED Matrix to first and second Shift Registers:
 (1588BS - Pin 1 is on the far left of the side with the printed label)
@@ -52,8 +51,8 @@ Row1      11111111  00011000  01010101
 Row2      ...
 ...
 Row8
-
 */
+
 #include "LEDfont.h"
 
 const int clockPin = 4;
@@ -148,7 +147,7 @@ void loop() {
   //delay(1000);
 
   // Test a character in context
-  //char message0[] = "Testing U: UUUUU";  // remember to leave one extra space for string terminator
+  //char message0[] = "Testing U: () [] ; UUU*UU **";  // remember to leave one extra space for string terminator
   //LEDscrollPlay(message0, sizeof(message0), SCROLLSPEED);
 
   // Show all characters (diagnostic)
