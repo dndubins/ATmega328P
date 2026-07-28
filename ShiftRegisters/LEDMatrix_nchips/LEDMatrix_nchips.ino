@@ -147,17 +147,17 @@ void loop() {
   //delay(1000);
 
   // Test a character in context
-  //char message0[] = "Testing <>: >>>>><<<<<";  // remember to leave one extra space for string terminator
+  //char message0[] = "Here's \"double quotes\", and here's \'single quotes\'.";  // remember to leave one extra space for string terminator
   //LEDscrollPlay(message0, sizeof(message0), SCROLLSPEED);
 
   // Show all characters (diagnostic)
-  //for (int j = 0; j < 70; j++) {
-  //  LEDshow_all(LEDchars[j], 400);
-  //}
+  for (int j = 0; j < LEDfontSize; j++) {
+    LEDshow_all(LEDfont[j].bitmap, 400);
+  }
   //delay(1000);
 
   // Play sparkles
-  LED_sparkles(displayBuffer[8][MODULES], 8, MODULES, 5, 50, 3000);  // last number is # steps
+  LED_sparkles(displayBuffer, 8, MODULES, 5, 50, 3000);  // last number is # steps
   LEDMatrixClear();
   delay(1000);
 
@@ -289,9 +289,9 @@ void reset_displayBuffer() {
   }
 }
 
-void addCharacterColumn(byte graphic[][8], byte ID, byte column) {
+void addCharacterColumn(byte graphic[], byte column) {
   for (int row = 0; row < 8; row++) {
-    byte pixel = (graphic[ID][row] >> column) & 1;
+    byte pixel = (graphic[row] >> column) & 1;
     // put pixel into the incoming right edge
     if (pixel) {
       displayBuffer[row][0] |= 0x01;  // New pixels always enter at the right-hand edge of the virtual display,
@@ -325,7 +325,7 @@ void LEDscrollPlay(char msg[], int len, int duration) {
   }
   for (int j = 0; j < len; j++) {
     int idx = LEDlookup(msg[j]);
-    if (idx >= 0) LEDscrollChar(LEDchars, idx, duration);
+    if (idx >= 0) LEDscrollChar(LEDfont[idx].bitmap, idx, duration);
   }
   for (int i = 0; i < DISPLAY_WIDTH; i++) {  // blank exit
     shiftDisplayLeft();
@@ -334,10 +334,10 @@ void LEDscrollPlay(char msg[], int len, int duration) {
   }
 }
 
-void LEDscrollChar(byte graphic[][8], byte ID, int wait) {
+void LEDscrollChar(byte graphic[], byte ID, int wait) {
   for (int column = 7; column >= 0; column--) {
     shiftDisplayLeft();
-    addCharacterColumn(graphic, ID, column);
+    addCharacterColumn(graphic, column);
     long timer = millis();
     while (millis() - timer < wait) registerMultiplex(displayBuffer);
   }
