@@ -151,9 +151,9 @@ void loop() {
   //LEDscrollPlay(message0, sizeof(message0), SCROLLSPEED);
 
   // Show all characters (diagnostic)
-  for (int j = 0; j < LEDfontSize; j++) {
-    LEDshow_all(LEDfont[j].bitmap, 400);
-  }
+  //for (int j = 0; j < LEDfontSize; j++) {
+  //  LEDshow_all(LEDfont[j].bitmap, 400);
+  //}
   //delay(1000);
 
   // Play sparkles
