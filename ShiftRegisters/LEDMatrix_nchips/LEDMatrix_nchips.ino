@@ -131,17 +131,10 @@ void setup() {
   pinMode(clockPin, OUTPUT);
   LEDMatrixClear();
   //Serial.begin(9600);
-  // rows: 8
-  // cols: MODULES
-  // n: # random points to select in total (at least 1 per segment)
-  // dur_step: duration of one step (use ~50 msec for glittery transitions)
-  // dur_total: total time for this effect
   randomSeed(analogRead(A0));  // seed random number generator
-  //void LED_sparkles(byte graphic[8][MODULES], int rows, int cols, int seg, int n, int dur_step, int dur_total) {
 }
 
 void loop() {
-
   // Fill all LEDs (diagnostic)
   //LEDshow_all(filled,1000);
   //delay(1000);
