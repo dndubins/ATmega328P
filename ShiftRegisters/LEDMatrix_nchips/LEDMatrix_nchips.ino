@@ -2,7 +2,7 @@
 LEDMatrix_nchips.ino
 Author: D. Dubins
 AI Assist: ChatGPT, Claude.AI, Perplexity.AI
-Date: 17-Jul-26
+Date: 28-Jul-26
 Last Revised: 27-Jul-26
 Description: Drives a series of N 8x8 LED modules. Routines for displaying simple graphics, and scrolling text. Shift Register Example
  for 74HC595 shift register.
@@ -130,7 +130,7 @@ void setup() {
   pinMode(dataPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   LEDMatrixClear();
-  //Serial.begin(9600);
+  Serial.begin(9600);
   // rows: 8
   // cols: MODULES
   // n: # random points to select in total (at least 1 per segment)
@@ -147,14 +147,15 @@ void loop() {
   //delay(1000);
 
   // Test a character in context
-  //char message0[] = "Here's \"double quotes\", and here's \'single quotes\'.";  // remember to leave one extra space for string terminator
+  //char message0[] = "I'm your overlooked friend, the interrobang‽‽‽";
   //LEDscrollPlay(message0, sizeof(message0), SCROLLSPEED);
 
   // Show all characters (diagnostic)
-  //for (int j = 0; j < LEDfontSize; j++) {
-  //  LEDshow_all(LEDfont[j].bitmap, 400);
-  //}
-  //delay(1000);
+  /*for (int j = 0; j < LEDfontSize; j++) {
+    LEDshow_all(LEDfont[j].bitmap, 500);
+    Serial.println("char: "+(String)LEDfont[j].key+" "+(String)font8Width(LEDfont[j].bitmap));
+  }
+  delay(1000);*/
 
   // Play sparkles
   LED_sparkles(displayBuffer, 8, MODULES, 5, 50, 3000);  // last number is # steps
@@ -335,7 +336,7 @@ void LEDscrollPlay(char msg[], int len, int duration) {
 }
 
 void LEDscrollChar(byte graphic[], byte ID, int wait) {
-  for (int column = 7; column >= 0; column--) {
+  for (int column = 7; column >= (7-font8Width(graphic)); column--) {
     shiftDisplayLeft();
     addCharacterColumn(graphic, column);
     long timer = millis();
@@ -389,4 +390,18 @@ void LED_sparkles(byte graphic[8][MODULES], int rows, int cols, int n, int dur_s
     }
     timer = millis();  //reset the timer
   }
+}
+
+byte font8Width(byte graphic[]){ // calculate the width of the graphic. If a space (empty), return a width of 4.
+  #define KERNING 1    // use this to change space between characters
+  byte b=0;
+  for(byte i=0;i<8;i++){
+    b|=graphic[i]; // flatten graphic vertically
+  }
+  for(byte i=0;i<8;i++){
+    if(b>>i&1){ // Check status of bit.
+      return (7-i+KERNING);
+    }
+  }
+  return 4; // if you made it this far, it's a space!
 }
