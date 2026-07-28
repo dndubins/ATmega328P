@@ -185,7 +185,7 @@ void loop() {
   LEDscrollPlay(message2, sizeof(message2), SCROLLSPEED);
 
   // Play scrolling message
-  char message3[] = "Remember to wear your PPE at all times: lab coat and safety glasses!";
+  char message3[] = "Remember to wear your PPE at all times: lab coat & safety glasses!";
   LEDscrollPlay(message3, sizeof(message3), SCROLLSPEED);
 
   // Play graphic (skulls):
