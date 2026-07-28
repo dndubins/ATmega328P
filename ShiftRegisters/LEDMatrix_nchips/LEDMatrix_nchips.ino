@@ -140,15 +140,15 @@ void loop() {
   //delay(1000);
 
   // Test a character in context
-  //char message0[] = "I'm your overlooked friend, the interrobang\x80\x80\x80";
+  //char message0[] = "I'm your overlooked friend, the interrobang\x80\x80\x80 <> [] \{\}";
   //LEDscrollPlay(message0, sizeof(message0), SCROLLSPEED);
 
   // Show all characters (diagnostic)
-  /*for (int j = 0; j < LEDfontSize; j++) {
-    LEDshow_all(LEDfont[j].bitmap, 250);
-    //Serial.println("char: "+(String)LEDfont[j].key+" "+(String)font8Width(LEDfont[j].bitmap));
-  }
-  delay(1000);*/
+  //for (int j = 35; j < LEDfontSize; j++) {
+  //  LEDshow_all(LEDfont[j].bitmap, 500);
+  //  Serial.println("char: "+(String)LEDfont[j].key+" "+(String)font8Width(LEDfont[j].bitmap));
+  //}
+  //delay(1000);
 
   // Play sparkles
   LED_sparkles(displayBuffer, 8, MODULES, 5, 50, 3000);  // last number is # steps
