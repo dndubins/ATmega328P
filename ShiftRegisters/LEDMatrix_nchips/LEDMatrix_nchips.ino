@@ -130,7 +130,7 @@ void setup() {
   pinMode(dataPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   LEDMatrixClear();
-  Serial.begin(9600);
+  //Serial.begin(9600);
   // rows: 8
   // cols: MODULES
   // n: # random points to select in total (at least 1 per segment)
@@ -152,8 +152,8 @@ void loop() {
 
   // Show all characters (diagnostic)
   /*for (int j = 0; j < LEDfontSize; j++) {
-    LEDshow_all(LEDfont[j].bitmap, 500);
-    Serial.println("char: "+(String)LEDfont[j].key+" "+(String)font8Width(LEDfont[j].bitmap));
+    LEDshow_all(LEDfont[j].bitmap, 250);
+    //Serial.println("char: "+(String)LEDfont[j].key+" "+(String)font8Width(LEDfont[j].bitmap));
   }
   delay(1000);*/
 
@@ -393,7 +393,7 @@ void LED_sparkles(byte graphic[8][MODULES], int rows, int cols, int n, int dur_s
 }
 
 byte font8Width(byte graphic[]){ // calculate the width of the graphic. If a space (empty), return a width of 4.
-  #define KERNING 1    // use this to change space between characters
+  #define KERNING 1    // use this to change spacing between characters (default: 1)
   byte b=0;
   for(byte i=0;i<8;i++){
     b|=graphic[i]; // flatten graphic vertically
