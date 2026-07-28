@@ -2,8 +2,8 @@
 LEDMatrix_nchips.ino
 Author: D. Dubins
 AI Assist: ChatGPT, Claude.AI, Perplexity.AI
-Date: 28-Jul-26
-Last Revised: 27-Jul-26
+Date: 17-Jul-26
+Last Revised: 28-Jul-26
 Description: Drives a series of N 8x8 LED modules. Routines for displaying simple graphics, and scrolling text. Shift Register Example
  for 74HC595 shift register.
 
