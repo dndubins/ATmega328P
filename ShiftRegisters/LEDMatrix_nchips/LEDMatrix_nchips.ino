@@ -140,7 +140,7 @@ void loop() {
   //delay(1000);
 
   // Test a character in context
-  //char message0[] = "I'm your overlooked friend, the interrobang‽‽‽";
+  //char message0[] = "I'm your overlooked friend, the interrobang\x80\x80\x80";
   //LEDscrollPlay(message0, sizeof(message0), SCROLLSPEED);
 
   // Show all characters (diagnostic)
