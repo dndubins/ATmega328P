@@ -1,59 +1,59 @@
-/*
-LEDMatrix_nchips.ino
-Author: D. Dubins
-AI Assist: ChatGPT, Claude.AI, Perplexity.AI
-Date: 17-Jul-26
-Last Revised: 29-Jul-26
-Description: Drives a series of N 8x8 LED modules. Routines for displaying simple graphics, and scrolling text. Shift Register Example
- for 74HC595 shift register.
-
- Hardware:
+/* LEDMatrix_nchips.ino
+ * Author: D. Dubins
+ * AI Assist: ChatGPT, Claude.AI, Perplexity.AI
+ * Date: 17-Jul-26
+ * Last Revised: 29-Jul-26
+ * Description: Drives a series of N 8x8 LED modules. Routines for displaying simple graphics, and scrolling text. Shift Register Example
+ * for 74HC595 shift register.
+ * 
+ * Hardware:
  * 74HC595 shift register attached to pins 4,5, and 6 of the Arduino,
- as detailed below.
+ * as detailed below.
  * LEDs attached to each of the outputs of the shift register
- 
-First 74HC595 to Arduino:
-SH_CP (pin 11) to to Ardunio DigitalPin 4
-ST_CP (pin 12) to Ardunio DigitalPin 5
-DS (pin 14) to Ardunio DigitalPin 6
-Pins 10,16: +5V
-Pins 8,13: GND
+ *  
+ * First 74HC595 to Arduino:
+ * SH_CP (pin 11) to to Ardunio DigitalPin 4
+ * ST_CP (pin 12) to Ardunio DigitalPin 5
+ * DS (pin 14) to Ardunio DigitalPin 6
+ * Pins 10,16: +5V
+ * Pins 8,13: GND
+ * 
+ * First 74HC595 to Second 74HC595:
+ * Pin 11 to Pin 11
+ * Pin 12 to Pin 12
+ * Pin 9 to Pin 14
+ * 
+ * 8x8 LED Matrix to first and second Shift Registers:
+ * (1588BS - Pin 1 is on the far left of the side with the printed label)
+ * Pin 1 to Chip 2, Pin 4
+ * Pin 2 to Chip 2, Pin 6
+ * Pin 3 to Chip 1, Pin 6
+ * Pin 4 to Chip 1, Pin 5
+ * Pin 5 to Chip 2, Pin 7
+ * Pin 6 to Chip 1, Pin 3
+ * Pin 7 to Chip 2, Pin 5
+ * Pin 8 to Chip 2, Pin 2
+ * 
+ * Pin 9 to Chip 2, Pin 15
+ * Pin 10 to Chip 1, Pin 4
+ * Pin 11 to Chip 1, Pin 2
+ * Pin 12 to Chip 2, Pin 3
+ * Pin 13 to Chip 1, Pin 7
+ * Pin 14 to Chip 2, Pin 1
+ * Pin 15 to Chip 1, Pin 1
+ * Pin 16 to Chip 1, Pin 15
+ * 
+ * displayBuffer[8][MODULES]: that's the image:
+ *           Module0   Module1   Module2
+ * Row0      10100110  01001001  00000000
+ * Row1      11111111  00011000  01010101
+ * Row2      ...
+ * ...
+ * Row8
+ */
 
-First 74HC595 to Second 74HC595:
-Pin 11 to Pin 11
-Pin 12 to Pin 12
-Pin 9 to Pin 14
 
-8x8 LED Matrix to first and second Shift Registers:
-(1588BS - Pin 1 is on the far left of the side with the printed label)
-Pin 1 to Chip 2, Pin 4
-Pin 2 to Chip 2, Pin 6
-Pin 3 to Chip 1, Pin 6
-Pin 4 to Chip 1, Pin 5
-Pin 5 to Chip 2, Pin 7
-Pin 6 to Chip 1, Pin 3
-Pin 7 to Chip 2, Pin 5
-Pin 8 to Chip 2, Pin 2
-
-Pin 9 to Chip 2, Pin 15
-Pin 10 to Chip 1, Pin 4
-Pin 11 to Chip 1, Pin 2
-Pin 12 to Chip 2, Pin 3
-Pin 13 to Chip 1, Pin 7
-Pin 14 to Chip 2, Pin 1
-Pin 15 to Chip 1, Pin 1
-Pin 16 to Chip 1, Pin 15
-
-displayBuffer[8][MODULES]: that's the image:
-          Module0   Module1   Module2
-Row0      10100110  01001001  00000000
-Row1      11111111  00011000  01010101
-Row2      ...
-...
-Row8
-*/
-
-#include "LEDfont.h"
+#include "LEDfont.h" // lib header file provided with this sketch
 
 const int clockPin = 4;
 const int latchPin = 5;
