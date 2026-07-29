@@ -3,7 +3,7 @@ LEDMatrix_nchips.ino
 Author: D. Dubins
 AI Assist: ChatGPT, Claude.AI, Perplexity.AI
 Date: 17-Jul-26
-Last Revised: 28-Jul-26
+Last Revised: 29-Jul-26
 Description: Drives a series of N 8x8 LED modules. Routines for displaying simple graphics, and scrolling text. Shift Register Example
  for 74HC595 shift register.
 
@@ -62,6 +62,7 @@ const int dataPin = 6;
 #define MODULES 5
 #define CHIPNUM (MODULES * 2)
 #define DISPLAY_WIDTH (MODULES * 8)
+#define KERNING 1                  // use this to change spacing between characters (default: 1)
 
 byte displayBuffer[8][MODULES];  // for the frame buffer (for more modules, Row0 will be [A][B][C][D][E])
 #define ROTATE_90 true           // rotate screen 90 degrees (comment out if not needed)
@@ -111,7 +112,7 @@ byte skull[8] = {
   B00000000
 };
 
-byte filled[8] = { // light all LEDs (diagnostic)
+byte filled[8] = {  // light all LEDs (diagnostic)
   B11111111,
   B11111111,
   B11111111,
@@ -130,7 +131,7 @@ void setup() {
   pinMode(dataPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   LEDMatrixClear();
-  //Serial.begin(9600);
+  Serial.begin(9600);
   randomSeed(analogRead(A0));  // seed random number generator
 }
 
@@ -139,9 +140,23 @@ void loop() {
   //LEDshow_all(filled,1000);
   //delay(1000);
 
+  // Brute force: add one character to the screen at a time then display for 1 second:
+  //LEDdrawChar(LEDfont[ LEDlookup('@') ].bitmap, 0);  // draw an '@' sign at position 0
+  //LEDdrawChar(happyface, 8); // draw a happyface at position 8
+  //LEDdrawChar(skull, 32); // draw a skull at position 32
+  //long timer = millis();
+  //while (millis() - timer < 1000) registerMultiplex(displayBuffer);
+
+  // Show a char array
+  char message0[] = "\x8A Hi! \x8A ";
+  LEDPlay(message0, sizeof(message0), 3000);
+
   // Test a character in context
   //char message0[] = "I'm your overlooked friend, the interrobang\x80\x80\x80 <> [] \{\}";
   //LEDscrollPlay(message0, sizeof(message0), SCROLLSPEED);
+
+  char message1[] = "\x8A\x8B\x8A\x8B\x8A Congrats to our lollipop winners! \x8A\x8B\x8A\x8B\x8A";
+  LEDscrollPlay(message1, sizeof(message1), SCROLLSPEED);
 
   // Show all characters (diagnostic)
   //for (int j = 35; j < LEDfontSize; j++) {
@@ -157,13 +172,13 @@ void loop() {
 
   // Play hearts in all modules
   for (int i = 0; i < 5; i++) {
-    LEDplayHearts_all(50); 
+    LEDplayHearts_all(50);
   }
   delay(1000);
 
   // Scroll message across multiple chips:
-  char message[] = "Welcome Pharmacy Camp!!! ";  // remember to leave one extra space for string terminator
-  LEDscrollPlay(message, sizeof(message), SCROLLSPEED);
+  char message2[] = "Welcome Pharmacy Camp!!! ";  // remember to leave one extra space for string terminator
+  LEDscrollPlay(message2, sizeof(message2), SCROLLSPEED);
 
   // Play beating hearts in separate modules:
   for (int i = 0; i < 3; i++) {
@@ -181,12 +196,12 @@ void loop() {
   delay(1000);
 
   // Play scrolling message:
-  char message2[] = "Leslie Dan Faculty of Pharmacy, University of Toronto";
-  LEDscrollPlay(message2, sizeof(message2), SCROLLSPEED);
+  char message3[] = "Leslie Dan Faculty of Pharmacy, University of Toronto";
+  LEDscrollPlay(message3, sizeof(message3), SCROLLSPEED);
 
   // Play scrolling message
-  char message3[] = "Remember to wear your PPE at all times: lab coat & safety glasses!";
-  LEDscrollPlay(message3, sizeof(message3), SCROLLSPEED);
+  char message4[] = "Remember to wear your PPE at all times: lab coat & safety glasses!";
+  LEDscrollPlay(message4, sizeof(message4), SCROLLSPEED);
 
   // Play graphic (skulls):
   LEDplaySkulls_all(500);
@@ -268,9 +283,9 @@ void LEDplayHearts_all(int wait) {
   LEDshow_all(heart1, wait);
 }
 
-void LEDplaySkulls_all(int wait){
-  for(int i=0;i<5;i++){
-    LEDshow_all(skull, wait); 
+void LEDplaySkulls_all(int wait) {
+  for (int i = 0; i < 5; i++) {
+    LEDshow_all(skull, wait);
     delay(wait);
   }
 }
@@ -328,12 +343,44 @@ void LEDscrollPlay(char msg[], int len, int duration) {
   }
 }
 
+void LEDPlay(char msg[], int len, int duration) {  // Play a line of text without scrolling (8x5=40)
+  reset_displayBuffer();
+  int x=0; // keep track of width
+  for (int j = 0; j < len; j++) {
+    int idx = LEDlookup(msg[j]);
+    if (idx >= 0) {
+      LEDdrawChar(LEDfont[idx].bitmap, x);
+      x+= font8Width(LEDfont[idx].bitmap)+KERNING; // add a space between characters
+      if (x>=DISPLAY_WIDTH)break;
+    }
+  }
+  long timer = millis();
+  while (millis() - timer < duration) registerMultiplex(displayBuffer);  // show the text
+}
+
 void LEDscrollChar(byte graphic[], byte ID, int wait) {
-  for (int column = 7; column >= (7-font8Width(graphic)); column--) {
+  for (int column = 7; column >= (7 - font8Width(graphic)); column--) {
     shiftDisplayLeft();
     addCharacterColumn(graphic, column);
     long timer = millis();
     while (millis() - timer < wait) registerMultiplex(displayBuffer);
+  }
+}
+
+void LEDdrawChar(byte graphic[], int x) {
+  int width = font8Width(graphic);
+  for (int col = 0; col < width; col++) {
+    int glyphCol = 7-col; 
+    int logicalPos = x + col;
+    if (logicalPos >= DISPLAY_WIDTH)
+      return;
+    int screenX = (DISPLAY_WIDTH - 1) - logicalPos;
+    int module = screenX / 8;
+    int bit = screenX % 8;
+    for (int row = 0; row < 8; row++) {
+      if ((graphic[row] >> glyphCol) & 1)
+        displayBuffer[row][module] |= (1 << bit);
+    }
   }
 }
 
@@ -385,16 +432,16 @@ void LED_sparkles(byte graphic[8][MODULES], int rows, int cols, int n, int dur_s
   }
 }
 
-byte font8Width(byte graphic[]){ // calculate the width of the graphic. If a space (empty), return a width of 4.
-  #define KERNING 1    // use this to change spacing between characters (default: 1)
-  byte b=0;
-  for(byte i=0;i<8;i++){
-    b|=graphic[i]; // flatten graphic vertically
+byte font8Width(byte graphic[]) {  // calculate the width of the graphic. If a space (empty), return a width of 4.
+  byte b = 0;
+  for (byte i = 0; i < 8; i++) {
+    b |= graphic[i];  // flatten graphic vertically
   }
-  for(byte i=0;i<8;i++){
-    if(b>>i&1){ // Check status of bit.
-      return (7-i+KERNING);
+  for (byte i = 0; i < 8; i++) {
+    if (b >> i & 1) {  // Check status of bit.
+      return (7 - i + KERNING);
     }
   }
-  return 4; // if you made it this far, it's a space!
+  return 4;  // if you made it this far, it's a space!
 }
+
