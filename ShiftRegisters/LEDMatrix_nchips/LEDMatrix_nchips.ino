@@ -244,7 +244,7 @@ void LEDMatrixClear() {  // clear the LED screens
 
 void LEDblack() {  // make LED screen dark (turn off all pixels without affecting buffer)
  //Shifts out 0's to all chips
-  byte columnbyte = 0;
+  byte columnbyte = 0xFF;
   for (int p = 0; p < 8; p++) {      // p is the row
     columnbyte = 0;                  // only turn on column "p" (e.g. B11101111 is column 4 ON, everything else off)
     digitalWrite(latchPin, LOW);
