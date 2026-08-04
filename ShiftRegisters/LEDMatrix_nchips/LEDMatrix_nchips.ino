@@ -2,7 +2,7 @@
  * Author: D. Dubins
  * AI Assist: ChatGPT, Claude.AI, Perplexity.AI
  * Date: 17-Jul-26
- * Last Revised: 31-Jul-26
+ * Last Revised: 04-Aug-26
  * Description: Drives a series of N 8x8 LED modules. Routines for displaying simple graphics, and scrolling text. Shift Register Example
  * for 74HC595 shift register.
  * 
@@ -53,7 +53,7 @@
  */
 
 
-#include "LEDfont.h" // lib header file provided with this sketch
+#include "LEDfont.h"  // lib header file provided with this sketch
 
 const int clockPin = 4;
 const int latchPin = 5;
@@ -62,7 +62,7 @@ const int dataPin = 6;
 #define MODULES 5
 #define DISPLAY_WIDTH (MODULES * 8)
 #define PIXELS (MODULES * 64)
-#define KERNING 1                  // use this to change spacing between characters (default: 1)
+#define KERNING 1  // use this to change spacing between characters (default: 1)
 
 byte displayBuffer[8][MODULES];  // for the frame buffer (for more modules, Row0 will be [A][B][C][D][E])
 #define ROTATE_90 true           // rotate screen 90 degrees (comment out if not needed)
@@ -152,14 +152,14 @@ void loop() {
   //while (millis() - timer < 1000) registerMultiplex(displayBuffer);
 
   // Show a char array
-  char message0[] = "\x8A Hi! \x8A ";
-  LEDPlay_dissolveIn(message0, sizeof(message0), 3000);
+  char message0[] = "   \x8AHi\x8A ";
+  LEDPlay(message0, sizeof(message0), 3000); // plays the text with no transitions
   delay(1000);
-  LEDPlay(message0, sizeof(message0), 3000);
+  LEDPlay_wipeUp(message0, sizeof(message0), 0, 3000); // wipes in upwards, then out
   delay(1000);
-  LEDPlay_wipeUp(message0, sizeof(message0), 3000);
+  LEDPlay_wipeRight(message0, sizeof(message0), 0, 3000); // wipes in from right, then out
   delay(1000);
-  LEDPlay_wipeRight(message0, sizeof(message0), 3000);
+  LEDPlay_dissolve(message0, sizeof(message0), 0, 3000); // dissolves in, then out
   delay(1000);
 
   // Test a character in context
@@ -183,7 +183,7 @@ void loop() {
   delay(1000);
 
   // Scroll message across multiple chips:
-  char message2[] = "Welcome Pharmacy Camp!!! ";  // remember to leave one extra space for string terminator
+  char message2[] = "Welcome to the Patheon Pharmaceutics Lab!!! ";  // remember to leave one extra space for string terminator
   LEDscrollPlay(message2, sizeof(message2), SCROLLSPEED);
 
   // Play beating hearts in separate modules:
@@ -233,8 +233,9 @@ void registerMultiplex(byte graphic[8][MODULES]) {  // this will take displayBuf
       shiftOut(dataPin, clockPin, LSBFIRST, columnbyte);
     }
     digitalWrite(latchPin, HIGH);  // Set the latch HIGH to trigger the bits shifting OUT:
-    digitalWrite(latchPin, LOW);  // chatgpt suggested this
+    digitalWrite(latchPin, LOW);   // chatgpt suggested this
   }
+  delayMicroseconds(500);  // delete later? See if this reduces bright spots.
 }
 
 void LEDMatrixClear() {  // clear the LED screens
@@ -243,10 +244,10 @@ void LEDMatrixClear() {  // clear the LED screens
 }
 
 void LEDblack() {  // make LED screen dark (turn off all pixels without affecting buffer)
- //Shifts out 0's to all chips
+                   //Shifts out 0's to all chips
   byte columnbyte = 0xFF;
-  for (int p = 0; p < 8; p++) {      // p is the row
-    columnbyte = 0;                  // only turn on column "p" (e.g. B11101111 is column 4 ON, everything else off)
+  for (int p = 0; p < 8; p++) {  // p is the row
+    columnbyte = 0;  // try 0xFF here later              
     digitalWrite(latchPin, LOW);
     for (int module = 0; module < MODULES; module++) {
       byte output = 0;
@@ -268,7 +269,7 @@ void LEDshow(byte graphic[8], byte module, int wait) {  // show 8x8 graphic on o
   while (millis() - timer < wait) {
     registerMultiplex(displayBuffer);
   }
-  LEDblack();
+  LEDblack(); // turn off LED
 }
 
 void LEDshow_all(byte graphic[8], int wait) {
@@ -284,7 +285,7 @@ void LEDshow_all(byte graphic[8], int wait) {
   while (millis() - timer < wait) {
     registerMultiplex(displayBuffer);
   }
-  LEDblack();
+  LEDblack(); // turn off LED
 }
 
 void LEDplayHearts(byte n, int wait) {
@@ -363,115 +364,187 @@ void LEDscrollPlay(char msg[], int len, int duration) {
     long timer = millis();
     while (millis() - timer < duration) registerMultiplex(displayBuffer);
   }
-  LEDblack();
+  LEDblack(); // turn off LED
 }
 
 void LEDPlay(char msg[], int len, int duration) {  // Play a line of text without scrolling (8x5=40)
   resetGrid(displayBuffer);
-  int x=0; // keep track of width
+  int x = 0;  // keep track of width
   for (int j = 0; j < len; j++) {
     int idx = LEDlookup(msg[j]);
     if (idx >= 0) {
       LEDdrawChar(LEDfont[idx].bitmap, x);
-      x+= font8Width(LEDfont[idx].bitmap)+KERNING; // add a space between characters
-      if (x>=DISPLAY_WIDTH)break;
+      x += font8Width(LEDfont[idx].bitmap) + KERNING;  // add a space between characters
+      if (x >= DISPLAY_WIDTH) break;
     }
   }
   long timer = millis();
   while (millis() - timer < duration) registerMultiplex(displayBuffer);  // show the text
-  LEDblack();
+  LEDblack(); // turn off LED
 }
 
-void LEDPlay_wipeUp(char msg[], int len, int duration) {  // Play a line of text without scrolling (8x5=40)
+void LEDPlay_wipeUp(char msg[], int len, byte type, int duration) {  // Play a line of text wiping it up then down
+  // type is going to be: 0: both (in and out), 1: wipe in only, 2: wipe out only
+  // read in msg[]
   byte displayBufferCopy[8][MODULES];  // make local copy of display buffer
-  int durstep = 50; // animation speed
+  int stepdur = 15;                    // animation speed
+  unsigned long timer;                 // for timing transitions
   resetGrid(displayBuffer);
   resetGrid(displayBufferCopy);
-  int x=0; // keep track of width
+  int x = 0;  // keep track of width
   for (int j = 0; j < len; j++) {
     int idx = LEDlookup(msg[j]);
     if (idx >= 0) {
       LEDdrawChar(LEDfont[idx].bitmap, x);
-      x+= font8Width(LEDfont[idx].bitmap)+KERNING; // add a space between characters
-      if (x>=DISPLAY_WIDTH)break;
+      x += font8Width(LEDfont[idx].bitmap) + KERNING;  // add a space between characters
+      if (x >= DISPLAY_WIDTH) break;
     }
   }
-  unsigned long timer = millis();
-  for(int c=7;c>=0;c--){
-    for(int mod=0;mod<MODULES;mod++){
-      displayBufferCopy[c][mod]=displayBuffer[c][mod];
-    }
-    while (millis() - timer < durstep) registerMultiplex(displayBufferCopy);  // show the text
-    timer=millis(); // reset the timer
-  }
-  while (millis() - timer < (duration - (durstep*8))) registerMultiplex(displayBufferCopy);  // last text to display longer
-  LEDblack();
-}
 
-void LEDPlay_wipeRight(char msg[], int len, int duration) {  // Play a line of text without scrolling (8x5=40)
-  byte displayBufferCopy[8][MODULES];  // make local copy of display buffer
-  int durstep = 15; // animation speed
-  resetGrid(displayBuffer);
-  resetGrid(displayBufferCopy);
-  int x=0; // keep track of width
-  for (int j = 0; j < len; j++) {
-    int idx = LEDlookup(msg[j]);
-    if (idx >= 0) {
-      LEDdrawChar(LEDfont[idx].bitmap, x);
-      x+= font8Width(LEDfont[idx].bitmap)+KERNING; // add a space between characters
-      if (x>=DISPLAY_WIDTH)break;
-    }
-  }
-  unsigned long timer = millis();
-  for(int mod=MODULES-1;mod>=0;mod--){
-    byte mask=0;
-    for(int col=0;col<8;col++){ // sweeping in from right
-      mask |= 1 << (7-col); // new mask
-      for(int row=0;row<8;row++){  // do this to all rows  
-        displayBufferCopy[row][mod]=displayBuffer[row][mod] & mask;
+  // intro transition
+  if (type == 0 || type == 1) {  // play intro for type 0 or 1
+    timer = millis();
+    for (int c = 7; c >= 0; c--) {
+      for (int mod = 0; mod < MODULES; mod++) {
+        displayBufferCopy[c][mod] = displayBuffer[c][mod];
       }
-      while (millis() - timer < durstep) registerMultiplex(displayBufferCopy);  // display rows
-      timer=millis(); // reset the timer
+      while (millis() - timer < stepdur) registerMultiplex(displayBufferCopy);  // show the text
+      timer = millis();                                                         // reset the timer
     }
-  }
-  timer=millis();
-  while (millis() - timer < (duration - (durstep*8))) registerMultiplex(displayBuffer);  // last text to display longer
-  LEDblack();
+  }  // end of intro
+
+  // body display
+  timer = millis();
+  while (millis() - timer < (duration - (stepdur * 8))) registerMultiplex(displayBuffer);  // last text to display longer
+
+  // outro transition
+  if (type == 0 || type == 2) {  // play outro for type 0 or 2
+    timer = millis();
+    for (int c = 7; c >= 0; c--) {
+      for (int mod = 0; mod < MODULES; mod++) {
+        displayBufferCopy[c][mod] = 0; // delete that row
+      }
+      while (millis() - timer < stepdur) registerMultiplex(displayBufferCopy);  // show the text
+      timer = millis();                                                         // reset the timer
+    }
+  }  // end of outro
+  LEDblack(); // turn off LED
 }
 
-void LEDPlay_dissolveIn(char msg[], int len, int duration) {  // Play a line of text without scrolling (8x5=40)
+void LEDPlay_wipeRight(char msg[], int len, byte type, int duration) {  // Play a line of text wiping it in then out
+  // type is going to be: 0: both (in and out), 1: wipe in only, 2: wipe out only
+  // read in msg[]
   byte displayBufferCopy[8][MODULES];  // make local copy of display buffer
-  byte mask[8][MODULES];  // random mask
-  int durstep = 5; // animation speed
+  int stepdur = 15;                    // animation speed
+  unsigned long timer;                 // for timing transitions
   resetGrid(displayBuffer);
   resetGrid(displayBufferCopy);
-  resetGrid(mask); // clear the mask
-  int x=0; // keep track of width
+  int x = 0;  // keep track of width
   for (int j = 0; j < len; j++) {
     int idx = LEDlookup(msg[j]);
     if (idx >= 0) {
       LEDdrawChar(LEDfont[idx].bitmap, x);
-      x+= font8Width(LEDfont[idx].bitmap)+KERNING; // add a space between characters
-      if (x>=DISPLAY_WIDTH)break;
+      x += font8Width(LEDfont[idx].bitmap) + KERNING;  // add a space between characters
+      if (x >= DISPLAY_WIDTH) break;
     }
   }
-  unsigned long timer;
-  for(int i=0;i<200;i++){
-    timer=millis(); // reset the timer
-    LatinHypercube_2D(mask, 8, MODULES, 2, false);  // rows, cols, segments, #random points, don't refresh
-    for (int row = 0; row < 8; row++) {  // initialize the displayBuffer
-      for (int module = 0; module < MODULES; module++) {
-        displayBufferCopy[row][module] = displayBuffer[row][module] & mask[row][module];
+
+  // intro transition
+  if (type == 0 || type == 1) {  // play intro for type 0 or 1
+    timer = millis();
+    for (int mod = MODULES - 1; mod >= 0; mod--) {
+      byte mask = 0;
+      for (int col = 0; col < 8; col++) {    // sweeping in from right
+        mask |= 1 << (7 - col);              // new mask
+        for (int row = 0; row < 8; row++) {  // do this to all rows
+          displayBufferCopy[row][mod] = displayBuffer[row][mod] & mask;
+        }
+        while (millis() - timer < stepdur) registerMultiplex(displayBufferCopy);  // display rows
+        timer = millis();                                                         // reset the timer
       }
     }
-    if(i<199){ // during transition
-      while (millis() - timer < durstep) registerMultiplex(displayBufferCopy);  // display rows
-    }else{   // last frame is full image. Deduct time of transition.
-      while (millis() - timer < (duration-1000)) registerMultiplex(displayBuffer);  // display rows
+  }  // end of intro
+
+  // body display
+  timer = millis();
+  while (millis() - timer < (duration - (stepdur * 8))) registerMultiplex(displayBuffer);  // last text to display longer
+
+  // outro transition
+  if (type == 0 || type == 2) {  // play outro for type 0 or 2
+    timer = millis();
+    for (int mod = MODULES - 1; mod >= 0; mod--) {
+      byte mask = 0b11111111;
+      for (int col = 0; col < 8; col++) {    // sweeping in from right
+        mask &= ~(1 << (7 - col));             // new mask (consider reversing this order)
+        for (int row = 0; row < 8; row++) {  // do this to all rows
+          displayBufferCopy[row][mod] = displayBuffer[row][mod] & mask;
+        }
+        while (millis() - timer < stepdur) registerMultiplex(displayBufferCopy);  // display rows
+        timer = millis();                                                         // reset the timer
+      }
+    }
+  }  // end of outro
+  LEDblack(); // turn off LED
+}
+
+void LEDPlay_dissolve(char msg[], int len, byte type, int duration) {  // Play a line of text wiping it in then out
+  // type is going to be: 0: both (in and out), 1: wipe in only, 2: wipe out only
+  // read in msg[]
+  int steps=200;
+  byte displayBufferCopy[8][MODULES];  // make local copy of display buffer
+  int stepdur = 5;                     // animation speed
+  unsigned long timer;                 // for timing transitions
+  resetGrid(displayBuffer);
+  resetGrid(displayBufferCopy);
+  int x = 0;  // keep track of width
+  for (int j = 0; j < len; j++) {
+    int idx = LEDlookup(msg[j]);
+    if (idx >= 0) {
+      LEDdrawChar(LEDfont[idx].bitmap, x);
+      x += font8Width(LEDfont[idx].bitmap) + KERNING;  // add a space between characters
+      if (x >= DISPLAY_WIDTH) break;
     }
   }
-  LEDblack();
+
+  // intro transition
+  byte mask[8][MODULES];                                      // random mask
+  resetGrid(mask);  // clear the mask
+
+  if (type == 0 || type == 1) {  // play intro for type 0 or 1
+    for (int i = 0; i < steps; i++) {
+      timer = millis();                               // reset the timer
+      LatinHypercube_2D(mask, 8, MODULES, 2, false);  // rows, cols, segments, #random points, don't refresh
+      for (int row = 0; row < 8; row++) {             // initialize the displayBuffer
+        for (int module = 0; module < MODULES; module++) {
+          displayBufferCopy[row][module] = displayBuffer[row][module] & mask[row][module];
+        }
+      }
+      while (millis() - timer < stepdur) registerMultiplex(displayBufferCopy);        // display rows
+    }
+  }  // end of intro
+
+  // body display
+  timer = millis();
+  while (millis() - timer < (duration - (steps*stepdur))) registerMultiplex(displayBuffer);  // last text to display longer
+
+  // outro transition
+  resetGrid(mask);  // clear the mask
+
+  if (type == 0 || type == 2) {  // play outro for type 0 or 2
+    for (int i = 0; i < steps; i++) {
+      timer = millis();                               // reset the timer
+      LatinHypercube_2D(mask, 8, MODULES, 2, false);  // rows, cols, segments, #random points, don't refresh
+      for (int row = 0; row < 8; row++) {             // initialize the displayBuffer
+        for (int module = 0; module < MODULES; module++) {
+          displayBufferCopy[row][module] = displayBuffer[row][module] & ~mask[row][module]; // turn off bits
+        }
+      }
+      while (millis() - timer < stepdur) registerMultiplex(displayBufferCopy);        // display rows
+    }
+  }  // end of outro
+  LEDblack(); // turn off LED
 }
+
 
 void LEDscrollChar(byte graphic[], byte ID, int wait) {
   for (int column = 7; column >= (7 - font8Width(graphic)); column--) {
@@ -485,7 +558,7 @@ void LEDscrollChar(byte graphic[], byte ID, int wait) {
 void LEDdrawChar(byte graphic[], int x) {
   int width = font8Width(graphic);
   for (int col = 0; col < width; col++) {
-    int glyphCol = 7-col; 
+    int glyphCol = 7 - col;
     int logicalPos = x + col;
     if (logicalPos >= DISPLAY_WIDTH)
       return;
@@ -515,7 +588,7 @@ byte getRotatedByte(byte graphic[8][MODULES], int module, int column) {
 // n is the number of random points selected in each segment (total # random points = 4*n)
 void LatinHypercube_2D(byte graphic[8][MODULES], int rows, int cols, int n, bool refresh) {
   // First clear the array
-  if(refresh){ // refresh = true: re-initialize display and start over. false: update existing.
+  if (refresh) {                            // refresh = true: re-initialize display and start over. false: update existing.
     for (int row = 0; row < rows; row++) {  // initialize the displayBuffer
       for (int col = 0; col < cols; col++) {
         graphic[row][col] = 0;
@@ -548,7 +621,7 @@ void LED_sparkles(byte graphic[8][MODULES], int rows, int cols, int n, int dur_s
     }
     timer = millis();  //reset the timer
   }
-  LEDblack();
+  LEDblack(); // turn off LED
 }
 
 byte font8Width(byte graphic[]) {  // calculate the width of the graphic. If a space (empty), return a width of 4.
@@ -563,4 +636,3 @@ byte font8Width(byte graphic[]) {  // calculate the width of the graphic. If a s
   }
   return 4;  // if you made it this far, it's a space!
 }
-
