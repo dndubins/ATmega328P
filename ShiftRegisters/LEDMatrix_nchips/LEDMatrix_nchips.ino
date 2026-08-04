@@ -152,7 +152,7 @@ void loop() {
   //while (millis() - timer < 1000) registerMultiplex(displayBuffer);
 
   // Show a char array
-  char message0[] = "   \x8AHi\x8A ";
+  char message0[] = "  \x8AHi\x8A";
   LEDPlay(message0, sizeof(message0), 3000); // plays the text with no transitions
   delay(1000);
   LEDPlay_wipeUp(message0, sizeof(message0), 0, 3000); // wipes in upwards, then out
@@ -235,7 +235,7 @@ void registerMultiplex(byte graphic[8][MODULES]) {  // this will take displayBuf
     digitalWrite(latchPin, HIGH);  // Set the latch HIGH to trigger the bits shifting OUT:
     digitalWrite(latchPin, LOW);   // chatgpt suggested this
   }
-  delayMicroseconds(500);  // delete later? See if this reduces bright spots.
+  delayMicroseconds(500);  // reduces bright spots (determined empirically)
 }
 
 void LEDMatrixClear() {  // clear the LED screens
@@ -519,7 +519,9 @@ void LEDPlay_dissolve(char msg[], int len, byte type, int duration) {  // Play a
           displayBufferCopy[row][module] = displayBuffer[row][module] & mask[row][module];
         }
       }
-      while (millis() - timer < stepdur) registerMultiplex(displayBufferCopy);        // display rows
+      while (millis() - timer < stepdur){
+        registerMultiplex(displayBufferCopy);        // display rows
+      }
     }
   }  // end of intro
 
@@ -539,7 +541,9 @@ void LEDPlay_dissolve(char msg[], int len, byte type, int duration) {  // Play a
           displayBufferCopy[row][module] = displayBuffer[row][module] & ~mask[row][module]; // turn off bits
         }
       }
-      while (millis() - timer < stepdur) registerMultiplex(displayBufferCopy);        // display rows
+      while (millis() - timer < stepdur){
+        registerMultiplex(displayBufferCopy);        // display rows
+      }
     }
   }  // end of outro
   LEDblack(); // turn off LED
