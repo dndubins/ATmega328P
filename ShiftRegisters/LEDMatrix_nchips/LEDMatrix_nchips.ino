@@ -2,7 +2,7 @@
  * Author: D. Dubins
  * AI Assist: ChatGPT, Claude.AI, Perplexity.AI
  * Date: 17-Jul-26
- * Last Revised: 04-Aug-26
+ * Last Revised: 05-Aug-26
  * Description: Drives a series of N 8x8 LED modules. Routines for displaying simple graphics, and scrolling text. Shift Register Example
  * for 74HC595 shift register.
  * 
@@ -136,13 +136,16 @@ void setup() {
 }
 
 void loop() {
+  // Show all characters (diagnostic)
+  //for (int j = 35; j < LEDfontSize; j++) {
+  //  LEDshow_all(LEDfont[j].bitmap, 500);
+  //  Serial.println("char: "+(String)LEDfont[j].key+" "+(String)font8Width(LEDfont[j].bitmap));
+  //}
+  //delay(1000);
+
   // Fill all LEDs (diagnostic)
   //LEDshow_all(filled,1000);
   //delay(1000);
-
-  // Play sparkles
-  LED_sparkles(displayBuffer, 8, MODULES, 5, 50, 3000);  // last number is # steps
-  delay(1000);
 
   // Brute force: add one character to the screen at a time then display for 1 second:
   //LEDdrawChar(LEDfont[ LEDlookup('@') ].bitmap, 0);  // draw an '@' sign at position 0
@@ -151,30 +154,30 @@ void loop() {
   //long timer = millis();
   //while (millis() - timer < 1000) registerMultiplex(displayBuffer);
 
-  // Show a char array
-  char message0[] = "  \x8AHi\x8A";
-  LEDPlay(message0, sizeof(message0), 3000); // plays the text with no transitions
-  delay(1000);
-  LEDPlay_wipeUp(message0, sizeof(message0), 0, 3000); // wipes in upwards, then out
-  delay(1000);
-  LEDPlay_wipeRight(message0, sizeof(message0), 0, 3000); // wipes in from right, then out
-  delay(1000);
-  LEDPlay_dissolve(message0, sizeof(message0), 0, 3000); // dissolves in, then out
-  delay(1000);
-
-  // Test a character in context
+  // Test a character in context (diagnostic)
   //char message0[] = "I'm your overlooked friend, the interrobang\x80\x80\x80 <> [] \{\}";
   //LEDscrollPlay(message0, sizeof(message0), SCROLLSPEED);
 
-  char message1[] = "\x8A\x8B\x8A\x8B\x8A Congrats to our lollipop winners! \x8A\x8B\x8A\x8B\x8A";
+  // Play sparkles
+  LED_sparkles(displayBuffer, 8, MODULES, 5, 50, 3000);  // last number is # steps
+  delay(1000);
+
+  char message1[] = "\x8A\x8A\x8A Compounding is fun! \x8A\x8A\x8A";
   LEDscrollPlay(message1, sizeof(message1), SCROLLSPEED);
 
-  // Show all characters (diagnostic)
-  //for (int j = 35; j < LEDfontSize; j++) {
-  //  LEDshow_all(LEDfont[j].bitmap, 500);
-  //  Serial.println("char: "+(String)LEDfont[j].key+" "+(String)font8Width(LEDfont[j].bitmap));
-  //}
-  //delay(1000);
+  // Show a char array
+  char message0A[] = "\x8A" "Lollipop";           // separate hex codes for safer string interpretation
+  LEDPlay(message0A, sizeof(message0A), 3000);              // plays the text with no transitions
+  delay(1000);
+  char message0B[] = "\x8B" "Gummy";             // separate hex codes for safer string interpretation
+  LEDPlay_wipeUp(message0B, sizeof(message0B), 0, 3000);    // wipes in upwards, then out
+  delay(1000);
+  char message0C[] = "\x8C" "Rectal";       // separate hex codes for safer string interpretation
+  LEDPlay_wipeRight(message0C, sizeof(message0C), 0, 3000); // wipes in from right, then out
+  delay(1000);
+  char message0D[] = "\x8D" "Troche";             // separate hex codes for safer string interpretation
+  LEDPlay_dissolve(message0D, sizeof(message0D), 0, 3000);  // dissolves in, then out
+  delay(1000);
 
   // Play hearts in all modules
   for (int i = 0; i < 5; i++) {
