@@ -2,7 +2,7 @@
  * Author: D. Dubins
  * AI Assist: ChatGPT, Claude.AI, Perplexity.AI
  * Date: 17-Jul-26
- * Last Revised: 05-Aug-26
+ * Last Revised: 12-Aug-26
  * Description: Drives a series of N 8x8 LED modules. Routines for displaying simple graphics, and scrolling text. Shift Register Example
  * for 74HC595 shift register.
  * 
@@ -59,7 +59,7 @@ const int clockPin = 4;
 const int latchPin = 5;
 const int dataPin = 6;
 
-#define MODULES 5
+#define MODULES 8
 #define DISPLAY_WIDTH (MODULES * 8)
 #define PIXELS (MODULES * 64)
 #define KERNING 1  // use this to change spacing between characters (default: 1)
@@ -166,16 +166,16 @@ void loop() {
   LEDscrollPlay(message1, sizeof(message1), SCROLLSPEED);
 
   // Show a char array
-  char message0A[] = "\x8A" "Lollipop";           // separate hex codes for safer string interpretation
+  char message0A[] = "\x8A" "Lollipop" "\x8A";           // separate hex codes for safer string interpretation
   LEDPlay(message0A, sizeof(message0A), 3000);              // plays the text with no transitions
   delay(1000);
-  char message0B[] = "\x8B" "Gummy";             // separate hex codes for safer string interpretation
+  char message0B[] = "\x8B" "Gummy" "\x8B";             // separate hex codes for safer string interpretation
   LEDPlay_wipeUp(message0B, sizeof(message0B), 0, 3000);    // wipes in upwards, then out
   delay(1000);
-  char message0C[] = "\x8C" "Rectal";       // separate hex codes for safer string interpretation
+  char message0C[] = "\x8C" "Rectal" "\x8C";       // separate hex codes for safer string interpretation
   LEDPlay_wipeRight(message0C, sizeof(message0C), 0, 3000); // wipes in from right, then out
   delay(1000);
-  char message0D[] = "\x8D" "Troche";             // separate hex codes for safer string interpretation
+  char message0D[] = "\x8D" "Troche" "\x8D";             // separate hex codes for safer string interpretation
   LEDPlay_dissolve(message0D, sizeof(message0D), 0, 3000);  // dissolves in, then out
   delay(1000);
 
