@@ -1,6 +1,6 @@
 // LEDfont.h file adapted from a community Arduino example for 8×8 matrix displays; no single canonical source.
 // Use: https://htmlpreview.github.io/?https://github.com/dndubins/ATmega328P/blob/main/ShiftRegisters/LEDMatrix_nchips/hexgen.htm
-// to edit or generate new hex codes.
+// to edit or generate new hex codes for glyphs.
 
 struct LEDChar {
   char key;
