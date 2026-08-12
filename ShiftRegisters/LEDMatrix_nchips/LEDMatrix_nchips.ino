@@ -167,13 +167,14 @@ void loop() {
 
   // Show a char array
   char message0A[] = "\x8A" "Lollipop" "\x8A";           // separate hex codes for safer string interpretation
-  LEDPlay(message0A, sizeof(message0A), 3000);              // plays the text with no transitions
+  //LEDPlay(message0A, sizeof(message0A), 3000);              // plays the text with no transitions
+  LEDPlay_wipeRight(message0A, sizeof(message0A), 0, 3000);      // wipes in right, then out
   delay(1000);
-  char message0B[] = "\x8B" "Gummy" "\x8B";             // separate hex codes for safer string interpretation
+  char message0B[] = "\x8B" " Gummy " "\x8B";             // separate hex codes for safer string interpretation
   LEDPlay_wipeUp(message0B, sizeof(message0B), 0, 3000);    // wipes in upwards, then out
   delay(1000);
-  char message0C[] = "\x8C" "Rectal" "\x8C";       // separate hex codes for safer string interpretation
-  LEDPlay_wipeRight(message0C, sizeof(message0C), 0, 3000); // wipes in from right, then out
+  char message0C[] = "\x8C" " Suppository " "\x8C";       // separate hex codes for safer string interpretation
+  LEDscrollPlay(message0C, sizeof(message0C), SCROLLSPEED); // wipes in from right, then out
   delay(1000);
   char message0D[] = "\x8D" "Troche" "\x8D";             // separate hex codes for safer string interpretation
   LEDPlay_dissolve(message0D, sizeof(message0D), 0, 3000);  // dissolves in, then out
@@ -186,7 +187,8 @@ void loop() {
   delay(1000);
 
   // Scroll message across multiple chips:
-  char message2[] = "Welcome to the Patheon Pharmaceutics Lab!!! ";  // remember to leave one extra space for string terminator
+  //char message2[] = "Welcome to the Patheon Pharmaceutics Lab!!! ";  // remember to leave one extra space for string terminator
+  char message2[] = "Welcome to Pharmaceutical Chemistry!!! ";  // remember to leave one extra space for string terminator
   LEDscrollPlay(message2, sizeof(message2), SCROLLSPEED);
 
   // Play beating hearts in separate modules:
@@ -196,6 +198,21 @@ void loop() {
     LEDplayHearts(2, 20);        // play hearts in module 2
     LEDplayHearts(4, 20);        // play hearts in module 4
     LEDplayHearts(5, 20);        // play hearts in module 3
+  }
+  delay(1000);
+
+  // Play scrolling message:
+  //char message3[] = "Leslie Dan Faculty of Pharmacy, University of Toronto";
+  char message3[] = "Pharm Chem is a joint program between Dept. of Chemistry & LDFP.";
+  LEDscrollPlay(message3, sizeof(message3), SCROLLSPEED);
+
+  // Play scrolling message
+  //char message4[] = "Remember to wear your PPE at all times: lab coat & safety glasses!";
+  char message4[] = "PCSU: Pharmaceutical Chemistry Student Union (also: Pretty Cool Students Undeniably!)";
+  LEDscrollPlay(message4, sizeof(message4), SCROLLSPEED);
+
+  // Play beating hearts in separate modules:
+  for (int i = 0; i < 3; i++) {
     LEDshow(happyface, 2, 250);  // play happy faces, staggered randomly
     LEDshow(happyface, 4, 250);
     LEDshow(happyface, 1, 250);
@@ -204,18 +221,9 @@ void loop() {
   }
   delay(1000);
 
-  // Play scrolling message:
-  char message3[] = "Leslie Dan Faculty of Pharmacy, University of Toronto";
-  LEDscrollPlay(message3, sizeof(message3), SCROLLSPEED);
-
-  // Play scrolling message
-  char message4[] = "Remember to wear your PPE at all times: lab coat & safety glasses!";
-  LEDscrollPlay(message4, sizeof(message4), SCROLLSPEED);
-
   // Play graphic (skulls):
-  LEDplaySkulls_all(500);
-
-  delay(1000);
+  //LEDplaySkulls_all(500);
+  //delay(1000);
 }
 
 void registerMultiplex(byte graphic[8][MODULES]) {  // this will take displayBuffer[8][MODULES]
