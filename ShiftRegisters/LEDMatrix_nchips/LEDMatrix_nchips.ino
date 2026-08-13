@@ -195,9 +195,12 @@ void loop() {
   for (int i = 0; i < 3; i++) {
     LEDplayHearts(1, 20);        // play hearts in module 1
     LEDplayHearts(3, 20);        // play hearts in module 5
-    LEDplayHearts(2, 20);        // play hearts in module 2
+    LEDplayHearts(5, 20);        // play hearts in module 2
+    LEDplayHearts(0, 20);        // play hearts in module 5
+    LEDplayHearts(7, 20);        // play hearts in module 2
     LEDplayHearts(4, 20);        // play hearts in module 4
-    LEDplayHearts(5, 20);        // play hearts in module 3
+    LEDplayHearts(6, 20);        // play hearts in module 3
+    LEDplayHearts(2, 20);        // play hearts in module 4
   }
   delay(1000);
 
@@ -213,11 +216,14 @@ void loop() {
 
   // Play beating hearts in separate modules:
   for (int i = 0; i < 3; i++) {
-    LEDshow(happyface, 2, 250);  // play happy faces, staggered randomly
-    LEDshow(happyface, 4, 250);
-    LEDshow(happyface, 1, 250);
-    LEDshow(happyface, 3, 250);
-    LEDshow(happyface, 0, 250);
+    LEDshow(happyface, 2, 200);  // play happy faces, staggered randomly
+    LEDshow(happyface, 4, 200);
+    LEDshow(happyface, 0, 200);
+    LEDshow(happyface, 6, 200);
+    LEDshow(happyface, 1, 200);
+    LEDshow(happyface, 3, 200);
+    LEDshow(happyface, 7, 200);
+    LEDshow(happyface, 5, 200);
   }
   delay(1000);
 
