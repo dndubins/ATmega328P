@@ -20,7 +20,7 @@ input[type=range] { width:220px; }
 .glyph { display:grid; grid-template-columns:repeat(8, var(--pixel)); grid-template-rows:repeat(8, var(--pixel)); gap:var(--gap); background:#555; padding:var(--gap); flex:none; }
 .pixel { width:var(--pixel); height:var(--pixel); background:#222; }
 .pixel.on { background:#eee; }
-.label { color:#ccc; min-width:42px; white-space:pre; }
+.label { color:#ccc; min-width:42px; white-space:pre; font-family:Consolas, "Segoe UI Symbol", "Noto Sans Symbols", "Noto Sans Symbols2", "Arial Unicode MS", monospace; }
 #message { color:#9f9; min-height:1.2em; }
 </style>
 </head>
@@ -70,14 +70,16 @@ const columns = document.getElementById('columns');
 function parseFont(text) {
   const result = [];
   const entryPattern =
-    /\{\s*(['"])((?:\\x[0-9a-fA-F]{2}|\\.|[^'"\\])+)\1\s*,\s*\{([^{}]*)\}\s*\}/g;
+    /\{\s*(['"])((?:\\x[0-9a-fA-F]{2}|\\u\{[0-9a-fA-F]+\}|\\u[0-9a-fA-F]{4}|\\.|[^'"\\])+)\1\s*,\s*\{([^{}]*)\}\s*\}\s*,?[ \t]*(?:\/\/([^\r\n]*))?/g;
   let match;
   while ((match = entryPattern.exec(text)) !== null) {
+    const rawChar = match[2];
     const char = decodeString(match[2]);
+    const comment = match[4] !== undefined ? match[4].trim() : '';
     const bytes = (match[3].match(/0[xX][0-9a-fA-F]+|\b\d+\b/g) || [])
       .map(value => value.toLowerCase().startsWith('0x') ? parseInt(value, 16) : parseInt(value, 10))
       .slice(0, 8);
-    if (bytes.length === 8) result.push({ char, bytes });
+    if (bytes.length === 8) result.push({ char, rawChar, comment, bytes });
   }
   return result;
 }
@@ -85,12 +87,19 @@ function parseFont(text) {
 function decodeString(value) {
   return value
     .replace(/\\x([0-9a-fA-F]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-    .replace(/\\n/g, '\n')
-    .replace(/\\r/g, '\r')
-    .replace(/\\t/g, '\t')
-    .replace(/\\\\/g, '\\')
-    .replace(/\\'/g, "'")
-    .replace(/\\"/g, '"');
+    .replace(/\\u\{([0-9a-fA-F]+)\}/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/\\\\/g, '\u0000BS\u0000')
+    .replace(/\\(.)/g, (_, c) => {
+      switch (c) {
+        case 'n': return '\n';
+        case 'r': return '\r';
+        case 't': return '\t';
+        case '0': return '\0';
+        default: return c; // unrecognized escapes (e.g. \{, \}, \#) fall back to the literal character
+      }
+    })
+    .replace(/\u0000BS\u0000/g, '\\');
 }
 
 function render() {
@@ -102,7 +111,9 @@ function render() {
     row.className = 'row';
     const glyph = document.createElement('div');
     glyph.className = 'glyph';
-    glyph.title = item.char === ' ' ? 'space' : item.char;
+    const label = item.rawChar === ' ' ? '[space]' : item.rawChar;
+    const tooltip = item.comment || label;
+    glyph.title = tooltip;
     item.bytes.forEach(byte => {
       for (let bit = 7; bit >= 0; bit--) {
         const pixel = document.createElement('div');
@@ -110,10 +121,10 @@ function render() {
         glyph.appendChild(pixel);
       }
     });
-    const label = document.createElement('div');
-    label.className = 'label';
-    label.textContent = item.char === ' ' ? '[space]' : item.char;
-    row.append(glyph, label);
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'label';
+    labelDiv.textContent = label;
+    row.append(glyph, labelDiv);
     library.appendChild(row);
   }
   status.textContent = chars.length ? `${chars.length} character${chars.length === 1 ? '' : 's'} loaded.` : 'No valid 8-byte character entries found.';
