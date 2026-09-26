@@ -70,10 +70,10 @@ const columns = document.getElementById('columns');
 function parseFont(text) {
   const result = [];
   const entryPattern =
-    /\{\s*(['"])((?:\\x[0-9a-fA-F]{2}|\\.|[^'"\\]))\1\s*,\s*\{([^{}]*)\}\s*\}/g;
+    /\{\s*(['"])((?:\\x[0-9a-fA-F]{2}|\\.|[^'"\\])+)\1\s*,\s*\{([^{}]*)\}\s*\}/g;
   let match;
   while ((match = entryPattern.exec(text)) !== null) {
-    const char = decodeChar(match[2]);
+    const char = decodeString(match[2]);
     const bytes = (match[3].match(/0[xX][0-9a-fA-F]+|\b\d+\b/g) || [])
       .map(value => value.toLowerCase().startsWith('0x') ? parseInt(value, 16) : parseInt(value, 10))
       .slice(0, 8);
@@ -82,18 +82,15 @@ function parseFont(text) {
   return result;
 }
 
-function decodeChar(value) {
-  if (value.length === 2 && value[0] === '\\') {
-    const code = value[1].toLowerCase();
-    if (code === 'n') return '\n';
-    if (code === 'r') return '\r';
-    if (code === 't') return '\t';
-    if (code === '\\') return '\\';
-    if (code === "'") return "'";
-    if (code === '"') return '"';
-  }
-  if (value.length === 4 && value.startsWith('\\x')) return String.fromCharCode(parseInt(value.slice(2), 16));
-  return value;
+function decodeString(value) {
+  return value
+    .replace(/\\x([0-9a-fA-F]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/\\n/g, '\n')
+    .replace(/\\r/g, '\r')
+    .replace(/\\t/g, '\t')
+    .replace(/\\\\/g, '\\')
+    .replace(/\\'/g, "'")
+    .replace(/\\"/g, '"');
 }
 
 function render() {
