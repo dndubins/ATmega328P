@@ -55,6 +55,22 @@
 
 //#include "LEDfont.h"  // lib header file provided with this sketch
 #include "LEDfont_narrow.h" // select this for narrower fonts
+#include <avr/pgmspace.h> // use PROGMEM to be more efficient
+const char message0[] PROGMEM = "Are you ready for an exciting career in drug development and research\x80\x80\x80";
+//const char message0[] PROGMEM = "I'm your overlooked friend, the interrobang\x80\x80\x80";
+const char message1[] PROGMEM = "\x8A\x8A\x8A Compounding is fun! \x8A\x8A\x8A";
+const char message2[] PROGMEM = "\x8A" "Lollipop" "\x8A";
+const char message3[] PROGMEM = "\x8B" " Gummy " "\x8B"; 
+const char message4[] PROGMEM = "\x8C\x8C\x8C" " Suppository " "\x8C\x8C\x8C";
+const char message5[] PROGMEM = "\x8D" "Troche" "\x8D"; 
+const char message6[] PROGMEM = "Welcome to Pharmaceutical Chemistry!!! ";
+const char message7[] PROGMEM = "Pharm Chem is a joint program between the Dept. of Chemistry & the LDFP.";
+const char message8[] PROGMEM = "PCSU: Pharmaceutical Chemistry Student Union (also: Pretty Cool Students Undeniably!)";
+
+// table of pointers, also kept in flash
+const char* const messageTable[] PROGMEM = { message0, message1, message2, message3, message4, message5, message6, message7, message8 };
+
+char buffer[100];  // size this to your longest message + 1, reused every time
 
 const int clockPin = 4;
 const int latchPin = 5;
@@ -156,30 +172,29 @@ void loop() {
   //while (millis() - timer < 1000) registerMultiplex(displayBuffer);
 
   // Test a character in context (diagnostic)
-  //char message0[] = "I'm your overlooked friend, the interrobang\x80\x80\x80 <> [] \{\}";
-  char message0[] = "Are you ready for an exciting career in drug development and research\x80\x80\x80";
-  LEDscrollPlay(message0, sizeof(message0), SCROLLSPEED);
+  loadMessage(0);
+  LEDscrollPlay(buffer, strlen(buffer), SCROLLSPEED);
 
   // Play sparkles
   LED_sparkles(displayBuffer, 8, MODULES, 5, 50, 3000);  // last number is # steps
   delay(1000);
 
-  char message1[] = "\x8A\x8A\x8A Compounding is fun! \x8A\x8A\x8A";
-  LEDscrollPlay(message1, sizeof(message1), SCROLLSPEED);
+  loadMessage(1);
+  LEDscrollPlay(buffer, strlen(buffer), SCROLLSPEED);
 
   // Show a char array
-  char message0A[] = "\x8A" "Lollipop" "\x8A";           // separate hex codes for safer string interpretation
-  //LEDPlay(message0A, sizeof(message0A), 3000);              // plays the text with no transitions
-  LEDPlay_wipeRight(message0A, sizeof(message0A), 0, 3000);      // wipes in right, then out
+  loadMessage(2);
+  //LEDPlay(message2, strlen(message2), 3000);              // plays the text with no transitions
+  LEDPlay_wipeRight(buffer, strlen(buffer), 0, 3000);      // wipes in right, then out
   delay(1000);
-  char message0B[] = "\x8B" " Gummy " "\x8B";             // separate hex codes for safer string interpretation
-  LEDPlay_wipeUp(message0B, sizeof(message0B), 0, 3000);    // wipes in upwards, then out
+  loadMessage(3);
+  LEDPlay_wipeUp(buffer, strlen(buffer), 0, 3000);    // wipes in upwards, then out
   delay(1000);
-  char message0C[] = "\x8C\x8C\x8C" " Suppository " "\x8C\x8C\x8C";       // separate hex codes for safer string interpretation
-  LEDscrollPlay(message0C, sizeof(message0C), SCROLLSPEED); // wipes in from right, then out
+  loadMessage(4);
+  LEDscrollPlay(buffer, strlen(buffer), SCROLLSPEED); // wipes in from right, then out
   delay(1000);
-  char message0D[] = "\x8D" "Troche" "\x8D";             // separate hex codes for safer string interpretation
-  LEDPlay_dissolve(message0D, sizeof(message0D), 0, 3000);  // dissolves in, then out
+  loadMessage(5);
+  LEDPlay_dissolve(buffer, strlen(buffer), 0, 3000);  // dissolves in, then out
   delay(1000);
 
   // Play hearts in all modules
@@ -188,12 +203,8 @@ void loop() {
   }
   delay(1000);
 
-  // Scroll message across multiple chips:
-  //char message2[] = "Welcome to the Patheon Pharmaceutics Lab!!! ";  // remember to leave one extra space for string terminator
-  char message2[] = "Welcome to Pharmaceutical Chemistry!!! ";  // remember to leave one extra space for string terminator
-  //char message2[] = "Welcome to COMPPS!!! ";  // remember to leave one extra space for string terminator
-
-  LEDscrollPlay(message2, sizeof(message2), SCROLLSPEED);
+  loadMessage(6);
+  LEDscrollPlay(buffer, strlen(buffer), SCROLLSPEED);
 
   // Play beating hearts in separate modules:
   for (int i = 0; i < 2; i++) {
@@ -209,16 +220,12 @@ void loop() {
   delay(1000);
 
   // Play scrolling message:
-  //char message3[] = "Leslie Dan Faculty of Pharmacy, University of Toronto";
-  char message3[] = "Pharm Chem is a joint program between the Dept. of Chemistry & the LDFP.";
-  //char message3[] = "COMPPS: Compounding Opportunities and Mentorship Program for Pharmacy Students!";
-  LEDscrollPlay(message3, sizeof(message3), SCROLLSPEED);
+  loadMessage(7);
+  LEDscrollPlay(buffer, strlen(buffer), SCROLLSPEED);
 
   // Play scrolling message
-  //char message4[] = "Remember to wear your PPE at all times: lab coat & safety glasses!";
-  char message4[] = "PCSU: Pharmaceutical Chemistry Student Union (also: Pretty Cool Students Undeniably!)";
-  //char message4[] = "A super-cool compounding club for the PharmD program.";
-  LEDscrollPlay(message4, sizeof(message4), SCROLLSPEED);
+  loadMessage(8);
+  LEDscrollPlay(buffer, strlen(buffer), SCROLLSPEED);
 
   // Play beating hearts in separate modules:
   for (int i = 0; i < 2; i++) {
@@ -662,4 +669,10 @@ byte font8Width(byte graphic[]) {  // calculate the width of the graphic. If a s
     }
   }
   return 4;  // if you made it this far, it's a space!
+}
+
+// To load message from PROGMEM into the buffer
+void loadMessage(uint8_t index) {
+  char* p = (char*)pgm_read_word(&messageTable[index]);
+  strcpy_P(buffer, p);
 }
