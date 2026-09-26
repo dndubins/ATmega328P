@@ -327,7 +327,7 @@ function refresh(){
 		+document.getElementById("charName").value
 		+"', {"
         +array.join(",")
-        +"}};"
+        +"}},"
         +" // "
         + document.getElementById("charName").value;
 
@@ -526,7 +526,7 @@ function copyCode(){
     let code = "{'" + name
         + "', {"
         + values.join(",")
-        + "}}"
+        + "}},"
         + " // " + name;
 
     navigator.clipboard.writeText(code)
