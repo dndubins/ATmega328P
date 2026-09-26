@@ -2,7 +2,7 @@
  * Author: D. Dubins
  * AI Assist: ChatGPT, Claude.AI, Perplexity.AI
  * Date: 17-Jul-26
- * Last Revised: 12-Aug-26
+ * Last Revised: 26-Sep-26
  * Description: Drives a series of N 8x8 LED modules. Routines for displaying simple graphics, and scrolling text. Shift Register Example
  * for 74HC595 shift register.
  * 
@@ -53,7 +53,8 @@
  */
 
 
-#include "LEDfont.h"  // lib header file provided with this sketch
+//#include "LEDfont.h"  // lib header file provided with this sketch
+#include "LEDfont_narrow.h" // select this for narrower fonts
 
 const int clockPin = 4;
 const int latchPin = 5;
@@ -66,7 +67,7 @@ const int dataPin = 6;
 
 byte displayBuffer[8][MODULES];  // for the frame buffer (for more modules, Row0 will be [A][B][C][D][E])
 #define ROTATE_90 true           // rotate screen 90 degrees (comment out if not needed)
-#define SCROLLSPEED 20           // speed for scrolling text (shorter=faster) Default: 20
+#define SCROLLSPEED 14           // speed for scrolling text (shorter=faster) Default: 20
 
 byte heart1[8] = {
   B00000000,  // the bit order is backwards here
@@ -156,7 +157,8 @@ void loop() {
 
   // Test a character in context (diagnostic)
   //char message0[] = "I'm your overlooked friend, the interrobang\x80\x80\x80 <> [] \{\}";
-  //LEDscrollPlay(message0, sizeof(message0), SCROLLSPEED);
+  char message0[] = "Are you ready for an exciting career in drug development and research\x80\x80\x80";
+  LEDscrollPlay(message0, sizeof(message0), SCROLLSPEED);
 
   // Play sparkles
   LED_sparkles(displayBuffer, 8, MODULES, 5, 50, 3000);  // last number is # steps
@@ -173,7 +175,7 @@ void loop() {
   char message0B[] = "\x8B" " Gummy " "\x8B";             // separate hex codes for safer string interpretation
   LEDPlay_wipeUp(message0B, sizeof(message0B), 0, 3000);    // wipes in upwards, then out
   delay(1000);
-  char message0C[] = "\x8C" " Suppository " "\x8C";       // separate hex codes for safer string interpretation
+  char message0C[] = "\x8C\x8C\x8C" " Suppository " "\x8C\x8C\x8C";       // separate hex codes for safer string interpretation
   LEDscrollPlay(message0C, sizeof(message0C), SCROLLSPEED); // wipes in from right, then out
   delay(1000);
   char message0D[] = "\x8D" "Troche" "\x8D";             // separate hex codes for safer string interpretation
@@ -189,33 +191,37 @@ void loop() {
   // Scroll message across multiple chips:
   //char message2[] = "Welcome to the Patheon Pharmaceutics Lab!!! ";  // remember to leave one extra space for string terminator
   char message2[] = "Welcome to Pharmaceutical Chemistry!!! ";  // remember to leave one extra space for string terminator
+  //char message2[] = "Welcome to COMPPS!!! ";  // remember to leave one extra space for string terminator
+
   LEDscrollPlay(message2, sizeof(message2), SCROLLSPEED);
 
   // Play beating hearts in separate modules:
-  for (int i = 0; i < 3; i++) {
-    LEDplayHearts(1, 20);        // play hearts in module 1
-    LEDplayHearts(3, 20);        // play hearts in module 5
-    LEDplayHearts(5, 20);        // play hearts in module 2
-    LEDplayHearts(0, 20);        // play hearts in module 5
-    LEDplayHearts(7, 20);        // play hearts in module 2
-    LEDplayHearts(4, 20);        // play hearts in module 4
-    LEDplayHearts(6, 20);        // play hearts in module 3
-    LEDplayHearts(2, 20);        // play hearts in module 4
+  for (int i = 0; i < 2; i++) {
+    LEDplayHearts(1, 10);        // play hearts in module 1
+    LEDplayHearts(3, 10);        // play hearts in module 5
+    LEDplayHearts(5, 10);        // play hearts in module 2
+    LEDplayHearts(0, 10);        // play hearts in module 5
+    LEDplayHearts(7, 10);        // play hearts in module 2
+    LEDplayHearts(4, 10);        // play hearts in module 4
+    LEDplayHearts(6, 10);        // play hearts in module 3
+    LEDplayHearts(2, 10);        // play hearts in module 4
   }
   delay(1000);
 
   // Play scrolling message:
   //char message3[] = "Leslie Dan Faculty of Pharmacy, University of Toronto";
-  char message3[] = "Pharm Chem is a joint program between Dept. of Chemistry & LDFP.";
+  char message3[] = "Pharm Chem is a joint program between the Dept. of Chemistry & the LDFP.";
+  //char message3[] = "COMPPS: Compounding Opportunities and Mentorship Program for Pharmacy Students!";
   LEDscrollPlay(message3, sizeof(message3), SCROLLSPEED);
 
   // Play scrolling message
   //char message4[] = "Remember to wear your PPE at all times: lab coat & safety glasses!";
   char message4[] = "PCSU: Pharmaceutical Chemistry Student Union (also: Pretty Cool Students Undeniably!)";
+  //char message4[] = "A super-cool compounding club for the PharmD program.";
   LEDscrollPlay(message4, sizeof(message4), SCROLLSPEED);
 
   // Play beating hearts in separate modules:
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 2; i++) {
     LEDshow(happyface, 2, 200);  // play happy faces, staggered randomly
     LEDshow(happyface, 4, 200);
     LEDshow(happyface, 0, 200);
