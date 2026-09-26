@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8×8 Bitmap Font Library Viewer</title>
+<style>
+:root { color-scheme: dark; }
+body { background:#202020; color:white; font-family:Consolas,monospace; margin:25px; }
+h1 { color:#6ff; }
+textarea { width:100%; height:280px; box-sizing:border-box; background:#111; color:#eee; border:1px solid #555; padding:10px; font:14px Consolas,monospace; }
+button, input, select { font:inherit; }
+button { padding:8px 12px; margin:4px 4px 4px 0; cursor:pointer; }
+.controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:12px 0; }
+input[type=range] { width:220px; }
+#status { color:#ccc; margin:10px 0; }
+#viewer { overflow:auto; background:#111; border:1px solid #555; padding:18px; min-height:150px; }
+.library { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:24px 18px; align-items:start; }
+.row { display:flex; align-items:center; gap:10px; }
+.glyph { display:grid; grid-template-columns:repeat(8, var(--pixel)); grid-template-rows:repeat(8, var(--pixel)); gap:var(--gap); background:#555; padding:var(--gap); flex:none; }
+.pixel { width:var(--pixel); height:var(--pixel); background:#222; }
+.pixel.on { background:#eee; }
+.label { color:#ccc; min-width:42px; white-space:pre; }
+#message { color:#9f9; min-height:1.2em; }
+</style>
+</head>
+<body>
+<h1>8×8 Bitmap Font Library Viewer</h1>
+<p>Paste your complete <code>LEDChar LEDfont[]</code> array, or any portion of it, below.</p>
+<textarea id="source" spellcheck="false" placeholder="Paste C font data here..."></textarea>
+<div class="controls">
+  <button id="renderButton">Render library</button>
+  <button id="clearButton">Clear</button>
+  <label>Zoom: <input id="zoom" type="range" min="4" max="40" value="16"> <span id="zoomValue">16 px</span></label>
+  <label>Columns: <select id="columns"><option value="auto">Automatic</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="8">8</option></select></label>
+</div>
+<div id="message"></div>
+<div id="status">No characters loaded.</div>
+<div id="viewer"><div id="library" class="library"></div></div>
+<script>
+const source = document.getElementById('source');
+const library = document.getElementById('library');
+const viewer = document.getElementById('viewer');
+const status = document.getElementById('status');
+const message = document.getElementById('message');
+const zoom = document.getElementById('zoom');
+const zoomValue = document.getElementById('zoomValue');
+const columns = document.getElementById('columns');
+
+function parseFont(text) {
+  const result = [];
+  const entryPattern =
+    /\{\s*(['"])((?:\\x[0-9a-fA-F]{2}|\\.|[^'"\\]))\1\s*,\s*\{([^{}]*)\}\s*\}/g;
+  let match;
+  while ((match = entryPattern.exec(text)) !== null) {
+    const char = decodeChar(match[2]);
+    const bytes = (match[3].match(/0[xX][0-9a-fA-F]+|\b\d+\b/g) || [])
+      .map(value => value.toLowerCase().startsWith('0x') ? parseInt(value, 16) : parseInt(value, 10))
+      .slice(0, 8);
+    if (bytes.length === 8) result.push({ char, bytes });
+  }
+  return result;
+}
+
+function decodeChar(value) {
+  if (value.length === 2 && value[0] === '\\') {
+    const code = value[1].toLowerCase();
+    if (code === 'n') return '\n';
+    if (code === 'r') return '\r';
+    if (code === 't') return '\t';
+    if (code === '\\') return '\\';
+    if (code === "'") return "'";
+    if (code === '"') return '"';
+  }
+  if (value.length === 4 && value.startsWith('\\x')) return String.fromCharCode(parseInt(value.slice(2), 16));
+  return value;
+}
+
+function render() {
+  const chars = parseFont(source.value);
+  library.innerHTML = '';
+  library.style.gridTemplateColumns = columns.value === 'auto' ? 'repeat(auto-fill, minmax(150px, 1fr))' : `repeat(${columns.value}, minmax(120px, 1fr))`;
+  for (const item of chars) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const glyph = document.createElement('div');
+    glyph.className = 'glyph';
+    glyph.title = item.char === ' ' ? 'space' : item.char;
+    item.bytes.forEach(byte => {
+      for (let bit = 7; bit >= 0; bit--) {
+        const pixel = document.createElement('div');
+        pixel.className = 'pixel' + ((byte & (1 << bit)) ? ' on' : '');
+        glyph.appendChild(pixel);
+      }
+    });
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = item.char === ' ' ? '[space]' : item.char;
+    row.append(glyph, label);
+    library.appendChild(row);
+  }
+  status.textContent = chars.length ? `${chars.length} character${chars.length === 1 ? '' : 's'} loaded.` : 'No valid 8-byte character entries found.';
+}
+
+function updateZoom() {
+  const size = `${zoom.value}px`;
+  document.documentElement.style.setProperty('--pixel', size);
+  document.documentElement.style.setProperty('--gap', `${Math.max(1, Math.round(Number(zoom.value) / 10))}px`);
+  zoomValue.textContent = `${zoom.value} px`;
+}
+
+document.getElementById('renderButton').onclick = render;
+document.getElementById('clearButton').onclick = () => { source.value = ''; library.innerHTML = ''; status.textContent = 'No characters loaded.'; message.textContent = ''; };
+zoom.oninput = updateZoom;
+columns.onchange = render;
+updateZoom();
+</script>
+</body>
+</html>
