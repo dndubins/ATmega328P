@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>g
+<head>
 <meta charset="UTF-8">
 <title>8x8 Bitmap Font Editor</title>
 
@@ -300,9 +300,11 @@ function refresh(){
     }
 
 
-    output += "\nC array:\n{"
+    output += "\nC array:\n{'"
+		+document.getElementById("charName").value
+		+"', {"
         +array.join(",")
-        +"};"
+        +"}};"
         +" // "
         + document.getElementById("charName").value;
 
