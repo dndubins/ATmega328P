@@ -72,6 +72,28 @@ pre {
     background:#111;
     padding:10px;
 }
+
+#toast {
+    visibility: hidden;
+    position: fixed;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    background: #333;
+    color: #6ff;
+    border: 1px solid #6ff;
+    padding: 10px 18px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+}
+
+#toast.show {
+    visibility: visible;
+    opacity: 1;
+}
+	
 </style>
 </head>
 
@@ -154,7 +176,7 @@ placeholder="Paste 8 bytes:
 <br>
 
 <button onclick="importHex()">Import</button>
-
+<div id="toast">Copied!</div>
 <script>
 
 let pixels=[];
@@ -479,42 +501,52 @@ function shiftDown(){
 
 function copyCode(){
 
-    let name=document.getElementById("charName").value;
+    let name = document.getElementById("charName").value;
 
-    let values=[];
+    let values = [];
 
-    for(let y=0;y<8;y++){
+    for(let y = 0; y < 8; y++){
 
-        let v=0;
+        let v = 0;
 
-        for(let x=0;x<8;x++)
+        for(let x = 0; x < 8; x++)
             if(pixels[y][x])
-                v|=(1<<(7-x));
+                v |= (1 << (7 - x));
 
         values.push(
-            "0x"+
+            "0x" +
             v.toString(16)
-            .toUpperCase()
-            .padStart(2,"0")
+             .toUpperCase()
+             .padStart(2, "0")
         );
 
     }
 
+    let code = "{'" + name
+        + "', {"
+        + values.join(",")
+        + "}}"
+        + " // " + name;
 
-    let code="{'"+name
-		+"', {"
-        +values.join(",")
-        +"}}"
-		+" // "+name
-		;
+    navigator.clipboard.writeText(code)
+        .then(function(){
 
-    navigator.clipboard.writeText(code);
+            let toast = document.getElementById("toast");
 
-    alert("Copied!");
+            toast.classList.add("show");
+
+            setTimeout(function(){
+                toast.classList.remove("show");
+            }, 1000);
+
+        })
+        .catch(function(error){
+
+            console.error("Copy failed:", error);
+
+        });
 
 }
-
-
 refresh();
 
 </script>
