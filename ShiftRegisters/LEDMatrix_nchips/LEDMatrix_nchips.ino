@@ -53,7 +53,7 @@
  */
 
 //#include "LEDfont_bold.h"  // bold font library provided with this sketch
-//#include "LEDfot_normal.h" // normal font library provided with this sketch
+//#include "LEDfont_normal.h" // normal font library provided with this sketch
 #include "LEDfont_narrow.h" // norrow font library provided with this sketch
 
 #include <avr/pgmspace.h> // use PROGMEM to be more efficient
