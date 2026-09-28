@@ -2,7 +2,7 @@
  * Author: D. Dubins
  * AI Assist: ChatGPT, Claude.AI, Perplexity.AI
  * Date: 17-Jul-26
- * Last Revised: 26-Sep-26
+ * Last Revised: 28-Sep-26
  * Description: Drives a series of N 8x8 LED modules. Routines for displaying simple graphics, and scrolling text. Shift Register Example
  * for 74HC595 shift register.
  * 
@@ -52,12 +52,14 @@
  * Row8
  */
 
+//#include "LEDfont_bold.h"  // bold font library provided with this sketch
+//#include "LEDfot_normal.h" // normal font library provided with this sketch
+#include "LEDfont_narrow.h" // norrow font library provided with this sketch
 
-//#include "LEDfont.h"  // lib header file provided with this sketch
-#include "LEDfont_narrow.h" // select this for narrower fonts
 #include <avr/pgmspace.h> // use PROGMEM to be more efficient
 const char message0[] PROGMEM = "Are you ready for an exciting career in drug development and research\x80\x80\x80";
-//const char message0[] PROGMEM = "I'm your overlooked friend, the interrobang\x80\x80\x80";
+//const char message0[] PROGMEM = "I'm your overlooked friend, the interrobang\x80\x80\x80 <> [] \{\}";
+
 const char message1[] PROGMEM = "\x8A\x8A\x8A Compounding is fun! \x8A\x8A\x8A";
 const char message2[] PROGMEM = "\x8A" "Lollipop" "\x8A";
 const char message3[] PROGMEM = "\x8B" " Gummy " "\x8B"; 
@@ -80,6 +82,7 @@ const int dataPin = 6;
 #define DISPLAY_WIDTH (MODULES * 8)
 #define PIXELS (MODULES * 64)
 #define KERNING 1  // use this to change spacing between characters (default: 1)
+#define SPACEWIDTH 3 // width of space character between words. Use 5 for normal font, 3 for narrow font.
 
 byte displayBuffer[8][MODULES];  // for the frame buffer (for more modules, Row0 will be [A][B][C][D][E])
 #define ROTATE_90 true           // rotate screen 90 degrees (comment out if not needed)
@@ -658,7 +661,7 @@ void LED_sparkles(byte graphic[8][MODULES], int rows, int cols, int n, int dur_s
   LEDblack(); // turn off LED
 }
 
-byte font8Width(byte graphic[]) {  // calculate the width of the graphic. If a space (empty), return a width of 4.
+int font8Width(byte graphic[]) {  // calculate the width of the graphic. If a space (empty), return a width of SPACEWIDTH.
   byte b = 0;
   for (byte i = 0; i < 8; i++) {
     b |= graphic[i];  // flatten graphic vertically
@@ -668,7 +671,7 @@ byte font8Width(byte graphic[]) {  // calculate the width of the graphic. If a s
       return (7 - i + KERNING);
     }
   }
-  return 4;  // if you made it this far, it's a space!
+  return SPACEWIDTH - KERNING - 1; // account for kerning
 }
 
 // To load message from PROGMEM into the buffer
