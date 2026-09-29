@@ -82,7 +82,7 @@ const int dataPin = 6;
 #define DISPLAY_WIDTH (MODULES * 8)
 #define PIXELS (MODULES * 64)
 #define KERNING 1  // use this to change spacing between characters (default: 1)
-#define SPACEWIDTH 3 // width of space character between words. Use 5 for normal font, 3 for narrow font.
+#define SPACEWIDTH 3 // width of space character between words. Use 5 for normal font, 4 for narrow font.
 
 byte displayBuffer[8][MODULES];  // for the frame buffer (for more modules, Row0 will be [A][B][C][D][E])
 #define ROTATE_90 true           // rotate screen 90 degrees (comment out if not needed)
