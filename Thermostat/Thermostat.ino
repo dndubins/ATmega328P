@@ -56,13 +56,21 @@ void loop(){
   delay(1000);         // Wait 1sec before taking next measure
 }
 
+// This function reads the temperature and stores to the global
+// variable tempC. Note that it's not a very "portable" function,
+// because it references the global varialbes tempPin, R, R0,
+// volts, R1, and tempC.
+// How could you make this function more independent of the rest
+// of the sketch?
 void readTemp(){
+  // This function takes an analog reading from tempPin, converts
+  // it to °C, then stores it to tempC.
   volts = analogRead(tempPin) * 3.3 / 1023.0;  // Take sensor
                        // reading from tempPin in divs (Scale
                        // 0-1023), and convert to volts
   R = volts*R1/(3.3-volts); // Convert voltage to resistance
-  tempC = (1/T0)+((1/B)*log(R/R0)); // Use the simplified B-
-                       // coefficient thermistor formula to
+  tempC = (1.0/T0)+((1.0/B)*log(R/R0)); // Use the simplified
+                       // B-coefficient thermistor formula to
                        // calculate temperature
   tempC = 1.0/tempC;   // invert the answer
   tempC = tempC - 273.15; // Convert from Kelvin to Celsius
