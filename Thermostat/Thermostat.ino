@@ -64,8 +64,8 @@ void loop(){
 // of the sketch?
 
 void readTemp(){
-  // This function takes an analog reading from tempPin, converts
-  // it to °C, then stores it to tempC.
+  // This function takes an analog reading from tempPin,
+  // converts it to °C, then stores it to tempC.
   volts = analogRead(tempPin) * 3.3 / 1023.0;  // Take sensor
                        // reading from tempPin in divs (Scale
                        // 0-1023), and convert to volts
