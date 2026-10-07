@@ -56,12 +56,13 @@ void loop(){
   delay(1000);         // Wait 1sec before taking next measure
 }
 
-// This function reads the temperature and stores to the global
-// variable tempC. Note that it's not a very "portable" function,
-// because it references the global varialbes tempPin, R, R0,
-// volts, R1, and tempC.
+// The following function readTemp() reads the temperature,
+// then stores it to the global variable tempC. Note that it's 
+// not a very "portable" function, because it references the
+// global varialbes tempPin, R, R0, volts, R1, and tempC.
 // How could you make this function more independent of the rest
 // of the sketch?
+
 void readTemp(){
   // This function takes an analog reading from tempPin, converts
   // it to °C, then stores it to tempC.
